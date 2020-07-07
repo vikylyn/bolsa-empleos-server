@@ -14,14 +14,19 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.1.13",
     "socket.io": "^2.3.0",
-    "socketio-jwt": "^4.6.2"
+    "socketio-jwt": "^4.6.2",
+    "typeorm": "^0.2.25"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.6",
     "@types/express": "^4.17.6",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/socket.io": "^2.1.8"
+    "@types/node": "^14.0.19",
+    "@types/socket.io": "^2.1.8",
+    "typescript": "^3.9.6"
   }
 }
