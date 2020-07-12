@@ -3,14 +3,15 @@ import Server from "./classes/server";
 import { SERVER_PORT } from "./global/environments";
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import {createConnection} from 'typeorm'  
-import rol from './routes/rol';
+import {createConnection} from 'typeorm'
+ 
+import rol from './src/routes/rol.routes';
   
 const server = Server.instance;
 
 createConnection().then(connection => {
     console.log('Conectado a la base de datos');
-}).catch(error => console.log(error));
+}).catch(error => console.log(error)); 
 
 
 //bodyParser
