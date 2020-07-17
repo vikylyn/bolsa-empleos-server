@@ -12,8 +12,8 @@ export class Credenciales {
     @Column({type: 'varchar', length: 100})
     password: string;  
   
-    @JoinColumn({name:'roles_id'})
-    @ManyToOne(type => Rol, rol => rol.id, {nullable: false})  
+    @JoinColumn({name:'roles_id'}) 
+    @ManyToOne(type => Rol, rol => rol.id, {nullable: false, eager: true})  
     rol: Rol
  
 }

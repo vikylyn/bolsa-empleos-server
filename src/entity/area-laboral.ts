@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Administrador } from './administrador';
-import { Profesion } from './profesion';
 
 @Entity('areas_laborales')
 export class AreaLaboral {
@@ -15,7 +14,7 @@ export class AreaLaboral {
     habilitado: boolean;
   
     @JoinColumn({name:'administradores_id'})
-    @ManyToOne(type => Administrador, administrador => administrador.id)
-    administrador: Administrador
+    @ManyToOne(type => Administrador, administrador => administrador.id,{nullable: false})
+    administrador: Administrador;
 
 }

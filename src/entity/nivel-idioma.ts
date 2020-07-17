@@ -1,13 +1,12 @@
 import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
 
 
-@Entity('roles')
-export class Rol {
+@Entity('nivel_idioma')
+export class NivelIdioma {
    
     @PrimaryGeneratedColumn()
     id: number;
     
-    @Column({type: 'varchar', length: 50,unique: true})
+    @Column({type: 'varchar', length: 20,unique: true})
     nombre: string;   
-
 }

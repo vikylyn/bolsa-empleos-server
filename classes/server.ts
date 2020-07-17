@@ -7,20 +7,43 @@ import http from 'http';
 // import socketioJwt from 'socketio-jwt';
 // import {SEED}  from '../config/config';
 
+
+// Inversify
+
+import { interfaces, InversifyExpressServer, TYPE } from 'inversify-express-utils';
+import { myContainer } from '../config/inversify.config';
+import bodyParser from 'body-parser';
+import '../src/controllers/rol.controller';  
+import '../src/controllers/administrador.controller';  
+import '../src/controllers/login.controller'; 
+import '../src/controllers/area-laboral.controller'; 
+import '../src/controllers/profesion.controller'; 
+
+
 export default class Server {
 
     private static _instance:Server;
-    public app: express.Application;
-    public port: number;
+    public server: InversifyExpressServer;  
+    public port: number;    
 
 //    public io: any;
     private httpServer: http.Server;
+    
 
 
     private constructor() {
-        this.app = express();
-        this.port = SERVER_PORT;
-        this.httpServer = new http.Server(this.app);
+        this.server = new InversifyExpressServer(myContainer);
+        this.port = SERVER_PORT; 
+
+        this.server.setConfig((app) => {
+            // add body parser
+            app.use(bodyParser.urlencoded({
+              extended: true
+            }));
+            app.use(bodyParser.json());
+          });
+        let app = this.server.build();
+        this.httpServer =  http.createServer(app);
                
 //        this.io =socketIO.listen(this.httpServer);
 //        this.escucharSockets(); 
@@ -65,6 +88,6 @@ export default class Server {
     }
  
 
-
+ 
 
 }

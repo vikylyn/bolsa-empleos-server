@@ -1,5 +1,7 @@
 import {Column, PrimaryGeneratedColumn,JoinColumn,OneToOne} from 'typeorm';
-import {Credenciales} from './credenciales'
+import {Credenciales} from './credenciales';
+
+
 export abstract class Usuario {
 
     @PrimaryGeneratedColumn()
@@ -21,13 +23,13 @@ export abstract class Usuario {
     cedula: string;
 
     @Column({type: 'varchar', length: 1})
-    sexo: string;
+    genero: string;
 
     @Column()
     habilitado: boolean;
 
-    @OneToOne(type => Credenciales,{nullable: false})
-    @JoinColumn({name: 'credenciales_id'})
+    @OneToOne(type => Credenciales,{nullable: false, eager: true})
+    @JoinColumn({name: 'credenciales_id'})  
     credenciales: Credenciales;
 
 }

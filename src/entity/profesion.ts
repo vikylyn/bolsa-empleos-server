@@ -20,6 +20,6 @@ export class Profesion {
   
     @JoinColumn({name:'administradores_id'})
     @ManyToOne(type => Administrador, administrador => administrador.id)
-    administrador: Administrador
+    administrador: Administrador 
 
 }
