@@ -10,12 +10,14 @@ import { SEED } from '../../config/config';
 import validarCampos from '../middlewares/administrador/validar-campos';
 
 import { body } from 'express-validator';
+import { ISolicitanteService } from '../interfaces/solicitante.service';
  
 @controller("/login")    
 export class LoginController implements interfaces.Controller {    
  
     constructor( @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService,
-                 @inject(TYPES.IAdministradorService) private adminService: IAdministradorService) {}
+                 @inject(TYPES.IAdministradorService) private adminService: IAdministradorService,
+                 @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService) {}
  
 
     @httpPost("/",
@@ -44,15 +46,28 @@ export class LoginController implements interfaces.Controller {
             let token = jwt.sign({ usuario: credenciales }, SEED, {expiresIn: 14400 }); // expira 4horas
 
             if(credenciales.rol.nombre === 'ROLE_ADMINISTRADOR') {
-                    console.log(credenciales);
                     const admin = await this.adminService.buscarPorCredencial(credenciales.id);
                     return res.status(200).json({
                         ok: true,
                         administrador: admin,
                         credenciales: credenciales,
                         token
-                    });
-                
+                    });   
+            }
+            if(credenciales.rol.nombre === 'ROLE_SOLICITANTE') {
+                const solicitante = await this.solicitanteService.buscarPorCredencial(credenciales.id);
+                if( solicitante.habilitado === false) {
+                    return res.status(403).json({
+                        ok: false,
+                        mensaje: 'Debe activar su cuenta ingresando al enlace enviado a su correo'
+                    }); 
+                }
+                return res.status(200).json({
+                    ok: true,
+                    solicitante: solicitante,
+                    credenciales: credenciales,
+                    token
+                });   
             }
         } catch (err) {
             console.log(err)

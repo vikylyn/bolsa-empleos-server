@@ -19,8 +19,13 @@ class CredencialesRepository  implements ICredencialesService  {
             return nuevoCredencial; 
     }
 */
-    modificar(id: number, credencial: Credenciales) {
-        throw new Error("Method not implemented.");
+    async modificar(id: number, credenciales: Credenciales) {
+        const credencial_modificado = await getRepository(Credenciales)
+        .createQueryBuilder()
+        .update(Credenciales)
+        .set({email: credenciales.email, password: credenciales.password})
+        .where("id = :id", { id: credenciales.id })
+        .execute();
     }
     eliminar(id: number) {
         throw new Error("Method not implemented.");

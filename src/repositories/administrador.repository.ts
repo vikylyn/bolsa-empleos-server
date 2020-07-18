@@ -17,8 +17,8 @@ class AdministradorRepository implements IAdministradorService  {
         .getOne();
         return administrador;
     }  
-    listar(desde: number) {
-        const administradores = getRepository(Administrador)
+    async listar(desde: number) {
+        const administradores = await getRepository(Administrador)
         .createQueryBuilder("administradores")
         .skip(desde)  
         .take(5)
@@ -105,7 +105,7 @@ class AdministradorRepository implements IAdministradorService  {
     async buscar(id: number) {
         const administrador = await  getRepository(Administrador).findOne(id);
         if(administrador){
-            administrador.credenciales.password = 'xd'
+            administrador.credenciales.password = 'xd';
         }
         return administrador;
     } 

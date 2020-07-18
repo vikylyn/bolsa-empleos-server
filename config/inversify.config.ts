@@ -10,6 +10,8 @@ import { IAreaLaboralService } from '../src/interfaces/area-laboral.service';
 import { AreaLaboralRepository } from "../src/repositories/area-laboral.repository";
 import { IProfesionService } from '../src/interfaces/profesion.service';
 import { ProfesionRepository } from "../src/repositories/profesion.repository";
+import { ISolicitanteService } from '../src/interfaces/solicitante.service';
+import { SolicitanteRepository } from "../src/repositories/solicitante.service";
 
 const myContainer = new Container();
 
@@ -17,7 +19,8 @@ myContainer.bind<IRolService>(TYPES.IRolService).to(RolRepository);
 myContainer.bind<IAdministradorService>(TYPES.IAdministradorService).to(AdministradorRepository);
 myContainer.bind<ICredencialesService>(TYPES.ICredencialesService).to(CredencialesRepository);
 myContainer.bind<IAreaLaboralService>(TYPES.IAreaLaboralService).to(AreaLaboralRepository);
-myContainer.bind<IProfesionService>(TYPES.IProfesionService).to(ProfesionRepository);   
+myContainer.bind<IProfesionService>(TYPES.IProfesionService).to(ProfesionRepository);  
+myContainer.bind<ISolicitanteService>(TYPES.ISolicitanteService).to(SolicitanteRepository);  
 
 
 export { myContainer };    

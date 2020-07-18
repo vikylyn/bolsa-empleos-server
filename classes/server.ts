@@ -18,6 +18,7 @@ import '../src/controllers/administrador.controller';
 import '../src/controllers/login.controller'; 
 import '../src/controllers/area-laboral.controller'; 
 import '../src/controllers/profesion.controller'; 
+import '../src/controllers/solicitante.controller'; 
 
 
 export default class Server {

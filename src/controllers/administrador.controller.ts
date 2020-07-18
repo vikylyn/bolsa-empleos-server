@@ -3,11 +3,11 @@ import { interfaces, controller, httpGet, httpPost, request, response, requestPa
 import { inject } from "inversify";
 import { TYPES } from "../../config/types";
 import { IAdministradorService } from '../interfaces/administrador.service';
-import { Administrador } from '../entity/administrador';
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
 import { ICredencialesService } from '../interfaces/creadenciales.service';
+import { Administrador } from '../entity/administrador';
 
 @controller("/administrador")    
 export class AdministradorController implements interfaces.Controller {    
@@ -61,7 +61,7 @@ export class AdministradorController implements interfaces.Controller {
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
 
         
-        try {
+        try { 
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.credenciales.email);
             if (existe_email) {
                 return res.status(400).json({
@@ -124,11 +124,19 @@ export class AdministradorController implements interfaces.Controller {
     @httpPut("/deshabilitar/:id",verificaToken)  
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const administrador = await this.adminService.eliminar(id)
-            return res.status(200).json({
-                ok: true,
-                mensaje: 'Administrador Eliminado exitosamente'
-            })
+            const administrador = await this.adminService.eliminar(id);
+            if (administrador.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Administrador Eliminado exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al deshabilitar administrador',
+                });
+            }
+
         } catch (err) {
             res.status(400).json({ 
                 ok: false,  

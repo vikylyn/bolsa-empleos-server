@@ -1,5 +1,6 @@
+
+
 import { Administrador } from '../entity/administrador';
-import { Credenciales } from '../entity/credenciales';
 
 
 export interface IAdministradorService {
