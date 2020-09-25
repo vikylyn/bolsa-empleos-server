@@ -19,6 +19,9 @@ export class Solicitante extends Usuario {
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
 
+    @Column({ type: "date"})
+    fecha_nac: Date;
+
     @Column()
     ocupado: boolean;
 
@@ -32,12 +35,14 @@ export class Solicitante extends Usuario {
 
     @JoinColumn({name:'profesiones_id'})
     @ManyToOne(type => Profesion, profesion => profesion.id, {nullable: false, eager: true})  
-    profesion: Profesion
+    profesion: Profesion;
 
-    @OneToOne(type => Curriculum, curriculum => curriculum.solicitante) // specify inverse side as a second parameter
+    // fecha de naciemiento aumentar
+
+ /*   @OneToOne(type => Curriculum, curriculum => curriculum.solicitante) // specify inverse side as a second parameter
     curriculum: Curriculum;
 
     @OneToMany(type => Postulacion, postulacion => postulacion.solicitante)
     postulaciones: Postulacion[];
-
+*/
 }

@@ -1,5 +1,5 @@
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
-import { CurriculumIdioma } from './curriculum-idioma';
+import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+
 
 
 @Entity('idiomas')
@@ -9,9 +9,6 @@ export class Idioma {
     id: number;
     
     @Column({type: 'varchar', length: 20,unique: true})
-    nombre: string;   
-
- //   @OneToMany(type => CurriculumIdioma, curriculum_idioma => curriculum_idioma.idioma)
- //   curriculum_idiomas: CurriculumIdioma[];
+    nombre: string; 
 
 }

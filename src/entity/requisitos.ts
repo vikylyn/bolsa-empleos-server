@@ -13,7 +13,7 @@ export class Requisitos {
     experiencia: number;
     
     @Column({type: 'varchar', length: 1})
-    sexo: string;
+    genero: string;
       
     @JoinColumn({name:'profesiones_id'}) 
     @ManyToOne(type => Profesion, profesion => profesion.id, {nullable: false, eager: true})  

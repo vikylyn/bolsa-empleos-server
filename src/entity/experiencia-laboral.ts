@@ -2,9 +2,9 @@ import {Entity, Column, PrimaryGeneratedColumn,JoinColumn, ManyToOne} from 'type
 import { Curriculum } from './curriculum';
 import { Pais } from './pais';
 import { AreaLaboral } from './area-laboral';
-
+ 
 @Entity('experiencias_laborales')
-export class EstudiosAvanzados {
+export class ExperienciaLaboral {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -32,7 +32,7 @@ export class EstudiosAvanzados {
 
     @JoinColumn({name:'areas_laborales_id'})
     @ManyToOne(type => AreaLaboral, area_laboral => area_laboral.id,{nullable:false, eager: true})
-    area_sector: AreaLaboral;
+    area_laboral: AreaLaboral;
 
     @JoinColumn({name:'curriculums_id'})
     @ManyToOne(type => Curriculum, curriculum => curriculum.id,{nullable:false})

@@ -16,8 +16,9 @@ let verificaToken = function(req: any, res: any , next: any) {
             });
         }
         req.usuario = decoded.usuario;
+      //  console.log(decoded.usuario);
         next();
     });
 }; 
-
+  
 export default verificaToken;

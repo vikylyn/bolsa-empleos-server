@@ -3,6 +3,8 @@ import { Empleador } from './empleador';
 import { Ciudad } from './ciudad';
 import { Requisitos } from './requisitos';
 import { TipoContrato } from './tipo-contrato';
+import { Horario } from './horario';
+import { RangoSueldo } from './rango-sueldo';
 
 
 @Entity('vacantes')
@@ -13,15 +15,17 @@ export class Vacante {
 
     @Column({type: 'varchar', length: 100})
     titulo: string;
-    
-    @Column()
-    sueldo: number;
+      
+    @JoinColumn({name:'sueldos_id'}) 
+    @ManyToOne(type => RangoSueldo, sueldo => sueldo.id, {nullable: false, eager: true})  
+    sueldo: RangoSueldo
 
     @Column({type: 'varchar', length: 45})
     direccion: string; 
     
-    @Column({type: 'varchar', length: 45})
-    horario: string;
+    @JoinColumn({name:'horarios_id'}) 
+    @ManyToOne(type => Horario, horario => horario.id, {nullable: false, eager: true})  
+    horario: Horario
 
     @Column()
     num_vacantes: number;
@@ -29,9 +33,9 @@ export class Vacante {
     @Column()
     num_disponibles: number;
 
-    @Column({type: 'varchar', length: 255})
+/*    @Column({type: 'varchar', length: 255})
     funciones: string;
-
+*/
     @Column({type: 'varchar', length: 255})
     descripcion: string;
     

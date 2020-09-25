@@ -6,18 +6,22 @@ import { Credenciales } from '../entity/credenciales';
 import bcrypt from 'bcryptjs';
 import { ISolicitanteService } from '../interfaces/solicitante.service';
 import { Solicitante } from '../entity/solicitante';
-import { stringify } from 'querystring';
+import { Imagen } from '../entity/imagen';
+
 
 @injectable()
-class SolicitanteRepository implements ISolicitanteService  {
+class SolicitanteService implements ISolicitanteService  {
+
 
     async buscarPorCredencial(id: number) {
         const solicitante = await  getRepository(Solicitante) 
         .createQueryBuilder("solicitante")
+        .leftJoinAndSelect("solicitante.imagen", "imagen")
         .where("solicitante.credenciales_id = :id", { id: id })  
         .getOne();
         return solicitante;
     }  
+
     async listar(desde: number) {
         const solicitantes = await getRepository(Solicitante)
         .createQueryBuilder("solicitantes")
@@ -26,7 +30,7 @@ class SolicitanteRepository implements ISolicitanteService  {
         .getMany();
         return solicitantes ;
     }
-    async adicionar(solicitante: Solicitante) {
+    async adicionar(body: any) {
         let respuesta: any;
         const connection = getConnection();
             const queryRunner = connection.createQueryRunner();
@@ -39,26 +43,32 @@ class SolicitanteRepository implements ISolicitanteService  {
             try {
                 // execute some operations on this transaction:
                 let credencial= await queryRunner.manager.save(Credenciales, 
-                    {email: solicitante.credenciales.email, 
-                     password: bcrypt.hashSync(solicitante.credenciales.password,10) ,
-                     rol: solicitante.credenciales.rol
+                    {email: body.email, 
+                     password: bcrypt.hashSync(body.password,10) ,
+                     rol: {id: body.id_rol}
                     });
+                let imagen = await queryRunner.manager.save(Imagen, 
+                    { id_cloudinary: 'no-image2_uyivib',
+                      formato: 'png',
+                      url: 'http://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png',
+                      url_segura: 'https://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png'});
+                    
                 let solicitante_guardado = await queryRunner.manager.save(Solicitante,
                     {
-                    nombre:solicitante.nombre, 
-                    apellidos: solicitante.apellidos, 
-                    imagen: solicitante.imagen,
-                    telefono: solicitante.telefono, 
-                    cedula: solicitante.cedula, 
-                    genero: solicitante.genero, 
+                    nombre:body.nombre, 
+                    apellidos: body.apellidos, 
+                    imagen: imagen, 
+                    telefono: body.telefono, 
+                    cedula: body.cedula, 
+                    genero: body.genero, 
                     habilitado: false,
-                    nacionalidad: solicitante.nacionalidad,
-                    direccion:solicitante.direccion,
-                //   creado_en: solicitante.creado_en,
+                    nacionalidad: body.nacionalidad,
+                    direccion:body.direccion,
                     ocupado: false,
-                    estado_civil: solicitante.estado_civil,
-                    ciudad: solicitante.ciudad,
-                    profesion: solicitante.profesion,
+                    fecha_nac: body.fecha_nac,
+                    estado_civil: {id: body.id_estado_civil},
+                    ciudad: {id: body.id_ciudad},
+                    profesion: {id: body.id_profesion},
                     credenciales: credencial})
                 await queryRunner.commitTransaction();
 
@@ -80,31 +90,29 @@ class SolicitanteRepository implements ISolicitanteService  {
 
             return respuesta;
     }
-    async modificar(id: number, solicitante: Solicitante) {
+    async modificar(solicitante: Solicitante, body: any) {
         const solicitante_modificado = await getRepository(Solicitante)
         .createQueryBuilder()
         .update(Solicitante)
         .set({
-            nombre:solicitante.nombre, 
-            apellidos: solicitante.apellidos, 
-            imagen: solicitante.imagen,
-            telefono: solicitante.telefono, 
-            cedula: solicitante.cedula, 
-            genero: solicitante.genero, 
-            habilitado: solicitante.habilitado,
-            nacionalidad: solicitante.nacionalidad,
-            direccion:solicitante.direccion,
-            ocupado: solicitante.ocupado,
-            estado_civil: solicitante.estado_civil,
-            ciudad: solicitante.ciudad,
-            profesion: solicitante.profesion,
+            nombre:body.nombre, 
+            apellidos: body.apellidos, 
+            telefono: body.telefono, 
+            cedula: body.cedula, 
+            genero: body.genero, 
+            habilitado: body.habilitado,
+            nacionalidad: body.nacionalidad,
+            direccion:body.direccion,
+            fecha_nac: body.fecha_nac,
+            estado_civil: {id: body.id_estado_civil},
+            ciudad: {id: body.id_ciudad},
         })
-        .where("id = :id", { id: id })
+        .where("id = :id", { id: solicitante.id })
         .execute();
         const credencial = await getRepository(Credenciales)
         .createQueryBuilder()
         .update(Credenciales)
-        .set({email: solicitante.credenciales.email})
+        .set({email: body.email})
         .where("id = :id", { id: solicitante.credenciales.id })
         .execute();
         return solicitante_modificado;
@@ -121,7 +129,16 @@ class SolicitanteRepository implements ISolicitanteService  {
         return respuesta;
     }
     async buscar(id: number) {
-        const solicitante = await  getRepository(Solicitante).findOne(id);
+        const solicitante = await 
+        getRepository(Solicitante)
+       .createQueryBuilder("solicitantes")
+       .leftJoinAndSelect("solicitantes.credenciales", "credenciales")
+       .leftJoinAndSelect("solicitantes.imagen", "imagen")
+       .leftJoinAndSelect("solicitantes.estado_civil", "estado_civil")
+       .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
+       .leftJoinAndSelect("solicitantes.profesion", "profesion")
+       .where("solicitantes.id = :id", { id: id })
+       .getOne();
         if(solicitante){
             solicitante.credenciales.password = 'xd' 
         }
@@ -146,8 +163,23 @@ class SolicitanteRepository implements ISolicitanteService  {
         .execute(); 
         return respuesta;
     }
-
-    
-
+    async habilitar(id: number) {
+        const respuesta = await getRepository(Solicitante)
+        .createQueryBuilder()
+        .update(Solicitante)
+        .set({habilitado: true})
+        .where("id = :id", { id: id })
+        .execute(); 
+        return respuesta;
+    }
+    async modificarImagen(id: number, imagen: Imagen) {
+        const solicitante = await getRepository(Solicitante)
+        .createQueryBuilder()
+        .update(Solicitante)
+        .set({imagen: imagen})
+        .where("id = :id", { id: id })
+        .execute();
+        return solicitante;
+    }
 }
-export { SolicitanteRepository };  
+export { SolicitanteService };  

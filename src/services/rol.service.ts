@@ -6,7 +6,7 @@ import { Rol } from "../entity/rol";
 
 
 @injectable()
-class RolRepository  implements IRolService  {
+class RolService  implements IRolService  {
     buscar(id: number) {
         const rol =  getRepository(Rol).findOne(id);
         return rol;
@@ -19,4 +19,4 @@ class RolRepository  implements IRolService  {
    
 }
   
-export { RolRepository };  
+export { RolService };  

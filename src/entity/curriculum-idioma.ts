@@ -15,7 +15,7 @@ export class CurriculumIdioma {
     curriculum: Curriculum;
 
     @JoinColumn({name:'idioma_id'})
-    @ManyToOne(type => Idioma, idioma => idioma.id,{nullable: false})
+    @ManyToOne(type => Idioma, idioma => idioma.id,{nullable: false, eager: true})
     idioma: Idioma;
 
 

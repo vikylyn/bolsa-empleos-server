@@ -9,6 +9,7 @@ import { body } from 'express-validator';
 import { ICredencialesService } from '../interfaces/creadenciales.service';
 import { Administrador } from '../entity/administrador';
 
+
 @controller("/administrador")    
 export class AdministradorController implements interfaces.Controller {    
  
@@ -19,9 +20,12 @@ export class AdministradorController implements interfaces.Controller {
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number, req: express.Request, res: express.Response, next: express.NextFunction) {
         let administradores = await this.adminService.listar(desde);
+        let total = await this.adminService.contar();
         return res.status(200).json({
             ok: true,
+            total,
             administradores
+            
         });
     } 
     @httpGet("/:id",verificaToken)
@@ -45,24 +49,24 @@ export class AdministradorController implements interfaces.Controller {
                 error: err.message });
         }
     } // 
-    @httpPost("/",verificaToken, 
+    @httpPost("/", 
+        verificaToken,
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('apellidos','Los apellidos son obligatorios').not().isEmpty(),
         body('telefono','El telefono es obigatorio').not().isEmpty(),
         body('cedula','La cedula es obligatoria').not().isEmpty(),
         body('genero', 'El genero es obligatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('credenciales.email', 'El email es obligatorio').isEmail(),
-        body('credenciales.password', 'El password es Obligatorio').not().isEmpty(),
-        body('credenciales.rol.id', 'El id del Rol es obligatorio').not().isEmpty(),
-        body('credenciales.rol.nombre', 'El nombre de rol es obligatorio').not().isEmpty(),
+        body('email', 'El email es obligatorio').isEmail(),
+        body('password', 'El password es Obligatorio').not().isEmpty(),
+        body('id_rol', 'El id del Rol es obligatorio').not().isEmpty(),
         validarCampos
         )
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
 
         
         try { 
-            const existe_email = await this.credencialesService.buscarCredenciales(req.body.credenciales.email);
+            const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
             if (existe_email) {
                 return res.status(400).json({
                     ok: false, 
@@ -70,15 +74,23 @@ export class AdministradorController implements interfaces.Controller {
                  })
             }
             const admin = await this.adminService.adicionar(req.body);
+            if(admin) {
+                return res.status(201).json({
+                    ok: true,
+                    mensaje: 'Administrador creado exitosamente',  
+                    administrador: admin
+                });
+            }else {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al adicionar Administrador',  
+                });
+            }
            
-            return res.status(201).json({
-                ok: true,
-                mensaje: 'Administrador creado exitosamente',  
-                administrador: admin
-            });
+           
             
         } catch (err) {
-            res.status(400).json({
+            res.status(500).json({
                 ok: false, 
                 error: err.message 
              });
@@ -93,15 +105,13 @@ export class AdministradorController implements interfaces.Controller {
         body('cedula','La cedula es obligatoria').not().isEmpty(),
         body('genero', 'El genero es obligatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('credenciales.email', 'El email es obligatorio').isEmail(),
-        body('credenciales.password', 'El password es Obligatorio').not().isEmpty(),
-        body('credenciales.rol.id', 'El id del Rol es obligatorio').not().isEmpty(),
-        body('credenciales.rol.nombre', 'El nombre de rol es obligatorio').not().isEmpty(),
+        body('email', 'El email es obligatorio').isEmail(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
           
         try {
+            
             const administrador = await this.adminService.buscar(id);
             if (!administrador){
                 return res.status(400).json({
@@ -109,19 +119,35 @@ export class AdministradorController implements interfaces.Controller {
                     mensaje:`No existe un administrador con ese ID ${id}`
             });
             }
-            const administradorm = await this.adminService.modificar(administrador.id, req.body);
-            return res.status(200).json({
-                ok:true,
-                mensaje: 'Administrador modificado exitosamente'
-            });
+            const email = await this.credencialesService.buscarEmailIguales(req.body.email,administrador.credenciales.id);
+            if (email) {
+                return res.status(400).json({
+                    ok: false, 
+                    mensaje: 'Existe un usuario con ese email'
+                 })
+            }
+            const administrador_modificado = await this.adminService.modificar(administrador, req.body);
+           
+            if (administrador_modificado.affected === 1){
+                return res.status(200).json({
+                    ok:true,
+                    mensaje: 'Administrador modificado exitosamente'
+                });
+            }else {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al modificar Administrador',
+                });
+            }
         } catch (err) {
             res.status(400).json({  
                 ok:false, 
-                error: err.message });
+                error: err.message
+            }); 
         }
     } 
 
-    @httpPut("/deshabilitar/:id",verificaToken)  
+    @httpGet("/deshabilitar/:id",verificaToken)  
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const administrador = await this.adminService.eliminar(id);
@@ -141,6 +167,27 @@ export class AdministradorController implements interfaces.Controller {
             res.status(400).json({ 
                 ok: false,  
                 error: err.message });  
+        }
+    }
+
+    @httpGet("/busqueda/:nombre",verificaToken)
+    private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const administrador = await this.adminService.buscarPorNombre(nombre);
+            if (!administrador){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un administrador con el nombre ${nombre}`
+            });
+            }  
+            return res.status(201).json({
+                ok: true, 
+                administradores: administrador,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
         }
     }
  

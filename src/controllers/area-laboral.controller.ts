@@ -15,11 +15,22 @@ export class AreaLaboralController implements interfaces.Controller {
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
         let areas = await this.areaService.listar(desde);
+        let total = await this.areaService.contar();
         return res.status(200).json({
-            ok: true,
+            ok: true, 
+            areas: areas,
+            total
+        })
+    }
+    @httpGet("/todas")
+    private async listarTodas(req: express.Request,res: express.Response, next: express.NextFunction) {
+        let areas = await this.areaService.listarTodas();
+        return res.status(200).json({
+            ok: true, 
             areas: areas
         })
     }
+
     @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
@@ -30,12 +41,32 @@ export class AreaLaboralController implements interfaces.Controller {
                     mensaje:`No existe un area laboral con el ID ${id}`
             });
             }
-            return res.status(201).json({
+            return res.status(200).json({
                 ok: true,
                 area: area,
             });
         } catch (err) {
-            res.status(400).json({ 
+            res.status(500).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda/:nombre",verificaToken)
+    private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const area = await this.areaService.buscarPorNombre(nombre);
+            if (!area){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un area laboral con el nombre ${nombre}`
+            });
+            } 
+            return res.status(200).json({
+                ok: true, 
+                areas: area,
+            });
+        } catch (err) {
+            res.status(500).json({ 
                 ok: false,
                 error: err.message });
         }
@@ -57,13 +88,21 @@ export class AreaLaboralController implements interfaces.Controller {
                     mensaje:`No existe un area laboral con el ID ${id}`
                 });
             }
-            const area_m = await this.areaService.modificar(area.id, req.body);
-            return res.status(200).json({
-                ok: true,
-                mensaje: 'Area Laboral modificada exitosamente',
-            });
+            const area_modificada = await this.areaService.modificar(area.id, req.body);
+            
+            if (area_modificada.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Area Laboral modificada exitosamente',
+                });
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                    mensaje: 'Error al modificar administrador',
+                });
+            }
         } catch (err) {
-            res.status(400).json({ error: err.message });
+            res.status(500).json({ error: err.message });
         }
     } 
     @httpPost("/",
@@ -78,30 +117,46 @@ export class AreaLaboralController implements interfaces.Controller {
         try {
             
             const area = await this.areaService.adicionar(req.body);
-            return res.status(201).json({
-                ok: true,
-                mensaje: 'Area Laboral creada exitosamente',
-                area:area
-            });
+            if (area) {
+                return res.status(201).json({
+                    ok: true,
+                    mensaje: 'Area Laboral creada exitosamente',
+                    area:area
+                });
+            }else {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al adicionar Area laboral'
+                });
+            }
+           
         } catch (err) {
-            res.status(400).json({
+            res.status(500).json({
                 ok: false,
-                mensaje: 'No se pudo crear el area laboral', 
+                mensaje: 'Error al adicionar Area laboral', 
                 error: err.message });
         }
     }
-    @httpPut("/deshabilitar/:id",verificaToken)
+    @httpGet("/deshabilitar/:id",verificaToken)
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
             const area = await this.areaService.eliminar(id)
-            return res.status(200).json({
-                ok: true,
-                mensaje: 'Area laboral Eliminada exitosamente',
-            })
+            
+            if (area.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Area laboral Eliminada exitosamente',
+                });
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                    mensaje: 'Error al deshabilitar area laboral',
+                });
+            }
         } catch (err) {
-            res.status(400).json({
+            res.status(500).json({
                 ok: false,
-                mensaje: 'No se pudo eliminar el area laboral', 
+                mensaje: 'Error al deshabilitar el area laboral', 
                 error: err.message });
         }
     }

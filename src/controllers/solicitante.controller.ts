@@ -2,14 +2,17 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../../config/types";
-import verificaToken from '../middlewares/verificar-token'
+import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
 import { ICredencialesService } from '../interfaces/creadenciales.service';
 import { ISolicitanteService } from '../interfaces/solicitante.service';
 import { Solicitante } from '../entity/solicitante';
+import {sendEmailSolicitante}  from '../email/enviar-email';
 
-@controller("/solicitante")    
+
+
+@controller("/solicitante")
 export class SolicitanteController implements interfaces.Controller {    
  
     constructor( @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService,
@@ -45,7 +48,7 @@ export class SolicitanteController implements interfaces.Controller {
                 error: err.message });
         }
     } // 
-    @httpPost("/",verificaToken, 
+    @httpPost("/",
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('apellidos','Los apellidos son obligatorios').not().isEmpty(),
         body('telefono','El telefono es obigatorio').not().isEmpty(),
@@ -53,20 +56,21 @@ export class SolicitanteController implements interfaces.Controller {
         body('genero', 'El genero es obligatorio').not().isEmpty(),
         body('nacionalidad', 'La Nacionalidad es obligatoria').not().isEmpty(),
         body('direccion', 'La direccion es obligatoria').not().isEmpty(),
-        body('estado_civil', 'El estado civil es obligatorio').not().isEmpty(),
-        body('ciudad', 'La ciudad es obligatoria').not().not().isEmpty(),
-        body('profesion', 'La profesion es obligatoria').not().isEmpty(),
-        body('credenciales.email', 'El email es obligatorio').isEmail(),
-        body('credenciales.password', 'El password es Obligatorio').not().isEmpty(),
-        body('credenciales.rol.id', 'El id del Rol es obligatorio').not().isEmpty(),
-        body('credenciales.rol.nombre', 'El nombre de rol es obligatorio').not().isEmpty(),
+        body('fecha_nac', 'La fecha de nacimiento es obligatoria').not().isEmpty(),
+        body('id_estado_civil', 'El id del estado civil es obligatorio').not().isEmpty(),
+        body('id_ciudad', 'El id de la ciudad es obligatorio').not().not().isEmpty(),
+        body('id_profesion', 'El id de la profesion es obligatorio').not().isEmpty(),
+        body('email', 'El email es obligatorio').isEmail(),
+        body('password', 'El password es Obligatorio').not().isEmpty(),
+        body('id_rol', 'El id del Rol es obligatorio').not().isEmpty(),
         validarCampos
         )
-    private async adicionar(@request() req: express.Request, @response() res: express.Response) {
+    private async adicionar(@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
 
         
         try {
-            const existe_email = await this.credencialesService.buscarCredenciales(req.body.credenciales.email);
+            console.log(req.body.email);
+            const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
             if (existe_email) {
                 return res.status(400).json({
                     ok: false, 
@@ -74,13 +78,22 @@ export class SolicitanteController implements interfaces.Controller {
                  })
             }
             const solicitante = await this.solicitanteService.adicionar(req.body);
-           
-            return res.status(201).json({
-                ok: true,
-                mensaje: 'Solicitante creado exitosamente',  
-                solicitante: solicitante
-            });
+            if (solicitante) {
             
+                sendEmailSolicitante(solicitante.id, solicitante.credenciales.email);
+    
+                return res.status(201).json({
+                    ok: true,
+                    mensaje: 'Solicitante adicionado exitosamente',  
+                    //solicitante: solicitante
+                });
+            } else {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al adicionar Solicitante',  
+                    // solicitante: solicitante
+                });
+            }  
         } catch (err) {
             res.status(400).json({
                 ok: false, 
@@ -89,23 +102,23 @@ export class SolicitanteController implements interfaces.Controller {
         }
     } 
 
-    @httpPut("/:id",
+    @httpPut("/modificar/:id",
         verificaToken, 
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('apellidos','Los apellidos son obligatorios').not().isEmpty(),
         body('telefono','El telefono es obigatorio').not().isEmpty(),
         body('cedula','La cedula es obligatoria').not().isEmpty(),
         body('genero', 'El genero es obligatorio').not().isEmpty(),
-        body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
         body('nacionalidad', 'La Nacionalidad es obligatoria').not().isEmpty(),
         body('direccion', 'La direccion es obligatoria').not().isEmpty(),
-        body('estado_civil', 'El estado civil es obligatorio').not().isEmpty(),
-        body('ciudad', 'La ciudad es obligatoria').not().isEmpty(),
-        body('profesion', 'La profesion es obligatoria').not().isEmpty(),
-        body('credenciales.email', 'El email es obligatorio').isEmail(),
+        body('fecha_nac', 'La fecha de nacimiento es obligatoria').not().isEmpty(),
+        body('id_estado_civil', 'El id del estado civil es obligatorio').not().isEmpty(),
+        body('id_ciudad', 'El id de la ciudad es obligatorio').not().not().isEmpty(),
+        body('id_profesion', 'El id de la profesion es obligatorio').not().isEmpty(),
+        body('email', 'El email es obligatorio').isEmail(),
         validarCampos
     )
-    private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
+    private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
           
         try {
             const solicitante = await this.solicitanteService.buscar(id);
@@ -115,11 +128,18 @@ export class SolicitanteController implements interfaces.Controller {
                     mensaje:`No existe un solicitante con ese ID ${id}`
             });
             }
-            const solicitante_modificado = await this.solicitanteService.modificar(solicitante.id, req.body);
+            const email = await this.credencialesService.buscarEmailIguales(req.body.email,solicitante.credenciales.id);
+            if (email) {
+                return res.status(400).json({
+                    ok: false, 
+                    mensaje: 'Existe un usuario con ese email'
+                 })
+            }
+            const solicitante_modificado = await this.solicitanteService.modificar(solicitante, req.body);
             if (solicitante_modificado.affected === 1){
                 return res.status(200).json({
                     ok:true,
-                    mensaje: 'Administrador modificado exitosamente',
+                    mensaje: 'Solicitante modificado exitosamente', 
                 });
             }else {
                 
@@ -200,5 +220,27 @@ export class SolicitanteController implements interfaces.Controller {
                 error: err.message });  
         }
     }
+
+    @httpPut("/activacion/:id", verificaToken)
+    private async activarCuenta(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const solicitante = await this.solicitanteService.habilitar(id);
+            if (solicitante.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Cuenta de solicitante activada exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                    mensaje: 'Error al activar cuenta de solicitante',
+                });
+            }
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message });  
+        }
+    } // 
 
 }

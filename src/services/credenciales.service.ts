@@ -1,15 +1,23 @@
 import { ICredencialesService } from '../interfaces/creadenciales.service';
 import { injectable } from 'inversify';
 import { Credenciales } from '../entity/credenciales';
-import { Rol } from '../entity/rol';
 import { getRepository } from 'typeorm';
+import bcrypt from 'bcryptjs';
 
 
 @injectable()
-class CredencialesRepository  implements ICredencialesService  {
+class CredencialesService  implements ICredencialesService  {
     async buscarCredenciales(email: string) {
         const credenciales = await  getRepository(Credenciales).findOne({email: email});
         return credenciales;
+    }
+    async buscarEmailIguales(email: string, id_credencial: number) { 
+        const credenciales = await  getRepository(Credenciales)  
+        .createQueryBuilder("credenciales")
+        .where("credenciales.email = :email and credenciales.id != :id", {email: email, id: id_credencial })  
+        .getOne();
+        console.log(credenciales);
+        return credenciales; 
     }
  /*   adicionar(credencial: Credenciales, role: Rol) {
         const nuevoCredencial =   getRepository(Credenciales).create(
@@ -19,21 +27,16 @@ class CredencialesRepository  implements ICredencialesService  {
             return nuevoCredencial; 
     }
 */
-    async modificar(id: number, credenciales: Credenciales) {
+    async modificar(id: number, body: any) {
         const credencial_modificado = await getRepository(Credenciales)
         .createQueryBuilder()
         .update(Credenciales)
-        .set({email: credenciales.email, password: credenciales.password})
-        .where("id = :id", { id: credenciales.id })
+        .set({email: body.email, password: bcrypt.hashSync(body.password,10)})
+        .where("id = :id", { id: id })
         .execute();
-    }
-    eliminar(id: number) {
-        throw new Error("Method not implemented.");
-    }
-    buscar(id: number) {
-        throw new Error("Method not implemented.");  
+        return credencial_modificado;
     }
    
 }
   
-export { CredencialesRepository };  
+export { CredencialesService };  

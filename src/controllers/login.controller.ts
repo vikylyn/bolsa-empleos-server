@@ -11,14 +11,25 @@ import validarCampos from '../middlewares/administrador/validar-campos';
 
 import { body } from 'express-validator';
 import { ISolicitanteService } from '../interfaces/solicitante.service';
- 
+import { IEmpleadorService } from '../interfaces/empleador.service';
+import verificaToken from '../middlewares/verificar-token';
+
 @controller("/login")    
 export class LoginController implements interfaces.Controller {    
  
     constructor( @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService,
                  @inject(TYPES.IAdministradorService) private adminService: IAdministradorService,
-                 @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService) {}
- 
+                 @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService,
+                 @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService) {}
+    
+    @httpPost("/renovar",verificaToken)
+        private renovarToken(@request() req: express.Request, @response() res: express.Response){
+            let token = jwt.sign({ id: req.body.id }, SEED, {expiresIn: 14400 });
+            return res.status(200).json({
+                ok: true,
+                token
+            });
+    }
 
     @httpPost("/",
             body('email', 'El email es obligatorio').isEmail(),
@@ -43,14 +54,21 @@ export class LoginController implements interfaces.Controller {
                 });
             }  
             credenciales.password = 'xd';
-            let token = jwt.sign({ usuario: credenciales }, SEED, {expiresIn: 14400 }); // expira 4horas
+            let token = jwt.sign({ usuario: credenciales.email }, SEED, {expiresIn: 14400 }); // expira 4horas
 
             if(credenciales.rol.nombre === 'ROLE_ADMINISTRADOR') {
                     const admin = await this.adminService.buscarPorCredencial(credenciales.id);
+                    if( admin.habilitado === false) {
+                        return res.status(403).json({
+                            ok: false,
+                            mensaje: 'Cuenta de administrador inactiva'
+                        }); 
+                    }
+                    admin.credenciales = credenciales;
+                    console.log(admin);
                     return res.status(200).json({
                         ok: true,
-                        administrador: admin,
-                        credenciales: credenciales,
+                        usuario: admin,
                         token
                     });   
             }
@@ -62,11 +80,26 @@ export class LoginController implements interfaces.Controller {
                         mensaje: 'Debe activar su cuenta ingresando al enlace enviado a su correo'
                     }); 
                 }
+                solicitante.credenciales = credenciales;
                 return res.status(200).json({
                     ok: true,
-                    solicitante: solicitante,
-                    credenciales: credenciales,
+                    usuario: solicitante,
                     token
+                });   
+            }
+            if(credenciales.rol.nombre === 'ROLE_EMPLEADOR') {
+                const empleador = await this.empleadorService.buscarPorCredencial(credenciales.id);
+                if( empleador.habilitado === false) {
+                    return res.status(403).json({
+                        ok: false,
+                        mensaje: 'Debe activar su cuenta ingresando al enlace enviado a su correo'
+                    }); 
+                }
+                empleador.credenciales = credenciales;
+                return res.status(200).json({
+                    ok: true,
+                    token,
+                    usuario: empleador
                 });   
             }
         } catch (err) {

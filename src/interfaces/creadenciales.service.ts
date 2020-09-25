@@ -3,9 +3,8 @@ import { Rol } from '../entity/rol';
 
 export interface ICredencialesService {
    
-   // adicionar(credencial: Credenciales, role: Rol): any;
+   // adicionar(credencial: Credenciales, role: Rol): any; 
     modificar(id: number,credencial: Credenciales): any;
-    eliminar(id: number):any;
-    buscar(id: number): any;
-    buscarCredenciales(email: string): any;    
+    buscarCredenciales(email: string): any; 
+    buscarEmailIguales(email: string, id_credencial: number): any;   
 } 

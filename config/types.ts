@@ -1,11 +1,37 @@
-import { ISolicitanteService } from '../src/interfaces/solicitante.service';
+
 const TYPES = {
     IRolService: Symbol.for("IRolService"),
     IAdministradorService: Symbol.for("IAdministradorService"),
     ICredencialesService: Symbol.for("ICredencialesService"),
     IAreaLaboralService: Symbol.for("IAreaLaboralService"),
     IProfesionService: Symbol.for("IProfesionService"),
-    ISolicitanteService: Symbol.for("ISolicitanteService")  
+    ISolicitanteService: Symbol.for("ISolicitanteService"),
+    IEmpleadorService: Symbol.for("IEmpleadorService"),
+    ICurriculumService: Symbol.for("ICurriculumService"),
+    IReferenciaService: Symbol.for("IReferenciaService"),
+    IIdiomaService: Symbol.for("IIdiomaService"), 
+    ICurriculumIdiomaService: Symbol.for("ICurriculumIdiomaService"),
+    INivelIdiomaService: Symbol.for("INivelIdiomaService"),
+    IEstadoCivilService: Symbol.for("IEstadoCivilService"),
+    IImagenService: Symbol.for("IImagenService"),
+    IHabilidadService: Symbol.for("IHabilidadService"),
+    ICurriculumHabilidadService: Symbol.for("ICurriculumHabilidadService"),
+    IExperienciaService: Symbol.for("IExperienciaService"),
+    INivelEstudioService: Symbol.for("INivelEstudioService"),
+    IGradoEscolarService: Symbol.for("IGradoEscolarService"),
+    IEstudioBasicoService: Symbol.for("IEstudioBasicoService"),
+    IEstudioAvanzadoService: Symbol.for("IEstudioAvanzadoService"),
+    IEmpresaService: Symbol.for("IEmpresaService"),
+    ITipoContratoService: Symbol.for("ITipoContratoService"),
+    IRangoSueldoService: Symbol.for("IRangoSueldoService"),
+    IVacanteService: Symbol.for("IVacanteService"),
+    IHorarioService: Symbol.for("IHorarioService"),
+    IPostulacionService: Symbol.for("IPostulacionService"),
+    IContratacionService: Symbol.for("IContratacionService"),
+    IPaisService:Symbol.for("IPaisService"),
+    IEstadoService:Symbol.for("IEstadoService"),
+    ICiudadService: Symbol.for("ICiudadService"),
+    IActividadLaboralService: Symbol.for("IActividadLaboralService")
 }
 
 export { TYPES };    

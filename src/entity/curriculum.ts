@@ -2,13 +2,15 @@ import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToOne
 import { Solicitante } from './solicitante';
 import { CurriculumIdioma } from './curriculum-idioma';
 import { Habilidad } from './habilidad';
-import { EstudiosBasicos } from './estudios-basicos';
-import { EstudiosAvanzados } from './experiencia-laboral';
+import { EstudioBasico } from './estudio-basico';
 import { Referencia } from './referencia';
+import { CurriculumHabilidad } from './curriculum-habilidad';
+import { EstudioAvanzado } from './estudio-avanzado';
+import { ExperienciaLaboral } from './experiencia-laboral';
 
 
 @Entity('curriculums')
-export class Curriculum {
+export class Curriculum {  
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -25,14 +27,17 @@ export class Curriculum {
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
   
-    @OneToMany(type => Habilidad, habilidad => habilidad.curriculum)
-    habilidades: Habilidad[];
+    @OneToMany(type => ExperienciaLaboral, experiencias => experiencias.curriculum)
+    experiencias_laborales: ExperienciaLaboral[];
 
-    @OneToMany(type => EstudiosBasicos, estudios_basicos => estudios_basicos.curriculum)
-    estudios_basicos: EstudiosBasicos[];
+    @OneToMany(type => CurriculumHabilidad, curriculum_habilidad => curriculum_habilidad.curriculum)
+    curriculum_habilidades: Habilidad[];
 
-    @OneToMany(type => EstudiosAvanzados, estudios_avanzados => estudios_avanzados.curriculum)
-    estudios_avanzados: EstudiosAvanzados[];
+    @OneToMany(type => EstudioBasico, estudios_basicos => estudios_basicos.curriculum)
+    estudios_basicos: EstudioBasico[];
+  
+    @OneToMany(type => EstudioAvanzado, estudios_avanzados => estudios_avanzados.curriculum)
+    estudios_avanzados: EstudioAvanzado[];
 
     @OneToMany(type => Referencia, referencia => referencia.curriculum)
     referencias: Referencia[];

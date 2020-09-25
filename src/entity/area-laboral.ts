@@ -7,7 +7,7 @@ export class AreaLaboral {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: 'varchar', length: 30,unique: true})
+    @Column({type: 'varchar', length: 100,unique: true})
     nombre: string;
     
     @Column()

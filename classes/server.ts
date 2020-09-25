@@ -2,6 +2,11 @@ import express from 'express';
 import { SERVER_PORT } from '../global/environments';
 //import socketIO from 'socket.io';
 import http from 'http';
+import cors from 'cors';
+
+//import fileUpload from 'express-fileupload';
+import path from 'path';
+
 // import * as socket from '../sockets/socket';
 // 
 // import socketioJwt from 'socketio-jwt';
@@ -13,12 +18,39 @@ import http from 'http';
 import { interfaces, InversifyExpressServer, TYPE } from 'inversify-express-utils';
 import { myContainer } from '../config/inversify.config';
 import bodyParser from 'body-parser';
+
 import '../src/controllers/rol.controller';  
 import '../src/controllers/administrador.controller';  
 import '../src/controllers/login.controller'; 
 import '../src/controllers/area-laboral.controller'; 
 import '../src/controllers/profesion.controller'; 
 import '../src/controllers/solicitante.controller'; 
+import '../src/controllers/empleador.controller'; 
+import '../src/controllers/curriculum.controller';
+import '../src/controllers/referencias.controller'; 
+import '../src/controllers/idioma.controller'; 
+import '../src/controllers/curriculum-idioma.controller'; 
+import '../src/controllers/upload.controller';
+import '../src/controllers/estado-civil.controller';  
+import '../src/controllers/habilidad.controller';  
+import '../src/controllers/curriculum-habilidad.controller';  
+import '../src/controllers/experiencia.controller';  
+import '../src/controllers/grado-escolar.controller';  
+import '../src/controllers/estudio-basico.controller'; 
+import '../src/controllers/nivel-estudio.controller';
+import '../src/controllers/estudio-avanzado.controller';
+import '../src/controllers/empresa.controller';
+import '../src/controllers/tipo-contrato.controller';
+import '../src/controllers/rango-sueldo.controller';
+import '../src/controllers/vacante.controller';
+import '../src/controllers/horario.controller';
+import '../src/controllers/postulacion.controller';
+import '../src/controllers/contratacion.controller';
+import '../src/controllers/ubicacion.controller';
+import '../src/controllers/actividad-laboral.controller';
+import '../src/controllers/credenciales.controller';
+
+
 
 
 export default class Server {
@@ -29,8 +61,7 @@ export default class Server {
 
 //    public io: any;
     private httpServer: http.Server;
-    
-
+     
 
     private constructor() {
         this.server = new InversifyExpressServer(myContainer);
@@ -42,11 +73,18 @@ export default class Server {
               extended: true
             }));
             app.use(bodyParser.json());
-          });
-        let app = this.server.build();
+            app.use( '/upload',express.static(path.resolve('imagenes')));
+            app.use( cors ( { origin: true , credentials: true}));
+           // app.use(express.static(path.resolve(__dirname, '../src/uploads')));
+           // app.use(upload.single('image')); 
+         
+          });   
+        let app = this.server.build(); 
+        
+
         this.httpServer =  http.createServer(app);
                
-//        this.io =socketIO.listen(this.httpServer);
+//        this.io =socketIO.listen(this.httpServer);  
 //        this.escucharSockets(); 
     }
     public static get instance() {

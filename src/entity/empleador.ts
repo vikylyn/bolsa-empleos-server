@@ -1,5 +1,5 @@
 import { Usuario } from './usuario';
-import { Entity, Column, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { Ciudad } from './ciudad';
 import { Vacante } from './vacante';
 
@@ -16,11 +16,15 @@ export class Empleador extends Usuario {
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
 
+    @Column()
+    empresa: Boolean;
+
     @JoinColumn({name:'ciudades_id'})
     @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
-    ciudad: Ciudad
+    ciudad: Ciudad;
 
   //  @JoinColumn({name:'empleadores_id'})
     @OneToMany(type => Vacante, vacante => vacante.empleador)  
-    vacante: Vacante[]
+    vacante: Vacante[];
+    
 }

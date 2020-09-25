@@ -1,5 +1,6 @@
-import {Column, PrimaryGeneratedColumn,JoinColumn,OneToOne} from 'typeorm';
+import { Column, PrimaryGeneratedColumn, JoinColumn, OneToOne,ManyToOne } from 'typeorm';
 import {Credenciales} from './credenciales';
+import { Imagen } from './imagen';
 
 
 export abstract class Usuario {
@@ -13,8 +14,7 @@ export abstract class Usuario {
     @Column({type: 'varchar', length: 60})
     apellidos: string;
 
-    @Column({type: 'varchar', length: 100, nullable:true})
-    imagen: string;
+ 
 
     @Column({type: 'varchar', length: 50})
     telefono: string;
@@ -31,5 +31,9 @@ export abstract class Usuario {
     @OneToOne(type => Credenciales,{nullable: false, eager: true})
     @JoinColumn({name: 'credenciales_id'})  
     credenciales: Credenciales;
+
+    @OneToOne(type => Imagen,{nullable: false, eager: true})
+    @JoinColumn({name: 'imagenes_id'})  
+    imagen: Imagen;
 
 }

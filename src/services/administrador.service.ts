@@ -1,4 +1,4 @@
-import { injectable, inject } from 'inversify';
+import { injectable } from 'inversify';
 
 import { getRepository,getConnection  } from "typeorm";
 import { IAdministradorService } from '../interfaces/administrador.service';
@@ -6,13 +6,16 @@ import { Administrador } from "../entity/administrador";
 import { Credenciales } from '../entity/credenciales';
 
 import bcrypt from 'bcryptjs';
+import { Imagen } from '../entity/imagen';
 
 @injectable()
-class AdministradorRepository implements IAdministradorService  {
+class AdministradorService implements IAdministradorService  {
+    
     
     async buscarPorCredencial(id: number) {
         const administrador = await  getRepository(Administrador)  
         .createQueryBuilder("administrador")
+        .leftJoinAndSelect("administrador.imagen", "imagen")
         .where("administrador.credenciales_id = :id", { id: id })  
         .getOne();
         return administrador;
@@ -25,7 +28,7 @@ class AdministradorRepository implements IAdministradorService  {
         .getMany();
         return administradores ;
     }
-    async adicionar(administrador: Administrador) {
+    async adicionar(body: any) {
         let adm: any;
         const connection = getConnection();
             const queryRunner = connection.createQueryRunner();
@@ -38,18 +41,24 @@ class AdministradorRepository implements IAdministradorService  {
             try {
                 // execute some operations on this transaction:
                 let credencial= await queryRunner.manager.save(Credenciales, 
-                    {email: administrador.credenciales.email, 
-                     password: bcrypt.hashSync(administrador.credenciales.password,10) ,
-                     rol: administrador.credenciales.rol
+                    {email: body.email, 
+                     password: bcrypt.hashSync(body.password,10) ,
+                     rol: {id: body.id_rol}
                     });
+                let imagen = await queryRunner.manager.save(Imagen, 
+                    { id_cloudinary: 'no-image2_uyivib',
+                      formato: 'png',
+                      url: 'http://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png',
+                      url_segura: 'https://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png'});
+                
                 let admin = await queryRunner.manager.save(Administrador,
-                    {nombre:administrador.nombre, 
-                    apellidos: administrador.apellidos, 
-                    imagen: administrador.imagen,
-                    telefono: administrador.telefono, 
-                    cedula: administrador.cedula, 
-                    genero: administrador.genero, 
-                    habilitado: administrador.habilitado,
+                    {nombre:body.nombre, 
+                    apellidos: body.apellidos, 
+                    imagen: imagen,
+                    telefono: body.telefono, 
+                    cedula: body.cedula, 
+                    genero: body.genero, 
+                    habilitado: body.habilitado,
                     credenciales: credencial})
                 await queryRunner.commitTransaction();
 
@@ -71,25 +80,40 @@ class AdministradorRepository implements IAdministradorService  {
 
             return adm;
     }
-    async modificar(id: number, administrador: Administrador) {
+    async modificarImagen(id: number, imagen: Imagen) {
         const admin = await getRepository(Administrador)
         .createQueryBuilder()
         .update(Administrador)
-        .set({nombre:administrador.nombre, 
-            apellidos: administrador.apellidos, 
-            imagen: administrador.imagen,
-            telefono: administrador.telefono, 
-            cedula: administrador.cedula, 
-            genero: administrador.genero, 
-            habilitado: administrador.habilitado})
+        .set({imagen: imagen})
         .where("id = :id", { id: id })
+        .execute();
+        return admin;
+    }
+    async modificar(administrador: Administrador, body: any) {
+        let habilitar: boolean;
+        if(body.habilitado === 'true' || body.habilitado === true) {
+            habilitar = true;
+        }else {
+            habilitar = false;
+        }
+        const admin = await getRepository(Administrador)
+        .createQueryBuilder()
+        .update(Administrador)
+        .set({nombre:body.nombre, 
+            apellidos: body.apellidos,
+            telefono: body.telefono, 
+            cedula: body.cedula, 
+            genero: body.genero, 
+            habilitado: habilitar})
+        .where("id = :id", { id: administrador.id })
         .execute();
         const credencial = await getRepository(Credenciales)
         .createQueryBuilder()
         .update(Credenciales)
-        .set({email: administrador.credenciales.email, password: administrador.credenciales.password})
-        .where("id = :id", { id: administrador.credenciales.id })
+        .set({email: body.email})
+        .where("id = :id", { id: administrador.credenciales.id})
         .execute();
+        console.log(admin);
         return admin;
     }
     async eliminar(id: number) {
@@ -109,6 +133,17 @@ class AdministradorRepository implements IAdministradorService  {
         }
         return administrador;
     } 
-
+    async contar() {
+        const total = await getRepository(Administrador)
+        .createQueryBuilder("administradores").getCount()
+        return total;
+    }
+    async buscarPorNombre(nombre: string) {
+        const administradores =  await getRepository(Administrador)
+        .createQueryBuilder("administradores")
+        .where("administradores.nombre regexp :nombre",{nombre: nombre})
+        .getMany()
+        return administradores;
+     }
 }
-export { AdministradorRepository };  
+export { AdministradorService };   

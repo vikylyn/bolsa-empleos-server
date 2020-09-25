@@ -1,9 +1,12 @@
-import { AreaLaboral } from '../entity/area-laboral';
+
 
 export interface IAreaLaboralService {
     listar(desde: number): any;
-    adicionar(area: AreaLaboral): any;
-    modificar(id: number,area: AreaLaboral): any;
+    listarTodas(): any; 
+    adicionar(area: any): any;
+    modificar(id: number,body: any): any;
     eliminar(id: number):any;
     buscar(id: number): any;
+    contar(): any;
+    buscarPorNombre(nombre: string): any;
 } 

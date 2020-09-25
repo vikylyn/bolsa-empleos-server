@@ -23,10 +23,11 @@ export class Postulacion {
     aceptado: boolean;
 
     @Column()
-    contratado: boolean;
+    favorito: boolean;
     
-    @Column()
-    habilitado: boolean;
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    creado_en: Date;
+
 
 
 }

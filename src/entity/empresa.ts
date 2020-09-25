@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
 import { Empleador } from './empleador';
 import { Ciudad } from './ciudad';
+import { Imagen } from './imagen';
 
 
-@Entity('empresas')
+@Entity('empresas') 
 export class Empresa {
 
     @PrimaryGeneratedColumn()
@@ -24,8 +25,10 @@ export class Empresa {
     @Column({type: 'varchar', length: 255})
     descripcion: string;
 
-    @Column({type: 'varchar', length: 100, nullable: true})
-    logo: string;
+    
+    @OneToOne(type => Imagen,{nullable: false, eager: true})
+    @JoinColumn({name: 'imagenes_id'})  
+    logo: Imagen;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;

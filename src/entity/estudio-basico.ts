@@ -1,19 +1,16 @@
 import {Entity, Column, PrimaryGeneratedColumn,JoinColumn, ManyToOne} from 'typeorm';
 import { Curriculum } from './curriculum';
 import { Pais } from './pais';
-import { NivelEstudio } from './nivel-estudio';
+import { GradoEscolar } from './grado-escolar';
 
-@Entity('estudios_avanzados')
-export class EstudiosAvanzados {
+@Entity('estudios_basicos')
+export class EstudioBasico {
 
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({type: 'varchar', length: 45})
-    institucion: string;
-
-    @Column({type: 'varchar', length: 30})
-    carrera: string;
+    colegio: string;
 
     @Column({type: 'date'})
     fecha_inicio: Date;
@@ -32,11 +29,14 @@ export class EstudiosAvanzados {
     curriculum: Curriculum;
 
     @JoinColumn({name:'paises_id'})
-    @ManyToOne(type => Pais, pais => pais.id,{nullable:false, eager: true})
+    @ManyToOne(type => Pais, pais => pais.id,{nullable:false})
     pais: Pais;
 
-    @JoinColumn({name:'niveles_estudio_id'})
-    @ManyToOne(type => NivelEstudio, nivel_estudio => nivel_estudio.id,{nullable:false, eager: true})
-    nivel_estudio: NivelEstudio;
+    @JoinColumn({name:'grado_inicio'})
+    @ManyToOne(type => GradoEscolar, grado => grado.id,{nullable:false})
+    grado_inicio: GradoEscolar;
 
+    @JoinColumn({name:'grado_fin'})
+    @ManyToOne(type => GradoEscolar, grado => grado.id,{nullable:false})
+    grado_fin: GradoEscolar;
 }

@@ -13,6 +13,6 @@ export class Ciudad {
   
     @JoinColumn({name:'estados_id'})
     @ManyToOne(type => Estado, estado => estado.id, {nullable: false, eager: true})  
-    pais: Estado 
+    estado: Estado 
  
 }
