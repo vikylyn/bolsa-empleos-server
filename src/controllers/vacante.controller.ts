@@ -14,12 +14,15 @@ export class VacanteController implements interfaces.Controller {
  
     constructor( @inject(TYPES.IVacanteService) private vacanteService: IVacanteService ) {}  
  
-    @httpGet("/listar/:id",verificaToken)
+    @httpGet("/lista/:id",verificaToken)
     private async listar(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
         let vacantes = await this.vacanteService.listar(id, desde);
+        let total = await this.vacanteService.contar(id);
+
         return res.status(200).json({
             ok: true,
-            vacantes: vacantes
+            vacantes,
+            total
         });
     }   
     @httpGet("/buscar/:id",verificaToken)

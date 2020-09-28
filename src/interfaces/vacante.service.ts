@@ -9,4 +9,5 @@ export interface IVacanteService {
     buscar(id: number): any;
     // solicitantes
     filtrarVacantes(profesion_id: number,ciudad_id: number, fecha: string, tipo_contrato_id: number, desde: number):any;
+    contar(id_empleador: number): any;
 } 

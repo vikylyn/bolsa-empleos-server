@@ -4,9 +4,7 @@ import { getRepository, getConnection } from 'typeorm';
 import { IVacanteService } from '../interfaces/vacante.service';
 import { Vacante } from '../entity/vacante';
 import { Requisitos } from '../entity/requisitos';
-import { Profesion } from "../entity/profesion";
-import { Ciudad } from "../entity/ciudad";
-import { TipoContrato } from "../entity/tipo-contrato";
+
 
 
 @injectable()
@@ -20,7 +18,7 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("vacantes.horario", "horario")
        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.profesion", "requisitos.profesion")
-        .leftJoinAndSelect("requisitos.idioma", "requisitos.idioma")
+       .leftJoinAndSelect("requisitos.idioma", "requisitos.idioma")
        .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
        .leftJoinAndSelect("vacantes.ciudad", "ciudad")
        .leftJoinAndSelect("vacantes.empleador", "empleador")
@@ -49,6 +47,20 @@ class VacanteService  implements IVacanteService  {
         .take(5)
         .getMany();
         return vacantes;
+    }
+    async contar(id_empleador: number) {
+        const total = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.horario", "horario")
+        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
+        .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
+        .leftJoinAndSelect("vacantes.ciudad", "ciudad")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("vacantes.empleador.id = :id", { id: id_empleador })
+        .getCount()
+        return total;
     }
     async adicionar(vacante: Vacante) {
         
