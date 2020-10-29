@@ -2,9 +2,8 @@ import { Usuario } from './usuario';
 import { Entity, Column, JoinColumn, ManyToOne, OneToOne, OneToMany } from 'typeorm';
 import { EstadoCivil } from './estado-civil';
 import { Ciudad } from './ciudad';
-import { Profesion } from './profesion';
-import { Curriculum } from './curriculum';
-import { Postulacion } from './postulacion';
+import { Ocupacion } from './ocupacion';
+import { OcupacionSolicitante } from './ocupacion-solicitante';
 
 
 
@@ -33,10 +32,9 @@ export class Solicitante extends Usuario {
     @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
     ciudad: Ciudad
 
-    @JoinColumn({name:'profesiones_id'})
-    @ManyToOne(type => Profesion, profesion => profesion.id, {nullable: false, eager: true})  
-    profesion: Profesion;
-
+ /*   @OneToMany(type => OcupacionSolicitante, ocupacion_solicitante => ocupacion_solicitante.ocupacion)  
+    ocupaciones: Ocupacion[];
+*/
     // fecha de naciemiento aumentar
 
  /*   @OneToOne(type => Curriculum, curriculum => curriculum.solicitante) // specify inverse side as a second parameter
@@ -45,4 +43,6 @@ export class Solicitante extends Usuario {
     @OneToMany(type => Postulacion, postulacion => postulacion.solicitante)
     postulaciones: Postulacion[];
 */
+    @OneToMany(type => OcupacionSolicitante, ocupacion => ocupacion.solicitante)
+    ocupaciones: OcupacionSolicitante[];
 }

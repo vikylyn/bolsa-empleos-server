@@ -3,53 +3,61 @@ import { interfaces, controller, httpGet, httpPost, request, response, requestPa
 import { inject } from "inversify";
 import { TYPES } from "../../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IProfesionService } from '../interfaces/profesion.service';
+import { IOcupacionService } from '../interfaces/ocupacion.service';
 
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
+import { Ocupacion } from '../entity/ocupacion';
  
-@controller("/profesion")    
-export class ProfesionController implements interfaces.Controller { 
+@controller("/ocupacion")    
+export class OcupacionController implements interfaces.Controller { 
     
  
-    constructor( @inject(TYPES.IProfesionService) private profesionService: IProfesionService ) {}  
+    constructor( @inject(TYPES.IOcupacionService) private ocupacionService: IOcupacionService ) {}  
  
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
-        let profesiones = await this.profesionService.listar(desde);
-        let total = await this.profesionService.contar();
+        let ocupaciones = await this.ocupacionService.listar(desde);
+        let total = await this.ocupacionService.contar();
         return res.status(200).json({
             ok: true,
-            profesiones,
+            ocupaciones,
             total
         })
     }
     @httpGet("/todas")
     private async listarTodas(@queryParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
-        let profesiones = await this.profesionService.listarTodas();
+        let ocupaciones = await this.ocupacionService.listarTodas();
         return res.status(200).json({
             ok: true,
-            profesiones: profesiones
+            ocupaciones
         })
     }
-    @httpGet("/:area/:actividad",verificaToken)
-    private async filtrar(@requestParam("area") id_area: number,
-                          @requestParam("actividad") id_actividad: number, 
+    @httpGet("/no-asiganadas/:id_solicitante",verificaToken)
+    private async listarNoAsignadasSolicitante(@requestParam("id_solicitante") id_solicitante: number,req: express.Request, res: express.Response, next: express.NextFunction) {
+        let ocupaciones = await this.ocupacionService.listarNoAsignadosSolicitante(id_solicitante);
+        return res.status(200).json({
+            ok: true,
+            ocupaciones
+        })
+    }
+    @httpGet("/:id_grupo",verificaToken)
+    private async filtrar(@requestParam("id_grupo") id_grupo: number,
                           @queryParam("desde") desde: number,
                           @response() res: express.Response, 
                           next: express.NextFunction) {
         try {
-            const profesiones = await this.profesionService.filtrar(id_area, id_actividad, desde);
-            const total = await this.profesionService.contarFiltrados(id_area, id_actividad);
-            if (!profesiones){
+            const ocupaciones = await this.ocupacionService.filtrar(id_grupo, desde);
+            const total = await this.ocupacionService.contarFiltrados(id_grupo);
+            if (!ocupaciones){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existen profesiones con esos ids`
+                    mensaje:`No existen ocupacioens con esos ids`
             });
             } 
             return res.status(200).json({
                 ok: true,
-                profesiones,
+                ocupaciones,
                 total
             });
         } catch (err) {
@@ -58,18 +66,18 @@ export class ProfesionController implements interfaces.Controller {
                 error: err.message });
         }
     }
-    @httpGet("/:id",verificaToken)
+    @httpGet("/buscar/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const profesion = await this.profesionService.buscar(id);
-            if (!profesion){
+            const ocupacion: Ocupacion = await this.ocupacionService.buscar(id);
+            if (!ocupacion){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe una profesion con el ID ${id}`
+                    mensaje:`No existe una ocupacion con el ID ${id}` 
                 });
             }
             return res.status(200).json({
-                profesion: profesion,
+                ocupacion,
             });
         } catch (err) {
             res.status(500).json({ error: err.message });
@@ -78,8 +86,8 @@ export class ProfesionController implements interfaces.Controller {
     @httpGet("/busqueda/lista/:nombre",verificaToken)
     private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const profesion = await this.profesionService.buscarPorNombre(nombre);   
-            if (!profesion){
+            const ocupaciones: Ocupacion[] = await this.ocupacionService.buscarPorNombre(nombre);   
+            if (!ocupaciones){
                 return res.status(400).json({
                     ok: false,
                     mensaje:`No existe una profesion con el nombre ${nombre}`
@@ -87,7 +95,7 @@ export class ProfesionController implements interfaces.Controller {
             } 
             return res.status(200).json({
                 ok: true, 
-                profesiones: profesion,
+                ocupaciones,
             });
         } catch (err) {
             res.status(500).json({ 
@@ -98,25 +106,24 @@ export class ProfesionController implements interfaces.Controller {
     @httpPut("/:id",
         verificaToken,
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('id_area_laboral', 'El id del area laboral es obligatoria').not().isEmpty(),
-        body('id_actividad_laboral', 'El id de la actividad laboral es obligatoria').not().isEmpty(),
+        body('id_grupo_ocupacional', 'El id del grupo ocupacional es obligatoria').not().isEmpty(),
         body('id_administrador', 'El id del administrador es obligatorio').not().isEmpty(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
           
         try {
-            const profesion = await this.profesionService.buscar(id);
-            if (!profesion){
+            const ocupacion = await this.ocupacionService.buscar(id);
+            if (!ocupacion){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe una profesion con el ID ${id}`
+                    mensaje:`No existe una ocupacion con el ID ${id}`
                 });
             }
-            const profesion_m = await this.profesionService.modificar(profesion.id, req.body);
+            const ocupacion_m = await this.ocupacionService.modificar(ocupacion.id, req.body);
             return res.status(200).json({
                 ok: true,
-                mensaje: 'Profesion modificada exitosamente',
+                mensaje: 'Ocupacion modificada exitosamente',
             });
         } catch (err) {
             res.status(500).json({ 
@@ -129,8 +136,7 @@ export class ProfesionController implements interfaces.Controller {
         verificaToken,
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('id_area_laboral', 'El id del area laboral es obligatoria').not().isEmpty(),
-        body('id_actividad_laboral', 'El id de la actividad laboral es obligatoria').not().isEmpty(),
+        body('id_grupo_ocupacional', 'El id del grupo ocupacional es obligatoria').not().isEmpty(),
         body('id_administrador', 'El id del administrador es obligatorio').not().isEmpty(),
         validarCampos
     )
@@ -138,11 +144,11 @@ export class ProfesionController implements interfaces.Controller {
         
         try {
             
-            const profesion = await this.profesionService.adicionar(req.body);
+            const ocupacion = await this.ocupacionService.adicionar(req.body);
             return res.status(201).json({
                 ok: true,
-                mensaje: 'Profesion creada exitosamente',
-                profesion: profesion
+                mensaje: 'Ocupacion creada exitosamente',
+                ocupacion
             });
         } catch (err) {
             res.status(500).json({
@@ -151,16 +157,15 @@ export class ProfesionController implements interfaces.Controller {
             });
         }
     }
-    @httpPut("/deshabilitar/:id",verificaToken) 
+    @httpPut("/inhabilitar/:id",verificaToken) 
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const profesion = await this.profesionService.eliminar(id);
-            console.log(profesion)
-            if(profesion.affected === 1) {
-                console.log(profesion);
+            const ocupacion = await this.ocupacionService.eliminar(id);
+            console.log(ocupacion)
+            if(ocupacion.affected === 1) {
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Area laboral Eliminada exitosamente',
+                    mensaje: 'Ocupacion Inhabilitada exitosamente',
                 })
             }
            

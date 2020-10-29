@@ -6,11 +6,15 @@ import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
 import { ICurriculumService } from '../interfaces/curriculum.service';
+import { Postulacion } from '../entity/postulacion';
+import { Curriculum } from '../entity/curriculum';
+import { IPostulacionService } from '../interfaces/postulacion.service';
  
 @controller("/curriculum")    
 export class CurriculumController implements interfaces.Controller {  
  
-    constructor( @inject(TYPES.ICurriculumService) private curriculumService: ICurriculumService ) {}  
+    constructor( @inject(TYPES.ICurriculumService) private curriculumService: ICurriculumService,
+                 @inject(TYPES.IPostulacionService) private postulacionService: IPostulacionService ) {}  
  
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -54,6 +58,27 @@ export class CurriculumController implements interfaces.Controller {
             return res.status(200).json({
                 ok: true,
                 curriculum: curriculum,
+            });
+        } catch (err) {
+            res.status(500).json({ 
+                ok: false,
+                error: err.message 
+            });
+        }
+    }
+    @httpGet("/completo/:id_solicitante",verificaToken)
+    private async buscarPorIdSolicitanteCompleto(@requestParam("id_solicitante") id_solicitante: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const curriculum: Curriculum = await this.curriculumService.buscarPorIdSolicitanteCompleto(id_solicitante);
+            if (!curriculum){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un curriculum para el solicitante con el ID ${id_solicitante}`
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                curriculum
             });
         } catch (err) {
             res.status(500).json({ 

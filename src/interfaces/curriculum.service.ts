@@ -7,5 +7,6 @@ export interface ICurriculumService {
     modificar(id: number,curriculum: Curriculum): any;
     buscarPorId(id: number): any;
     buscarPorIdSolicitante(id: number): any;
+    buscarPorIdSolicitanteCompleto(id: number): any;
 
 } 

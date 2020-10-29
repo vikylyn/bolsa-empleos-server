@@ -22,8 +22,8 @@ import bodyParser from 'body-parser';
 import '../src/controllers/rol.controller';  
 import '../src/controllers/administrador.controller';  
 import '../src/controllers/login.controller'; 
-import '../src/controllers/area-laboral.controller'; 
-import '../src/controllers/profesion.controller'; 
+import '../src/controllers/grupo-ocupacional.controller'; 
+import '../src/controllers/ocupacion.controller'; 
 import '../src/controllers/solicitante.controller'; 
 import '../src/controllers/empleador.controller'; 
 import '../src/controllers/curriculum.controller';
@@ -47,9 +47,8 @@ import '../src/controllers/horario.controller';
 import '../src/controllers/postulacion.controller';
 import '../src/controllers/contratacion.controller';
 import '../src/controllers/ubicacion.controller';
-import '../src/controllers/actividad-laboral.controller';
 import '../src/controllers/credenciales.controller';
-
+import '../src/controllers/ocupacion-solicitante.controller'
 
 
 

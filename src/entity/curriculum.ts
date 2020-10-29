@@ -21,7 +21,7 @@ export class Curriculum {
     @Column()
     pretension_salarial: number;
 
-    @Column({type: 'varchar', length: 255})
+    @Column({type: 'varchar', length: 500})
     biografia: string; 
       
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})

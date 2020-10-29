@@ -13,11 +13,26 @@ class PostulacionService  implements IPostulacionService  {
        .createQueryBuilder("postulaciones")
        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
        .leftJoinAndSelect("postulaciones.vacante", "vacante")
-       .where("vacante.id = :id", { id: id })
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("vacante.id = :id && postulaciones.aceptado != true", { id: id })
        .skip(desde)  
        .take(5)
        .getMany();
-       return postulaciones;    }
+       return postulaciones;    
+    }
+    async contarPorIdVacante(id_vacante: number) {
+        const total = await 
+        getRepository(Postulacion)
+             .createQueryBuilder("postulaciones")
+             .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+             .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .where("vacante.id = :id", { id: id_vacante })
+             .getCount();
+       return total;   
+}
     async buscar(id: number) {
         const postulacion = await 
         getRepository(Postulacion)
@@ -45,11 +60,11 @@ class PostulacionService  implements IPostulacionService  {
         const respuesta = await getRepository(Postulacion).delete(id);
         return respuesta;
     }
-    async postularSolicitante(postulacion: Postulacion) {
+    async postularSolicitante(body: any) {
         const postulacion_nueva = await  getRepository(Postulacion)
         .create({
-            solicitante: postulacion.solicitante,
-            vacante: postulacion.vacante,
+            solicitante: {id: body.id_solicitante},
+            vacante: {id: body.id_vacante},
             aceptado: false,
             favorito: false
         });
@@ -91,16 +106,30 @@ class PostulacionService  implements IPostulacionService  {
         return respuesta;
     }
    async listarPorSolicitante(id: number,desde: number) {
-    const postulaciones = await 
-         getRepository(Postulacion)
-        .createQueryBuilder("postulaciones")
-        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
-        .leftJoinAndSelect("postulaciones.vacante", "vacante")
-        .where("solicitante.id = :id", { id: id })
-        .skip(desde)  
-        .take(5)
-        .getMany();
-   return postulaciones;
+         const postulaciones = await 
+              getRepository(Postulacion)
+             .createQueryBuilder("postulaciones")
+             .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+             .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .leftJoinAndSelect("vacante.sueldo", "sueldo")
+             .leftJoinAndSelect("vacante.empleador", "empleador")
+             .leftJoinAndSelect("vacante.requisitos", "requisitos")
+             .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+             .where("solicitante.id = :id", { id: id })
+             .skip(desde)  
+             .take(5)
+             .getMany();
+        return postulaciones;
+   }
+   async contarPorIdSolicitante(id_solicitante: number) {
+            const total = await 
+            getRepository(Postulacion)
+                .createQueryBuilder("postulaciones")
+                .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+                .leftJoinAndSelect("postulaciones.vacante", "vacante")
+                .where("solicitante.id = :id", { id: id_solicitante })
+                .getCount();
+            return total;
    }
    async buscarPorSolicitanteVacante(id_solicitante: number, id_vacante: number) {
     const postulacion = await 

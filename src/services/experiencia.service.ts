@@ -11,7 +11,8 @@ class ExperienciaService  implements IExperienciaService  {
         const experiencias = await 
          getRepository(ExperienciaLaboral)
         .createQueryBuilder("experiencias_laborales")
-        .leftJoinAndSelect("experiencias_laborales.area_laboral", "area_laboral")
+  //      .leftJoinAndSelect("experiencias_laborales.grupo_ocupacional", "grupo_ocupacional")
+        .leftJoinAndSelect("experiencias_laborales.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("experiencias_laborales.curriculum", "curriculum")
         .leftJoinAndSelect("experiencias_laborales.pais", "pais")
         .where("experiencias_laborales.curriculum.id = :id", { id: id })
@@ -30,7 +31,8 @@ class ExperienciaService  implements IExperienciaService  {
             fecha_fin: body.fecha_fin,
             estado: body.estado,
             ciudad: body.ciudad,
-            area_laboral: {id: body.id_area_laboral},  
+     //       grupo_ocupacional: {id: body.id_grupo_ocupacional},  
+            tipo_contrato: {id: body.id_tipo_contrato},
             curriculum: {id: body.id_curriculum},
             pais: {id: body.id_pais}
         });
@@ -49,7 +51,8 @@ class ExperienciaService  implements IExperienciaService  {
             fecha_fin: body.fecha_fin,
             estado: body.estado,
             ciudad: body.ciudad,
-            area_laboral: {id: body.id_area_laboral},  
+       //     grupo_ocupacional: {id: body.id_grupo_ocupacional}, 
+            tipo_contrato: {id: body.id_tipo_contrato},
             pais: {id: body.id_pais}
         })
         .where("id = :id", { id: id })
@@ -64,7 +67,8 @@ class ExperienciaService  implements IExperienciaService  {
         const experiencia = await 
         getRepository(ExperienciaLaboral)
         .createQueryBuilder("experiencias_laborales")
-        .leftJoinAndSelect("experiencias_laborales.area_laboral", "area_laboral")
+        .leftJoinAndSelect("experiencias_laborales.tipo_contrato", "tipo_contrato")
+ //       .leftJoinAndSelect("experiencias_laborales.grupo_ocupacional", "grupo_ocupacional")
         .leftJoinAndSelect("experiencias_laborales.curriculum", "curriculum")
         .leftJoinAndSelect("experiencias_laborales.pais", "pais")
         .where("experiencias_laborales.id = :id", { id: id })
@@ -75,7 +79,8 @@ class ExperienciaService  implements IExperienciaService  {
     async contar(id_curriculum: number) {
         const total = await getRepository(ExperienciaLaboral)
         .createQueryBuilder("experiencias_laborales")
-        .leftJoinAndSelect("experiencias_laborales.area_laboral", "area_laboral")
+        .leftJoinAndSelect("experiencias_laborales.tipo_contrato", "tipo_contrato")
+     //   .leftJoinAndSelect("experiencias_laborales.grupo_ocupacional", "grupo_ocupacional")
         .leftJoinAndSelect("experiencias_laborales.curriculum", "curriculum")
         .leftJoinAndSelect("experiencias_laborales.pais", "pais")
         .where("experiencias_laborales.curriculum.id = :id", { id: id_curriculum })

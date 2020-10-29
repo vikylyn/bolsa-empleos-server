@@ -1,5 +1,5 @@
-import { Profesion } from '../entity/profesion';
-export interface IProfesionService {  
+
+export interface IOcupacionService {  
     listar(desde: number): any;
     listarTodas(): any;
     adicionar(body: any): any;
@@ -8,7 +8,9 @@ export interface IProfesionService {
     buscar(id: number): any;
     contar(): any;
     buscarPorNombre(nombre: string): any;
-    filtrar(id_area: number, id_actividad: number, desde: number): any;
-    contarFiltrados(id_area: number, id_actividad: number): any;
+    filtrar(id_area: number, desde: number): any;
+    contarFiltrados(id_area: number): any;
+
+    listarNoAsignadosSolicitante(id_solicitante: number):any;
 
 } 

@@ -3,8 +3,8 @@ const TYPES = {
     IRolService: Symbol.for("IRolService"),
     IAdministradorService: Symbol.for("IAdministradorService"),
     ICredencialesService: Symbol.for("ICredencialesService"),
-    IAreaLaboralService: Symbol.for("IAreaLaboralService"),
-    IProfesionService: Symbol.for("IProfesionService"),
+    IGrupoOcupacionalService: Symbol.for("IGrupoOcupacionalService"),
+    IOcupacionService: Symbol.for("IOcupacionService"),
     ISolicitanteService: Symbol.for("ISolicitanteService"),
     IEmpleadorService: Symbol.for("IEmpleadorService"),
     ICurriculumService: Symbol.for("ICurriculumService"),
@@ -31,7 +31,7 @@ const TYPES = {
     IPaisService:Symbol.for("IPaisService"),
     IEstadoService:Symbol.for("IEstadoService"),
     ICiudadService: Symbol.for("ICiudadService"),
-    IActividadLaboralService: Symbol.for("IActividadLaboralService")
+    IOcupacionSolicitanteService: Symbol.for("IOcupacionSolicitanteService")
 }
 
 export { TYPES };    

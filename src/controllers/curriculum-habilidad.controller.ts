@@ -48,10 +48,10 @@ export class CurriculumHabilidadController implements interfaces.Controller {
                 error: err.message 
             });
         }
-    } // 
+    } 
     @httpPost("/",verificaToken, 
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
-        body('id_habilidad','El id de la habilidad es obligatorio').not().isEmpty(),
+        body('id_habilidad','Los ids de las habilidades son obligatorios').not().isEmpty(),
         validarCampos
         )
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
@@ -62,13 +62,12 @@ export class CurriculumHabilidadController implements interfaces.Controller {
             if(curriculum_habilidad) {
                 return res.status(201).json({
                     ok: true,
-                    mensaje: 'Adicion de habilidad  exitosamente',  
-                    habilidad: curriculum_habilidad
+                    mensaje: 'Habilidades adicionadas  exitosamente',  
                 });
             }else {
                 return res.status(500).json({
                     ok: false,
-                    mensaje: 'Error al adicionar habilidad', 
+                    mensaje: 'Error al adicionar habilidades', 
                 });
             }
            
@@ -80,43 +79,6 @@ export class CurriculumHabilidadController implements interfaces.Controller {
              });
         }
     } 
-
-    @httpPut("/:id",
-        verificaToken, 
-        body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
-        body('id_habilidad','El id de la habilidad es obligatorio').not().isEmpty(),
-        validarCampos
-    )
-    private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
-          
-        try {
-            const curriculum_habilidad = await this.curriculum_habilidadService.buscar(id);
-            if (!curriculum_habilidad) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje:`No existe una asignacion de habilidad con el ID ${id}`
-            });
-            }
-            const habilidad_modificada = await this.curriculum_habilidadService.modificar(curriculum_habilidad.id, req.body);
-            if (habilidad_modificada.affected === 1) {
-                return res.status(200).json({
-                    ok: true,
-                    mensaje: 'Asignancion de habilidad modificada exitosamente'
-                });
-            } else {
-                
-                return res.status(400).json({
-                    ok:false,
-                    mensaje: 'Error al modificar la asiganacion de habilidad',
-                });
-            }
-        } catch (err) {
-            res.status(400).json({  
-                ok:false, 
-                error: err.message });
-        }
-    } 
-
     @httpDelete("/:id",verificaToken)  
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {

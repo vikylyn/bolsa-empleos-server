@@ -6,10 +6,10 @@ import { IAdministradorService } from '../src/interfaces/administrador.service';
 import { AdministradorService } from '../src/services/administrador.service'
 import { ICredencialesService } from '../src/interfaces/creadenciales.service';
 import { CredencialesService } from "../src/services/credenciales.service";
-import { IAreaLaboralService } from '../src/interfaces/area-laboral.service';
-import { AreaLaboralService } from "../src/services/area-laboral.service";
-import { IProfesionService } from '../src/interfaces/profesion.service';
-import { ProfesionService } from "../src/services/profesion.service";
+import { IGrupoOcupacionalService } from '../src/interfaces/grupo-ocupacional.service';
+import { GrupoOcupacionalService } from "../src/services/grupo-ocupacional";
+import { IOcupacionService } from '../src/interfaces/ocupacion.service';
+import { ProfesionService } from "../src/services/ocupacion.service";
 import { ISolicitanteService } from '../src/interfaces/solicitante.service';
 import { SolicitanteService } from "../src/services/solicitante.service";
 import { IEmpleadorService } from '../src/interfaces/empleador.service';
@@ -62,16 +62,16 @@ import { EstadoService } from "../src/services/estado.service";
 import { IEstadoService } from '../src/interfaces/estado.service';
 import { CiudadService } from "../src/services/ciudad.service";
 import { ICiudadService } from '../src/interfaces/ciudad.service';
-import { IActividadLaboralService } from '../src/interfaces/actividad-laboral.service';
-import { ActividadLaboralService } from "../src/services/actividad-laboral.service";
+import { IOcupacionSolicitanteService } from '../src/interfaces/ocupacion-solicitante.service';
+import { OcupacionSolicitanteService } from "../src/services/ocupacion-solicitante.service";
 
 const myContainer = new Container();
 
 myContainer.bind<IRolService>(TYPES.IRolService).to(RolService);
 myContainer.bind<IAdministradorService>(TYPES.IAdministradorService).to(AdministradorService); 
 myContainer.bind<ICredencialesService>(TYPES.ICredencialesService).to(CredencialesService);
-myContainer.bind<IAreaLaboralService>(TYPES.IAreaLaboralService).to(AreaLaboralService);
-myContainer.bind<IProfesionService>(TYPES.IProfesionService).to(ProfesionService);  
+myContainer.bind<IGrupoOcupacionalService>(TYPES.IGrupoOcupacionalService).to(GrupoOcupacionalService);
+myContainer.bind<IOcupacionService>(TYPES.IOcupacionService).to(ProfesionService);  
 myContainer.bind<ISolicitanteService>(TYPES.ISolicitanteService).to(SolicitanteService);  
 myContainer.bind<IEmpleadorService>(TYPES.IEmpleadorService).to(EmpleadorService); 
 myContainer.bind<ICurriculumService>(TYPES.ICurriculumService).to(CurriculumService);
@@ -98,5 +98,5 @@ myContainer.bind<IContratacionService>(TYPES.IContratacionService).to(Contrataci
 myContainer.bind<IPaisService>(TYPES.IPaisService).to(PaisService);
 myContainer.bind<IEstadoService>(TYPES.IEstadoService).to(EstadoService);
 myContainer.bind<ICiudadService>(TYPES.ICiudadService).to(CiudadService);
-myContainer.bind<IActividadLaboralService>(TYPES.IActividadLaboralService).to(ActividadLaboralService);
+myContainer.bind<IOcupacionSolicitanteService>(TYPES.IOcupacionSolicitanteService).to(OcupacionSolicitanteService);
 export { myContainer };       

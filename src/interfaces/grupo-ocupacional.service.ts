@@ -1,6 +1,4 @@
-
-
-export interface IAreaLaboralService {
+export interface IGrupoOcupacionalService {
     listar(desde: number): any;
     listarTodas(): any; 
     adicionar(area: any): any;

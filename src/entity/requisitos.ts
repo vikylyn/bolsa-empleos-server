@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
-import { Profesion } from './profesion';
+import { Ocupacion } from './ocupacion';
 import { Idioma } from './idioma';
 
 
@@ -16,8 +16,8 @@ export class Requisitos {
     genero: string;
       
     @JoinColumn({name:'profesiones_id'}) 
-    @ManyToOne(type => Profesion, profesion => profesion.id, {nullable: false, eager: true})  
-    profesion: Profesion; 
+    @ManyToOne(type => Ocupacion, ocupacion => ocupacion.id, {nullable: false, eager: true})  
+    ocupacion: Ocupacion; 
 
     @JoinColumn({name:'idiomas_id'}) 
     @ManyToOne(type => Idioma, idioma => idioma.id, {nullable: false, eager: true})  

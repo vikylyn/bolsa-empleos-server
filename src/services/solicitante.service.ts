@@ -7,6 +7,8 @@ import bcrypt from 'bcryptjs';
 import { ISolicitanteService } from '../interfaces/solicitante.service';
 import { Solicitante } from '../entity/solicitante';
 import { Imagen } from '../entity/imagen';
+import { OcupacionSolicitante } from '../entity/ocupacion-solicitante';
+import { stringify } from 'querystring';
 
 
 @injectable()
@@ -43,7 +45,8 @@ class SolicitanteService implements ISolicitanteService  {
             try {
                 // execute some operations on this transaction:
                 let credencial= await queryRunner.manager.save(Credenciales, 
-                    {email: body.email, 
+                    {
+                     email: body.email, 
                      password: bcrypt.hashSync(body.password,10) ,
                      rol: {id: body.id_rol}
                     });
@@ -52,6 +55,8 @@ class SolicitanteService implements ISolicitanteService  {
                       formato: 'png',
                       url: 'http://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png',
                       url_segura: 'https://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png'});
+
+
                     
                 let solicitante_guardado = await queryRunner.manager.save(Solicitante,
                     {
@@ -61,20 +66,31 @@ class SolicitanteService implements ISolicitanteService  {
                     telefono: body.telefono, 
                     cedula: body.cedula, 
                     genero: body.genero, 
-                    habilitado: false,
+                    habilitado: true,
                     nacionalidad: body.nacionalidad,
                     direccion:body.direccion,
                     ocupado: false,
                     fecha_nac: body.fecha_nac,
                     estado_civil: {id: body.id_estado_civil},
                     ciudad: {id: body.id_ciudad},
-                    profesion: {id: body.id_profesion},
                     credenciales: credencial})
+                console.log(solicitante_guardado);
+                const idProfesiones: string = body.id_profesion;
+                for (let index = 0; index < idProfesiones.length; index++) {
+                    let ocupacion = await queryRunner.manager.save(OcupacionSolicitante,
+                        {
+                            solicitante: solicitante_guardado,
+                            ocupacion: {id: parseInt(idProfesiones[index]) },
+                            habilitado: true
+                        });
+                        console.log(ocupacion)
+                }
+    
                 await queryRunner.commitTransaction();
 
                 solicitante_guardado.credenciales.password = 'xd';
                 respuesta = solicitante_guardado;
-                
+            
             
             } catch (err) {
             
@@ -136,7 +152,6 @@ class SolicitanteService implements ISolicitanteService  {
        .leftJoinAndSelect("solicitantes.imagen", "imagen")
        .leftJoinAndSelect("solicitantes.estado_civil", "estado_civil")
        .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
-       .leftJoinAndSelect("solicitantes.profesion", "profesion")
        .where("solicitantes.id = :id", { id: id })
        .getOne();
         if(solicitante){

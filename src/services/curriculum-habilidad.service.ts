@@ -1,6 +1,6 @@
 import { injectable} from "inversify";
 
-import { getRepository } from "typeorm";
+import { getRepository, getConnection } from 'typeorm';
 import { ICurriculumHabilidadService } from '../interfaces/curriculum-habilidad.service';
 import { CurriculumHabilidad } from '../entity/curriculum-habilidad';
 
@@ -20,24 +20,39 @@ class CurriculumHabilidadService  implements ICurriculumHabilidadService  {
         return idiomas;
     }
     async adicionar(body: any) {
-        const curriculum_habilidad_nuevo = await  getRepository(CurriculumHabilidad)
-        .create({
-            curriculum: {id: body.id_curriculum},
-            habilidad:{id: body.id_habilidad}
-        });
-        const respuesta =  getRepository(CurriculumHabilidad).save(curriculum_habilidad_nuevo);
-        return respuesta;
-    }
-    async modificar(id: number, body: any) {
-        const respuesta = await getRepository(CurriculumHabilidad)
-        .createQueryBuilder()
-        .update(CurriculumHabilidad)
-        .set({
-            habilidad:{id: body.id_habilidad}
-        })
-        .where("id = :id", { id: id })
-        .execute();
-        return respuesta;
+        let respuesta: boolean;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+            try {
+                const idHabilidades: string = body.id_habilidad;
+                for (let index = 0; index < idHabilidades.length; index++) {
+                    let habilidad = await queryRunner.manager.save(CurriculumHabilidad,
+                        {
+                            curriculum: {id: body.id_curriculum},
+                            habilidad:{id: parseInt(idHabilidades[index])}
+                        });
+                }
+    
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+            
+            
+            } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
     }
     async eliminar(id: number) {
         const curriculum_habilidad = await getRepository(CurriculumHabilidad).delete(id);

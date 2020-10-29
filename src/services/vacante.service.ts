@@ -2,31 +2,32 @@ import { injectable} from "inversify";
 
 import { getRepository, getConnection } from 'typeorm';
 import { IVacanteService } from '../interfaces/vacante.service';
-import { Vacante } from '../entity/vacante';
 import { Requisitos } from '../entity/requisitos';
 
-
+import {Vacante} from '../entity/vacante'
 
 @injectable()
 class VacanteService  implements IVacanteService  {
-    async filtrarVacantes(profesion_id: number, ciudad_id: number, fecha: string, tipo_contrato_id: number, desde: number) {
-        console.log(fecha)
+    async filtrarVacantes(body: any, desde: number) {
         const vacantes = await 
         getRepository(Vacante)
        .createQueryBuilder("vacantes")
        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
        .leftJoinAndSelect("vacantes.horario", "horario")
        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
-       .leftJoinAndSelect("requisitos.profesion", "requisitos.profesion")
+       .leftJoinAndSelect("requisitos.ocupacion", "requisitos.ocupacion")
        .leftJoinAndSelect("requisitos.idioma", "requisitos.idioma")
        .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
        .leftJoinAndSelect("vacantes.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
        .leftJoinAndSelect("vacantes.empleador", "empleador")
+       .leftJoinAndSelect("empleador.imagen", "imagen")
        .where(
-           "requisitos.profesion.id = :profesion "+
+           "requisitos.ocupacion.id = :ocupacion "+
            "and ciudad.id = :ciudad_id "+    
            "and tipo_contrato.id = :tipo_contrato_id "+      
-           "and vacantes.creado_en >= :creado_en", { profesion: profesion_id,ciudad_id: ciudad_id,tipo_contrato_id: tipo_contrato_id,creado_en: fecha })
+           "and vacantes.creado_en >= :creado_en", { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, tipo_contrato_id: body.id_tipo_contrato, creado_en: body.fecha })
        .skip(desde)  
        .take(5)
        .getMany();
@@ -39,6 +40,8 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("requisitos.idioma", "idioma")
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
@@ -62,7 +65,7 @@ class VacanteService  implements IVacanteService  {
         .getCount()
         return total;
     }
-    async adicionar(vacante: Vacante) {
+    async adicionar(body: any) {
         
         let respuesta: any;
         const connection = getConnection();
@@ -77,26 +80,26 @@ class VacanteService  implements IVacanteService  {
                 // execute some operations on this transaction:
                 let requisitos= await queryRunner.manager.save(Requisitos, 
                     {
-                        experiencia: vacante.requisitos.experiencia,
-                        genero: vacante.requisitos.genero,
-                        profesion: vacante.requisitos.profesion,
-                        idioma: vacante.requisitos.idioma
+                        experiencia: body.experiencia,
+                        genero: body.genero,
+                        ocupacion: {id: body.id_ocupacion},
+                        idioma: {id: body.id_idioma}
                     });
                 let vacante_nueva = await queryRunner.manager.save(Vacante,
                     {    
-                        titulo: vacante.titulo,
-                        sueldo: vacante.sueldo,
-                        direccion: vacante.direccion,
-                        horario: vacante.horario,
-                        num_vacantes: vacante.num_vacantes,
-                        num_disponibles: vacante.num_vacantes,
-                     //   funciones: vacante.funciones,
-                        descripcion: vacante.descripcion,
-                        habilitado: vacante.habilitado,
+                        titulo: body.titulo,
+                        sueldo: {id: body.id_sueldo},
+                        direccion: body.direccion,
+                        horario: {id: body.id_horario},
+                        num_vacantes: body.num_vacantes,
+                        num_disponibles: body.num_vacantes,
+                     //   funciones: body.funciones,
+                        descripcion: body.descripcion,
+                        habilitado: body.habilitado,
                         requisitos: requisitos,
-                        tipo_contrato: vacante.tipo_contrato,
-                        ciudad: vacante.ciudad,
-                        empleador: vacante.empleador
+                        tipo_contrato: {id: body.id_tipo_contrato},
+                        ciudad: {id: body.id_ciudad},
+                        empleador: {id: body.id_empleador}
                     });
                 await queryRunner.commitTransaction();
 
@@ -117,23 +120,26 @@ class VacanteService  implements IVacanteService  {
 
             return respuesta;
     }
-    async modificar(id: number, vacante: Vacante) {
+    async modificar(id: number, body: any) {
+        console.log(body.habilitado);
+        let habilitado = false;
+        if(body.habilitado === true || body.habilitado === 'true') {
+            habilitado = true;
+        }
         const respuesta = await getRepository(Vacante)
         .createQueryBuilder()
         .update(Vacante)
         .set({
-            titulo: vacante.titulo,
-            sueldo: vacante.sueldo,
-            direccion: vacante.direccion,
-            horario: vacante.horario,
-            num_vacantes: vacante.num_vacantes,
-            num_disponibles: vacante.num_vacantes,
-        //    funciones: vacante.funciones,
-            descripcion: vacante.descripcion,
-            habilitado: vacante.habilitado,
-            requisitos: vacante.requisitos,
-            tipo_contrato: vacante.tipo_contrato,
-            ciudad: vacante.ciudad,
+            titulo: body.titulo,
+            sueldo: {id: body.id_sueldo},
+            direccion: body.direccion,
+            horario: {id: body.id_horario},
+            num_vacantes: body.num_vacantes,
+            num_disponibles: body.num_vacantes,
+            descripcion: body.descripcion,
+            habilitado: habilitado,
+            tipo_contrato: {id: body.id_tipo_contrato},
+            ciudad: {id: body.id_ciudad},
         })
         .where("id = :id", { id: id })
         .execute();
@@ -141,16 +147,16 @@ class VacanteService  implements IVacanteService  {
         .createQueryBuilder()
         .update(Requisitos)
         .set({
-            experiencia: vacante.requisitos.experiencia,
-            genero: vacante.requisitos.genero,
-            profesion: vacante.requisitos.profesion,
-            idioma: vacante.requisitos.idioma
+            experiencia: body.experiencia,
+            genero: body.genero,
+            ocupacion: {id: body.id_ocupacion},
+            idioma: {id: body.id_idioma}
         })
-        .where("id = :id", { id: vacante.requisitos.id })
+        .where("id = :id", { id: body.id_requisitos})
         .execute();
         return respuesta;
     }
-    async deshabilitar(id: number) {
+    async inhabilitar(id: number) {
         const respuesta = await getRepository(Vacante)
         .createQueryBuilder()
         .update(Vacante)
@@ -162,20 +168,22 @@ class VacanteService  implements IVacanteService  {
         return respuesta;
     }
     async buscar(id: number) {
-        const vacante = await 
+        const body = await 
         getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
-        .leftJoinAndSelect("requisitos.profesion", "requisitos.profesion")
-        .leftJoinAndSelect("requisitos.idioma", "requisitos.idioma")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("requisitos.idioma", "idioma")
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
+        .leftJoinAndSelect("ciudad.estado", "estado")
+        .leftJoinAndSelect("estado.pais", "pais")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
         .where("vacantes.id = :id", { id: id })
        .getOne();
-       return vacante;
+       return body;
     }
    
    

@@ -6,6 +6,7 @@ import { Rol } from './rol';
 export class Credenciales {
     @PrimaryGeneratedColumn()
     id: number;
+    
     @Column({type: 'varchar', length: 50,unique: true})
     email: string;
     

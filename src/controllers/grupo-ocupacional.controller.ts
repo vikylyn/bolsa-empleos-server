@@ -2,68 +2,70 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../../config/types";
-import { IAreaLaboralService } from '../interfaces/area-laboral.service';
+import { IGrupoOcupacionalService } from '../interfaces/grupo-ocupacional.service';
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
+import { GrupoOcupacional } from '../entity/grupo-ocupacional';
  
-@controller("/area")    
-export class AreaLaboralController implements interfaces.Controller {  
+@controller("/grupo-ocupacional")    
+export class GrupoOcupacionalController implements interfaces.Controller {  
  
-    constructor( @inject(TYPES.IAreaLaboralService) private areaService: IAreaLaboralService ) {}  
+    constructor( @inject(TYPES.IGrupoOcupacionalService) private grupoService: IGrupoOcupacionalService ) {}  
  
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
-        let areas = await this.areaService.listar(desde);
-        let total = await this.areaService.contar();
+        let grupos: GrupoOcupacional[] = await this.grupoService.listar(desde);
+        let total = await this.grupoService.contar();
         return res.status(200).json({
             ok: true, 
-            areas: areas,
+            grupos,
             total
         })
     }
-    @httpGet("/todas")
+    @httpGet("/todos")
     private async listarTodas(req: express.Request,res: express.Response, next: express.NextFunction) {
-        let areas = await this.areaService.listarTodas();
+        let grupos: GrupoOcupacional[] = await this.grupoService.listarTodas();
         return res.status(200).json({
             ok: true, 
-            areas: areas
+            grupos
         })
     }
 
     @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const area = await this.areaService.buscar(id);
-            if (!area){
+            const grupo: GrupoOcupacional = await this.grupoService.buscar(id);
+            if (!grupo){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe un area laboral con el ID ${id}`
+                    mensaje:`No existe un grupo laboral con el ID ${id}`
             });
             }
             return res.status(200).json({
                 ok: true,
-                area: area,
+                grupo,
             });
         } catch (err) {
             res.status(500).json({ 
                 ok: false,
-                error: err.message });
+                error: err.message 
+            });
         }
     }
     @httpGet("/busqueda/:nombre",verificaToken)
     private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const area = await this.areaService.buscarPorNombre(nombre);
-            if (!area){
+            const grupos: GrupoOcupacional[] = await this.grupoService.buscarPorNombre(nombre);
+            if (!grupos){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe un area laboral con el nombre ${nombre}`
+                    mensaje:`No existe un grupo ocupacional con el nombre ${nombre}`
             });
             } 
             return res.status(200).json({
                 ok: true, 
-                areas: area,
+                grupos,
             });
         } catch (err) {
             res.status(500).json({ 
@@ -75,30 +77,30 @@ export class AreaLaboralController implements interfaces.Controller {
         verificaToken,
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('administrador', 'El administrador es obligatorio').not().isEmpty(),
+        body('id_administrador', 'El id del administrador es obligatorio').not().isEmpty(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
           
         try {
-            const area = await this.areaService.buscar(id);
-            if (!area){
+            const grupo: GrupoOcupacional = await this.grupoService.buscar(id);
+            if (!grupo){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe un area laboral con el ID ${id}`
+                    mensaje:`No existe un grupo ocupacional con el ID ${id}`
                 });
             }
-            const area_modificada = await this.areaService.modificar(area.id, req.body);
+            const grupo_modificado = await this.grupoService.modificar(grupo.id, req.body);
             
-            if (area_modificada.affected === 1){
+            if (grupo_modificado.affected === 1){
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Area Laboral modificada exitosamente',
+                    mensaje: 'Grupo modificado exitosamente',
                 });
             }else {
                 return res.status(400).json({
                     ok:false,
-                    mensaje: 'Error al modificar administrador',
+                    mensaje: 'Error al modificar grupo ocupacional',
                 });
             }
         } catch (err) {
@@ -109,19 +111,19 @@ export class AreaLaboralController implements interfaces.Controller {
         verificaToken,
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
-        body('administrador', 'El administrador es obligatorio').not().isEmpty(),
+        body('id_administrador', 'El id del administrador es obligatorio').not().isEmpty(),
         validarCampos
     )
     private async adicionar(@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
         
         try {
             
-            const area = await this.areaService.adicionar(req.body);
-            if (area) {
+            const grupo: GrupoOcupacional = await this.grupoService.adicionar(req.body);
+            if (grupo) {
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Area Laboral creada exitosamente',
-                    area:area
+                    grupo
                 });
             }else {
                 return res.status(400).json({
@@ -137,26 +139,26 @@ export class AreaLaboralController implements interfaces.Controller {
                 error: err.message });
         }
     }
-    @httpGet("/deshabilitar/:id",verificaToken)
+    @httpGet("/inhabilitar/:id",verificaToken)
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const area = await this.areaService.eliminar(id)
+            const grupo = await this.grupoService.eliminar(id)
             
-            if (area.affected === 1){
+            if (grupo.affected === 1){
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Area laboral Eliminada exitosamente',
+                    mensaje: 'Grupo inhabilitado exitosamente',
                 });
             }else {
                 return res.status(400).json({
                     ok:false,
-                    mensaje: 'Error al deshabilitar area laboral',
+                    mensaje: 'Error al inhabilitar grupo ocupacional',
                 });
             }
         } catch (err) {
             res.status(500).json({
                 ok: false,
-                mensaje: 'Error al deshabilitar el area laboral', 
+                mensaje: 'Error al inhabilitar grupo ocupacional', 
                 error: err.message });
         }
     }

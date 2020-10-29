@@ -69,7 +69,6 @@ export class SolicitanteController implements interfaces.Controller {
 
         
         try {
-            console.log(req.body.email);
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
             if (existe_email) {
                 return res.status(400).json({
@@ -77,6 +76,7 @@ export class SolicitanteController implements interfaces.Controller {
                     mensaje: 'Existe un usuario con ese email'
                  })
             }
+            
             const solicitante = await this.solicitanteService.adicionar(req.body);
             if (solicitante) {
             
@@ -85,7 +85,6 @@ export class SolicitanteController implements interfaces.Controller {
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Solicitante adicionado exitosamente',  
-                    //solicitante: solicitante
                 });
             } else {
                 return res.status(400).json({
@@ -94,6 +93,7 @@ export class SolicitanteController implements interfaces.Controller {
                     // solicitante: solicitante
                 });
             }  
+        
         } catch (err) {
             res.status(400).json({
                 ok: false, 
@@ -114,7 +114,6 @@ export class SolicitanteController implements interfaces.Controller {
         body('fecha_nac', 'La fecha de nacimiento es obligatoria').not().isEmpty(),
         body('id_estado_civil', 'El id del estado civil es obligatorio').not().isEmpty(),
         body('id_ciudad', 'El id de la ciudad es obligatorio').not().not().isEmpty(),
-        body('id_profesion', 'El id de la profesion es obligatorio').not().isEmpty(),
         body('email', 'El email es obligatorio').isEmail(),
         validarCampos
     )

@@ -12,11 +12,21 @@ class HabilidadService  implements IHabilidadService  {
         return habilidad;
     }
   
-    listar(): any {
-        const habilidades = getRepository(Habilidad).find()
-       return habilidades ;
+    async listar(id_curriculum: number): Promise<any> {
+ 
+       console.log('id curriculum', id_curriculum)
+       const habilidades = await getRepository(Habilidad)
+       .query("SELECT * FROM habilidades AS h  WHERE NOT EXISTS (SELECT * FROM curriculums_habilidades AS c  WHERE h.id = c.habilidades_id and c.curriculums_id = ?)", [id_curriculum]);
+       console.log(habilidades)
+       return habilidades;
     }
-   
+
+  /*  async listarNoAsignadosCurriculum(id_curriculum: number) {
+        const habilidades = await getRepository(Habilidad)
+        .query("SELECT * FROM habilidades AS h  WHERE NOT EXISTS (SELECT * FROM curriculums_habilidades AS c  WHERE h.id = c.habilidades_id and c.curriculums_id = ?) ;  ", [id_curriculum]);
+        return habilidades;
+    }
+  */ 
 }
   
 export { HabilidadService };  

@@ -15,23 +15,27 @@ export class ContratacionController implements interfaces.Controller {
                  @inject(TYPES.IPostulacionService) private postulacionService: IPostulacionService
      ) {}
  
-    @httpGet("/listar/:id",verificaToken)
-     private async listar(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-         let contrataciones = await this.contratacionService.listar(id, desde);
+    @httpGet("/lista/:id",verificaToken)
+     private async listar(@queryParam("desde") desde: number,@requestParam("id") id_vacante: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+         let contrataciones = await this.contratacionService.listarPorIdVacante(id_vacante, desde);
+         let total = await this.contratacionService.contarPorIdVacante(id_vacante);
          return res.status(200).json({
              ok: true,
-             contrataciones
+             contrataciones,
+             total
          });
     }
-    @httpGet("/listar-confirmados/:id",verificaToken)
-    private async listarConfirmados(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+    @httpGet("/lista-solicitante/:id",verificaToken)
+    private async listarPorIdSolicitante(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
         let contrataciones = await this.contratacionService.listarConfirmados(id, desde);
+        let total = await this.contratacionService.contarConfirmados(id);
         return res.status(200).json({
             ok: true,
-            contrataciones
+            contrataciones,
+            total
         });
     }
-    @httpPut("/confirmar/:id",verificaToken)
+    @httpPut("/confirmacion/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const postulacion: Postulacion = await this.postulacionService.buscar(id);
@@ -176,10 +180,10 @@ export class ContratacionController implements interfaces.Controller {
             });  
         }
     }
-    @httpPost("/aceptar/:id",
+    @httpPost("/:id",
         verificaToken
     )
-    private async aceptarSolicitante(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
+    private async contratacionSolicitante(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
       
     try {
         const postulacion = await this.postulacionService.buscar(id);

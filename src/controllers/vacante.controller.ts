@@ -25,7 +25,19 @@ export class VacanteController implements interfaces.Controller {
             total
         });
     }   
-    @httpGet("/buscar/:id",verificaToken)
+    @httpPost("/filtrar",verificaToken)
+    private async filtrarVacantes(
+            @queryParam("desde") desde: number,
+            req: express.Request, 
+            res: express.Response, 
+            next: express.NextFunction) {
+        let vacantes = await this.vacanteService.filtrarVacantes(req.body, desde);
+        return res.status(200).json({
+            ok: true,
+            vacantes: vacantes
+        });
+    }  
+    @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const vacante: Vacante = await this.vacanteService.buscar(id);
@@ -46,19 +58,24 @@ export class VacanteController implements interfaces.Controller {
             });
         }
     } // 
-    @httpPost("/adicionar/",verificaToken, 
+    @httpPost("/",verificaToken, 
         body('titulo','El titulo es oblidatorio').not().isEmpty(),
-        body('sueldo','El sueldo es oblidatorio').not().isEmpty(),
+        body('id_sueldo','El id del sueldo es oblidatorio').not().isEmpty(),
         body('direccion','La direccion es obligatoria').not().isEmpty(),
-        body('horario','El horario es oblidatorio').not().isEmpty(),
+        body('id_horario','El id del horario es oblidatorio').not().isEmpty(),
         body('num_vacantes','El numero de vacantes es oblidatorio').not().isEmpty(),
     //    body('funciones','las funciones son obligatorias').not().isEmpty(),
         body('descripcion','la descripcion es obligatoria').not().isEmpty(),
         body('habilitado','la habilitacion es obligatoria').not().isEmpty(),
-        body('requisitos','los requisitos son obligatorios').not().isEmpty(),// aumentar el resto de campos del objeto
-        body('tipo_contrato','El tipo de contrato es obligatorio').not().isEmpty(),
-        body('ciudad','la ciudad es obligatoria').not().isEmpty(),
-        body('empleador','El empleador es oblidatorio').not().isEmpty(),
+   //     body('requisitos','los requisitos son obligatorios').not().isEmpty(),// aumentar el resto de campos del objeto
+        body('id_tipo_contrato','El id del tipo de contrato es obligatorio').not().isEmpty(),
+        body('id_ciudad','el id de la ciudad es obligatorio').not().isEmpty(),
+        body('id_empleador','El id del empleador es oblidatorio').not().isEmpty(),
+
+        body('experiencia','La experiencia es oblidatoria').not().isEmpty(),
+        body('genero','El genero es oblidatorio').not().isEmpty(),
+        body('id_ocupacion','El id de la ocupacion es oblidatorio').not().isEmpty(),
+        body('id_idioma','El id del idioma es oblidatorio').not().isEmpty(),
         validarCampos
         )
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
@@ -88,20 +105,25 @@ export class VacanteController implements interfaces.Controller {
         }
     } 
 
-    @httpPut("/modificar/:id",
+    @httpPut("/:id",
         verificaToken, 
         body('titulo','El titulo es oblidatorio').not().isEmpty(),
-        body('sueldo','El sueldo es oblidatorio').not().isEmpty(),
+        body('id_sueldo','El id del sueldo es oblidatorio').not().isEmpty(),
         body('direccion','La direccion es obligatoria').not().isEmpty(),
-        body('horario','El horario es oblidatorio').not().isEmpty(),
+        body('id_horario','El id del horario es oblidatorio').not().isEmpty(),
         body('num_vacantes','El numero de vacantes es oblidatorio').not().isEmpty(),
     //    body('funciones','las funciones son obligatorias').not().isEmpty(),
         body('descripcion','la descripcion es obligatoria').not().isEmpty(),
         body('habilitado','la habilitacion es obligatoria').not().isEmpty(),
-        body('requisitos','los requisitos son obligatorios').not().isEmpty(),// aumentar el resto de campos del objeto
-        body('tipo_contrato','El tipo de contrato es obligatorio').not().isEmpty(),
-        body('ciudad','la ciudad es obligatoria').not().isEmpty(),
-        body('empleador','El empleador es oblidatorio').not().isEmpty(),
+   //     body('requisitos','los requisitos son obligatorios').not().isEmpty(),// aumentar el resto de campos del objeto
+        body('id_tipo_contrato','El id del tipo de contrato es obligatorio').not().isEmpty(),
+        body('id_ciudad','el id de la ciudad es obligatorio').not().isEmpty(),
+        body('id_empleador','El id del empleador es oblidatorio').not().isEmpty(),
+
+        body('experiencia','La experiencia es oblidatoria').not().isEmpty(),
+        body('genero','El genero es oblidatorio').not().isEmpty(),
+        body('id_ocupacion','El id de la ocupacion es oblidatorio').not().isEmpty(),
+        body('id_idioma','El id del idioma es oblidatorio').not().isEmpty(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
@@ -134,19 +156,19 @@ export class VacanteController implements interfaces.Controller {
         }
     } 
 
-    @httpPut("/deshabilitar/:id",verificaToken)  
+    @httpPut("/inhabilitar/:id",verificaToken)  
     private async deshabilitar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const curriculum_habilidad = await this.vacanteService.deshabilitar(id);
+            const curriculum_habilidad = await this.vacanteService.inhabilitar(id);
             if (curriculum_habilidad.affected === 1){
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Vacante deshabilitada exitosamente'
+                    mensaje: 'Vacante inhabilitada exitosamente'
                 })
             }else {
                 return res.status(400).json({
                     ok:false,
-                     mensaje: 'Error al deshabilitar vacante',
+                     mensaje: 'Error al inhabilitar vacante',
                 });
             }
 
@@ -158,20 +180,6 @@ export class VacanteController implements interfaces.Controller {
         }
     }
 
-    @httpGet("/filtrar",verificaToken)
-    private async filtrarVacantes(@queryParam("desde") desde: number,
-            @queryParam("profesion") profesion_id: number,
-            @queryParam("ciudad") ciudad_id: number,
-            @queryParam("fecha") fecha: string, 
-            @queryParam("tipo_contrato") tipo_contrato: number, 
-            req: express.Request, 
-            res: express.Response, 
-            next: express.NextFunction) {
-        let vacantes = await this.vacanteService.filtrarVacantes(profesion_id,ciudad_id,fecha,tipo_contrato,desde);
-        return res.status(200).json({
-            ok: true,
-            vacantes: vacantes
-        });
-    }  
+
  
 }

@@ -57,7 +57,8 @@ export class ExperienciaController implements interfaces.Controller {
         body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
-        body('id_area_laboral','El id del area laboral es obligatorio').not().isEmpty(),
+        body('id_tipo_contrato','El id del tipo de contrato laboral es obligatorio').not().isEmpty(),
+   //     body('id_grupo_ocupacional','El id del grupo ocupacional laboral es obligatorio').not().isEmpty(),
         validarCampos
         )
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
@@ -98,7 +99,8 @@ export class ExperienciaController implements interfaces.Controller {
         body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
-        body('id_area_laboral','El id del area laboral es obligatorio').not().isEmpty(),
+        body('id_tipo_contrato','El id del tipo de contrato laboral es obligatorio').not().isEmpty(),
+    //    body('id_grupo_ocupacional','El id del grupo ocupacional laboral es obligatorio').not().isEmpty(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {

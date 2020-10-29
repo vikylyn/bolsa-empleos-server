@@ -57,7 +57,49 @@ class CurriculumService  implements ICurriculumService  {
     
         return respuesta;
     }
-   
+    async buscarPorIdSolicitanteCompleto(id: number) {
+        const respuesta = await getRepository(Curriculum)
+        .createQueryBuilder("curriculums")
+        .leftJoinAndSelect("curriculums.experiencias_laborales", "experiencias_laborales")
+        .leftJoinAndSelect("experiencias_laborales.pais", "experiencia_pais")
+
+        .leftJoinAndSelect("curriculums.curriculum_habilidades", "curriculum_habilidades")
+        .leftJoinAndSelect("curriculum_habilidades.habilidad", "habilidad")
+
+        .leftJoinAndSelect("curriculums.estudios_basicos", "estudios_basicos")
+        .leftJoinAndSelect("estudios_basicos.grado_inicio", "grado_inicio")
+        .leftJoinAndSelect("grado_inicio.nivel_escolar", "inicio_nivel.escolar")
+        .leftJoinAndSelect("estudios_basicos.grado_fin", "grado_fin")
+        .leftJoinAndSelect("grado_fin.nivel_escolar", "fin_nivel.escolar")
+        .leftJoinAndSelect("estudios_basicos.pais", "estudio_pais")
+
+
+        .leftJoinAndSelect("curriculums.estudios_avanzados", "estudios_avanzados")
+        .leftJoinAndSelect("estudios_avanzados.nivel_estudio", "nivel_estudio")
+        .leftJoinAndSelect("estudios_avanzados.pais", "avanzado_pais")
+
+        .leftJoinAndSelect("curriculums.referencias", "referencias")
+
+        .leftJoinAndSelect("curriculums.curriculum_idiomas", "curriculum_idiomas")
+        .leftJoinAndSelect("curriculum_idiomas.idioma", "idioma")
+        .leftJoinAndSelect("curriculum_idiomas.nivel_escrito", "nivel_escrito")
+        .leftJoinAndSelect("curriculum_idiomas.nivel_lectura", "nivel_lectura")
+        .leftJoinAndSelect("curriculum_idiomas.nivel_oral", "nivel_oral")
+
+        .leftJoinAndSelect("curriculums.solicitante", "solicitante")
+        .leftJoinAndSelect("solicitante.imagen", "imagen")
+        .leftJoinAndSelect("solicitante.ocupaciones", "ocupaciones")
+        .leftJoinAndSelect("solicitante.credenciales", "credenciales")
+        .leftJoinAndSelect("solicitante.ciudad", "ciudad")
+        .leftJoinAndSelect("ciudad.estado", "estado")
+        .leftJoinAndSelect("estado.pais", "pais")
+        .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
+        
+        .where("curriculums.solicitante.id = :id", { id: id })
+        .getOne();
+        respuesta.solicitante.credenciales.password = "xd";
+        return respuesta;
+    }
   
    
 }

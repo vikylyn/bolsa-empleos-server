@@ -12,16 +12,16 @@ export class HabilidadController implements interfaces.Controller {
  
     constructor( @inject(TYPES.IHabilidadService) private habilidadService: IHabilidadService ) {}
  
-    @httpGet("/",verificaToken)
-    private async listar(req: express.Request, res: express.Response, next: express.NextFunction) {
-        let habilidades = await this.habilidadService.listar();
+    @httpGet("/:id_curriculum",verificaToken)
+    private async listar(@requestParam("id_curriculum") id_curriculum: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        let habilidades = await this.habilidadService.listar(id_curriculum);
         return res.status(200).json({
             ok: true,
             habilidades: habilidades
         });
     }
 
-    @httpGet("/:id",verificaToken)
+ /*   @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const habilidad = await this.habilidadService.buscar(id); 
@@ -43,4 +43,5 @@ export class HabilidadController implements interfaces.Controller {
             });
         }
     }
+*/
 }

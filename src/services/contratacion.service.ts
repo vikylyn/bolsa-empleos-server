@@ -86,28 +86,60 @@ class ContratacionService  implements IContratacionService  {
 
             return respuesta;
     }
-    async listar(id: number, desde: number) {
+    async listarPorIdVacante(id: number, desde: number) {
         const contrataciones = await 
         getRepository(Contratacion)
        .createQueryBuilder("contrataciones")
        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
        .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
        .where("vacante.id = :id", { id: id })
        .skip(desde)  
        .take(5)
        .getMany();
-       return contrataciones;    }
+       return contrataciones;    
+    }
+    async contarPorIdVacante(id: number) {
+        const total = await 
+        getRepository(Contratacion)
+       .createQueryBuilder("contrataciones")
+       .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+       .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .where("vacante.id = :id", { id: id })
+       .getCount();
+       return total;    
+    }
     async listarConfirmados(id: number, desde: number) {
-        const postulaciones = await 
+        const contrataciones = await 
         getRepository(Contratacion)
         .createQueryBuilder("contrataciones")
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
        .where("solicitante.id = :id and contrataciones.confirmado = true", { id: id })
        .skip(desde)  
        .take(5)
        .getMany();
-  return postulaciones;    }
+    
+        return contrataciones;    
+    }
+    async  contarConfirmados(id_solicitante: number) {
+        const total = await 
+        getRepository(Contratacion)
+        .createQueryBuilder("contrataciones")
+        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+        .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .where("solicitante.id = :id and contrataciones.confirmado = true", { id: id_solicitante })
+       .getCount();
+    
+        return total; 
+    }
+
     async buscar(id: number) {
         const contratacion = await  
         getRepository(Contratacion)

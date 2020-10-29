@@ -50,7 +50,7 @@ export class AdministradorController implements interfaces.Controller {
         }
     } // 
     @httpPost("/", 
-        verificaToken,
+     //   verificaToken,
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
         body('apellidos','Los apellidos son obligatorios').not().isEmpty(),
         body('telefono','El telefono es obigatorio').not().isEmpty(),
