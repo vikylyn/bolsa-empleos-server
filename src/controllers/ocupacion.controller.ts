@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import { IOcupacionService } from '../interfaces/ocupacion.service';
 
@@ -121,10 +121,17 @@ export class OcupacionController implements interfaces.Controller {
                 });
             }
             const ocupacion_m = await this.ocupacionService.modificar(ocupacion.id, req.body);
-            return res.status(200).json({
-                ok: true,
-                mensaje: 'Ocupacion modificada exitosamente',
-            });
+            if(ocupacion_m.affected === 1) {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ocupacion modificada exitosamente',
+                });
+            }else {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: 'Error al Modificar Ocupacion',
+                });
+            }
         } catch (err) {
             res.status(500).json({ 
                 ok: false,
@@ -145,6 +152,12 @@ export class OcupacionController implements interfaces.Controller {
         try {
             
             const ocupacion = await this.ocupacionService.adicionar(req.body);
+            if(!ocupacion) {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: 'Error al Adicionar Ocupacion',
+                })
+            }
             return res.status(201).json({
                 ok: true,
                 mensaje: 'Ocupacion creada exitosamente',
@@ -158,14 +171,55 @@ export class OcupacionController implements interfaces.Controller {
         }
     }
     @httpPut("/inhabilitar/:id",verificaToken) 
-    private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
+    private async inhabilitar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const ocupacion = await this.ocupacionService.eliminar(id);
-            console.log(ocupacion)
-            if(ocupacion.affected === 1) {
+            const ocupacion = await this.ocupacionService.buscar(id);
+            if (!ocupacion){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una ocupacion con el ID ${id}`
+                });
+            }
+            const ocupacionInhabilitada = await this.ocupacionService.inhabilitar(id);
+            if(ocupacionInhabilitada.affected === 1) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Ocupacion Inhabilitada exitosamente',
+                })
+            }else {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: 'Error al inhabilitar Ocupacion',
+                })
+            }
+           
+        } catch (err) {
+            res.status(500).json({
+                ok: false,
+                error: err.message });
+        }
+    }
+
+    @httpPut("/habilitar/:id",verificaToken) 
+    private async habilitar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const ocupacion = await this.ocupacionService.buscar(id);
+            if (!ocupacion){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una ocupacion con el ID ${id}`
+                });
+            }
+            const ocupacionHabilitada = await this.ocupacionService.habilitar(id);
+            if(ocupacionHabilitada.affected === 1) {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ocupacion Habilitada exitosamente',
+                })
+            }else {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: 'Error al Habilitar Ocupacion',
                 })
             }
            

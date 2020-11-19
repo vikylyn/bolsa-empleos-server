@@ -108,6 +108,15 @@ insert into sueldos(sueldo) values('Mayor a bs. 15000');
 insert into sueldos(sueldo) values('No declarado');
 insert into sueldos(sueldo) values('Negociable');
 */
+
+insert into tipo_notificacion(id,tipo,descripcion) values(1,'nueva_postulacion','Notificacion enviada al empleador cuando hay un nuevo postulante para su vacante');
+insert into tipo_notificacion(id,tipo,descripcion) values(2,'postulacion_aceptada', 'Notificacion enviada al solicitante cuando el empleador acepta su postulacion pero todavia no es un contrato');
+insert into tipo_notificacion(id,tipo,descripcion) values(3, 'postulacion_rechazada_empleador', 'Notificacion enviada al solicitante cuando el empleador no acepta su postulacion');
+insert into tipo_notificacion(id,tipo,descripcion) values(4, 'desvinculacion_solicitante', 'Notificacion enviada al solicitante cuando es desvinculado de una contratacion');
+insert into tipo_notificacion(id,tipo,descripcion) values(5, 'postulacion_confirmada', 'Notificacion enviada al empleador cuando el solicitante confirma la postulacion y pasa a ser un contrato');
+insert into tipo_notificacion(id,tipo,descripcion) values(6, 'postulacion_rechazada_solicitante', 'Notificacion enviada al empleador cuando el solicitante rechaza la postulacion');
+
+
 select * from idiomas;
 select * from nivel_idioma;
 delete from curriculums_habilidades where id>0;

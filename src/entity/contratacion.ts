@@ -22,8 +22,8 @@ export class Contratacion {
     @Column()
     habilitado: boolean;
 
-    @Column()
-    confirmado: boolean;
+ //   @Column()
+ //   confirmado: boolean;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;

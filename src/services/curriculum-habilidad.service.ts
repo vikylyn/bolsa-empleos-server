@@ -8,7 +8,7 @@ import { CurriculumHabilidad } from '../entity/curriculum-habilidad';
 @injectable()
 class CurriculumHabilidadService  implements ICurriculumHabilidadService  {
     async listar(id: number, desde: number) {
-        const idiomas = await 
+        const habilidades = await 
          getRepository(CurriculumHabilidad)
         .createQueryBuilder("curriculums_habilidades")
         .leftJoinAndSelect("curriculums_habilidades.habilidad", "habilidad")
@@ -17,7 +17,7 @@ class CurriculumHabilidadService  implements ICurriculumHabilidadService  {
         .skip(desde)  
         .take(5)
         .getMany();
-        return idiomas;
+        return habilidades;
     }
     async adicionar(body: any) {
         let respuesta: boolean;

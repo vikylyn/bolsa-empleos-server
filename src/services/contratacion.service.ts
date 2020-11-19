@@ -5,6 +5,8 @@ import { Contratacion } from '../entity/contratacion';
 import { getRepository, getConnection } from 'typeorm';
 import { Solicitante } from '../entity/solicitante';
 import { Vacante } from '../entity/vacante';
+import { NotificacionEmpleador } from '../entity/notificacion-empleador';
+import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
 
 
 @injectable()
@@ -21,7 +23,7 @@ class ContratacionService  implements IContratacionService  {
             // lets now open a new transaction:
             await queryRunner.startTransaction();
             try {
-                const vacante_modificada = await queryRunner.manager
+                await queryRunner.manager
                     .createQueryBuilder()
                     .update(Vacante)
                     .set({
@@ -29,11 +31,20 @@ class ContratacionService  implements IContratacionService  {
                     })
                     .where("id = :id", { id: postulacion.vacante.id })
                     .execute();
-                const contratacion_eliminada = await queryRunner.manager.createQueryBuilder()
+                await queryRunner.manager.createQueryBuilder()
                 .delete().from(Contratacion).where("solicitante.id = :id_solicitante and vacante.id = :id_vacante", 
                     {id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id}).execute();
                 const postulacion_eliminada = await queryRunner.manager.createQueryBuilder()
                 .delete().from(Postulacion).where("id = :id",{id: postulacion.id}).execute();
+
+                await queryRunner.manager.save(NotificacionEmpleador,
+                    {
+                        leido: false,
+                        solicitante: {id: postulacion.solicitante.id},
+                        empleador: {id: postulacion.vacante.empleador.id},
+                        vacante: {id: postulacion.vacante.id},
+                        tipo_notificacion: {id: 6}
+                    });
                 await queryRunner.commitTransaction();
 
                 respuesta = postulacion_eliminada;
@@ -95,7 +106,8 @@ class ContratacionService  implements IContratacionService  {
        .leftJoinAndSelect("vacante.sueldo", "sueldo")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-       .where("vacante.id = :id", { id: id })
+       .where("vacante.id = :id and contrataciones.habilitado", { id: id })
+       .addOrderBy("contrataciones.creado_en", "DESC")
        .skip(desde)  
        .take(5)
        .getMany();
@@ -111,7 +123,7 @@ class ContratacionService  implements IContratacionService  {
        .getCount();
        return total;    
     }
-    async listarConfirmados(id: number, desde: number) {
+    async listarPorIdSolicitante(id: number, desde: number) {
         const contrataciones = await 
         getRepository(Contratacion)
         .createQueryBuilder("contrataciones")
@@ -121,20 +133,48 @@ class ContratacionService  implements IContratacionService  {
         .leftJoinAndSelect("vacante.empleador", "empleador")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-       .where("solicitante.id = :id and contrataciones.confirmado = true", { id: id })
+       .where("solicitante.id = :id", { id: id })
        .skip(desde)  
        .take(5)
        .getMany();
     
         return contrataciones;    
     }
-    async  contarConfirmados(id_solicitante: number) {
+    async  contarPorIdSolicitante(id_solicitante: number) {
         const total = await 
         getRepository(Contratacion)
         .createQueryBuilder("contrataciones")
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
-       .where("solicitante.id = :id and contrataciones.confirmado = true", { id: id_solicitante })
+       .where("solicitante.id = :id", { id: id_solicitante })
+       .getCount();
+    
+        return total; 
+    }
+    async listarPorIdEmpleador(id: number, desde: number) {
+        const contrataciones = await 
+        getRepository(Contratacion)
+        .createQueryBuilder("contrataciones")
+        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+        .leftJoinAndSelect("contrataciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("empleador.id = :id and contrataciones.habilitado =true", { id: id })
+       .skip(desde)  
+       .take(5)
+       .getMany();
+    
+        return contrataciones;    
+    }
+    async  contarPorIdEmpleador(id_empleador: number) {
+        const total = await 
+        getRepository(Contratacion)
+        .createQueryBuilder("contrataciones")
+        .leftJoinAndSelect("contrataciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+       .where("empleador.id = :id", { id: id_empleador })
        .getCount();
     
         return total; 
@@ -146,6 +186,13 @@ class ContratacionService  implements IContratacionService  {
        .createQueryBuilder("contrataciones")
        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
        .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .leftJoinAndSelect("vacante.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
        .where("contrataciones.id = :id", { id: id })
        .getOne();
        return contratacion;    
@@ -171,7 +218,7 @@ class ContratacionService  implements IContratacionService  {
                        confirmado: false
                     });
                 
-                const postulacion_modificada = await queryRunner.manager
+                await queryRunner.manager
                     .createQueryBuilder()
                     .update(Postulacion)
                     .set({
@@ -179,7 +226,7 @@ class ContratacionService  implements IContratacionService  {
                     })
                     .where("id = :id", { id: postulacion.id })
                     .execute();
-                const vacante_modificada = await queryRunner.manager
+                await queryRunner.manager
                     .createQueryBuilder()
                     .update(Vacante)
                     .set({
@@ -187,6 +234,15 @@ class ContratacionService  implements IContratacionService  {
                     })
                     .where("id = :id", { id: postulacion.vacante.id })
                     .execute();
+
+                await queryRunner.manager.save(NotificacionSolicitante,
+                        {
+                            leido: false,
+                            solicitante: {id: postulacion.solicitante.id},
+                            empleador: {id: postulacion.vacante.empleador.id},
+                            vacante: {id: postulacion.vacante.id},
+                            tipo_notificacion: {id: 2}
+                        });
                 await queryRunner.commitTransaction();
 
                 respuesta = contratacion;
@@ -196,54 +252,6 @@ class ContratacionService  implements IContratacionService  {
                 await queryRunner.rollbackTransaction();
                 respuesta = err;
             } finally {
-                await queryRunner.release();
-            }
-
-            return respuesta;
-    }
-    async confirmarContrato(postulacion: Postulacion) {
-        let respuesta: any;
-        const connection = getConnection();
-            const queryRunner = connection.createQueryRunner();
-
-            // establish real database connection using our new query runner
-            await queryRunner.connect();
-
-            // lets now open a new transaction:
-            await queryRunner.startTransaction();
-            try {
-                // execute some operations on this transaction:
-                
-                let contratacion = await queryRunner.manager.createQueryBuilder()
-                .update(Contratacion)
-                .set({
-                   confirmado: true
-                })
-                .where("solicitante.id = :id and vacante.id = :id_vacante ", { id: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
-                .execute();
-                
-                let solicitante_modificado = await queryRunner.manager.createQueryBuilder()
-                    .update(Solicitante)
-                    .set({
-                       ocupado: true
-                    })
-                    .where("id = :id", { id: postulacion.solicitante.id })
-                    .execute();
-                let postulacion_borrada = await queryRunner.manager.delete(Postulacion,postulacion);
-                await queryRunner.commitTransaction();
-
-                respuesta = contratacion;
-                
-            
-            } catch (err) {
-            
-                // since we have errors let's rollback changes we made
-                await queryRunner.rollbackTransaction();
-                respuesta = err;
-            
-            } finally {
-            
-                // you need to release query runner which is manually created:
                 await queryRunner.release();
             }
 
@@ -258,22 +266,30 @@ class ContratacionService  implements IContratacionService  {
         try {
                 // execute some operations on this transaction:
                 
-            let contratacion_modificada = await queryRunner.manager.createQueryBuilder()
+            await queryRunner.manager.createQueryBuilder()
             .update(Contratacion)
             .set({
                habilitado: false
             })
             .where("id = :id", { id: contratacion.id })
             .execute();
-            let solicitante_modificado = await queryRunner.manager.createQueryBuilder()
+            await queryRunner.manager.createQueryBuilder()
             .update(Solicitante)
             .set({
                ocupado: false
             })
             .where("id = :id", { id: contratacion.solicitante.id })
             .execute();
+            await queryRunner.manager.save(NotificacionSolicitante,
+                {
+                    leido: false,
+                    solicitante: {id: contratacion.solicitante.id},
+                    empleador: {id: contratacion.vacante.empleador.id},
+                    vacante: {id: contratacion.vacante.id},
+                    tipo_notificacion: {id: 4}
+                });
             await queryRunner.commitTransaction();
-            respuesta = contratacion_modificada;
+            respuesta = true; 
                 
             
         } catch (err) {
@@ -300,7 +316,25 @@ class ContratacionService  implements IContratacionService  {
         .getOne();
        return contratacion;
     }
-   
+    async busqueda(valor: string, id_empleador: number) {
+        const contrataciones = await 
+        getRepository(Contratacion)
+       .createQueryBuilder("contrataciones")
+       .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+       .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where(`(solicitante.nombre regexp :valor and empleador.id = :id and contrataciones.habilitado = true) ||
+                (solicitante.apellidos regexp :valor and empleador.id = :id and contrataciones.habilitado = true) || 
+                (solicitante.cedula regexp :valor and empleador.id = :id and contrataciones.habilitado = true) ||
+                (vacante.titulo regexp :valor and empleador.id = :id and contrataciones.habilitado = true) ||
+                (ocupacion.nombre regexp :valor and empleador.id = :id and contrataciones.habilitado = true)`,{valor: valor, id: id_empleador})
+        .addOrderBy("contrataciones.creado_en", "DESC")
+        .getMany()
+        return contrataciones;
+     }
 }
   
 export {ContratacionService}; 

@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, response, requestParam} from "inversify-express-utils";
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import { IRangoSueldoService } from '../interfaces/rango-sueldo.service';
  

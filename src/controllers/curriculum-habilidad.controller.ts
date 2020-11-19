@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
@@ -21,12 +21,11 @@ export class CurriculumHabilidadController implements interfaces.Controller {
 
         const result = curriculums_habilidad.map(curriculum => curriculum.habilidad);
 
-        console.log(result);
         return res.status(200).json({
             ok: true,
             habilidades: curriculums_habilidad,
             total
-        });
+        }); 
     } 
     @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {

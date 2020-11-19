@@ -116,12 +116,22 @@ class AdministradorService implements IAdministradorService  {
         console.log(admin);
         return admin;
     }
-    async eliminar(id: number) {
+    async inhabilitar(id: number) {
         const admin = await getRepository(Administrador)
         .createQueryBuilder()
         .update(Administrador)
         .set({ 
             habilitado: false})
+        .where("id = :id", { id: id })
+        .execute(); 
+        return admin;
+    }
+    async habilitar(id: number) {
+        const admin = await getRepository(Administrador)
+        .createQueryBuilder()
+        .update(Administrador)
+        .set({ 
+            habilitado: true})
         .where("id = :id", { id: id })
         .execute(); 
         return admin;
@@ -141,7 +151,7 @@ class AdministradorService implements IAdministradorService  {
     async buscarPorNombre(nombre: string) {
         const administradores =  await getRepository(Administrador)
         .createQueryBuilder("administradores")
-        .where("administradores.nombre regexp :nombre",{nombre: nombre})
+        .where("administradores.nombre regexp :nombre || administradores.apellidos regexp :nombre || administradores.cedula regexp :nombre",{nombre: nombre})
         .getMany()
         return administradores;
      }

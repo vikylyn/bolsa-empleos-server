@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import { IAdministradorService } from '../interfaces/administrador.service';
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
@@ -117,7 +117,7 @@ export class AdministradorController implements interfaces.Controller {
                 return res.status(400).json({
                     ok: false,
                     mensaje:`No existe un administrador con ese ID ${id}`
-            });
+                });
             }
             const email = await this.credencialesService.buscarEmailIguales(req.body.email,administrador.credenciales.id);
             if (email) {
@@ -147,19 +147,56 @@ export class AdministradorController implements interfaces.Controller {
         }
     } 
 
-    @httpGet("/deshabilitar/:id",verificaToken)  
-    private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
+    @httpGet("/inhabilitar/:id",verificaToken)  
+    private async inhabilitar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const administrador = await this.adminService.eliminar(id);
-            if (administrador.affected === 1){
+            const administrador: Administrador = await this.adminService.buscar(id);
+            if (!administrador){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un administrador con ese ID ${id}`
+                });
+            }
+            const administradorInhabilitado = await this.adminService.inhabilitar(id);
+            if (administradorInhabilitado.affected === 1){
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Administrador Eliminado exitosamente'
+                    mensaje: 'Administrador inhabilitado exitosamente'
                 })
             }else {
                 return res.status(400).json({
                     ok:false,
-                     mensaje: 'Error al deshabilitar administrador',
+                     mensaje: 'Error al inhabilitar administrador',
+                });
+            }
+
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message });  
+        }
+    }
+
+    @httpGet("/habilitar/:id",verificaToken)  
+    private async habilitar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const administrador: Administrador = await this.adminService.buscar(id);
+            if (!administrador){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un administrador con ese ID ${id}`
+                });
+            }
+            const administradorHabilitado = await this.adminService.habilitar(id);
+            if (administradorHabilitado.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Administrador habilitado exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al habilitar administrador',
                 });
             }
 
@@ -173,16 +210,16 @@ export class AdministradorController implements interfaces.Controller {
     @httpGet("/busqueda/:nombre",verificaToken)
     private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const administrador = await this.adminService.buscarPorNombre(nombre);
-            if (!administrador){
+            const administradores: Administrador[] = await this.adminService.buscarPorNombre(nombre);
+            if (!administradores){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe un administrador con el nombre ${nombre}`
+                    mensaje:`No existen administradores con el valor ${nombre}`
             });
             }  
-            return res.status(201).json({
+            return res.status(200).json({
                 ok: true, 
-                administradores: administrador,
+                administradores,
             });
         } catch (err) {
             res.status(400).json({ 

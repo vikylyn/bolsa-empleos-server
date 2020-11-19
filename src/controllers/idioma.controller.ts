@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, response, requestParam} from "inversify-express-utils";
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import { IIdiomaService } from '../interfaces/idioma.service';
 import { INivelIdiomaService } from '../interfaces/nivel-idioma.service';
@@ -15,6 +15,14 @@ export class IdiomaController implements interfaces.Controller {
     @httpGet("/",verificaToken)
     private async listar(req: express.Request, res: express.Response, next: express.NextFunction) {
         let idiomas = await this.idiomaService.listar();
+        return res.status(200).json({
+            ok: true,
+            idiomas: idiomas
+        });
+    }
+    @httpGet("/lista/:id",verificaToken)
+    private async listarNoAsignados(@requestParam("id") id_curriculum: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        let idiomas = await this.idiomaService.listarNoAsignados(id_curriculum);
         return res.status(200).json({
             ok: true,
             idiomas: idiomas

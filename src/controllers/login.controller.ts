@@ -1,12 +1,12 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, httpDelete, request, queryParam, response, requestParam, httpPut } from "inversify-express-utils";
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import { ICredencialesService } from '../interfaces/creadenciales.service';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { IAdministradorService } from '../interfaces/administrador.service';
-import { SEED } from '../../config/config';
+import { SEED } from '../config/config';
 import validarCampos from '../middlewares/administrador/validar-campos';
 
 import { body } from 'express-validator';

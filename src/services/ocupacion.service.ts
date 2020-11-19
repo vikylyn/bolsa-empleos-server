@@ -76,12 +76,22 @@ class OcupacionService  implements IOcupacionService  {
         .execute();
         return ocupacion_m;
     }
-    async eliminar(id: number) {
+    async inhabilitar(id: number) {
         console.log(id);
         const ocupacion = await getRepository(Ocupacion)
         .createQueryBuilder()
         .update(Ocupacion)
         .set({habilitado: false})
+        .where("id = :id", { id: id })
+        .execute(); 
+        return ocupacion;
+    }
+    async habilitar(id: number) {
+        console.log(id);
+        const ocupacion = await getRepository(Ocupacion)
+        .createQueryBuilder()
+        .update(Ocupacion)
+        .set({habilitado: true})
         .where("id = :id", { id: id })
         .execute(); 
         return ocupacion;

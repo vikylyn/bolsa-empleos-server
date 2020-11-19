@@ -9,6 +9,25 @@ import {Vacante} from '../entity/vacante'
 @injectable()
 class VacanteService  implements IVacanteService  {
     async filtrarVacantes(body: any, desde: number) {
+        let fecha = new Date();
+        let mes = fecha.getMonth() + 1;
+        let fechaActual = `${fecha.getFullYear()}-${mes}-${fecha.getDate()}`;
+        let consulta = "requisitos.ocupacion.id = :ocupacion ";
+        if(parseInt(body.id_ciudad) > 0) {
+            consulta +="and ciudad.id = :ciudad_id ";
+        }
+        if(parseInt(body.id_tipo_contrato) > 0) {
+            consulta +="and tipo_contrato.id = :tipo_contrato_id ";
+        }
+        if(fechaActual === body.fecha) {
+            consulta += "and vacantes.creado_en <= :creado_en ";
+ 
+        }else {
+            consulta += "and vacantes.creado_en >= :creado_en ";
+        }
+
+        consulta += "and vacantes.habilitado = true and vacantes.eliminado = false";
+
         const vacantes = await 
         getRepository(Vacante)
        .createQueryBuilder("vacantes")
@@ -23,17 +42,14 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("estado.pais", "pais")
        .leftJoinAndSelect("vacantes.empleador", "empleador")
        .leftJoinAndSelect("empleador.imagen", "imagen")
-       .where(
-           "requisitos.ocupacion.id = :ocupacion "+
-           "and ciudad.id = :ciudad_id "+    
-           "and tipo_contrato.id = :tipo_contrato_id "+      
-           "and vacantes.creado_en >= :creado_en", { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, tipo_contrato_id: body.id_tipo_contrato, creado_en: body.fecha })
+       .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, tipo_contrato_id: body.id_tipo_contrato, creado_en: body.fecha })
+       .addOrderBy("vacantes.creado_en", "DESC")
        .skip(desde)  
        .take(5)
        .getMany();
        return vacantes;
     }
-    async listar(id: number, desde: number) { 
+    async listarTodas(id: number, desde: number) { 
         const vacantes = await 
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
@@ -45,23 +61,75 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id", { id: id })
+        .where("vacantes.empleador.id = :id and vacantes.eliminado = false", { id: id })
+        .addOrderBy("vacantes.creado_en", "DESC")
         .skip(desde)  
         .take(5)
         .getMany();
         return vacantes;
     }
-    async contar(id_empleador: number) {
-        const total = await 
+    async listarHabilitadas(id: number, desde: number) { 
+        const vacantes = await 
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("requisitos.idioma", "idioma")
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id", { id: id_empleador })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = true and vacantes.eliminado = false", { id: id })
+        .addOrderBy("vacantes.creado_en", "DESC")
+        .skip(desde)  
+        .take(5)
+        .getMany();
+        return vacantes;
+    }
+    async listarInhabilitadas(id: number, desde: number) { 
+        const vacantes = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.horario", "horario")
+        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("requisitos.idioma", "idioma")
+        .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
+        .leftJoinAndSelect("vacantes.ciudad", "ciudad")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = false and vacantes.eliminado = false", { id: id })
+        .addOrderBy("vacantes.creado_en", "DESC")
+        .skip(desde)  
+        .take(5)
+        .getMany();
+        return vacantes;
+    }
+    async contarTodas(id_empleador: number) {
+        const total = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("vacantes.empleador.id = :id and vacantes.eliminado = false", { id: id_empleador })
+        .getCount()
+        return total;
+    }
+    async contarHabilitadas(id_empleador: number) {
+        const total = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = true and vacantes.eliminado = false", { id: id_empleador })
+        .getCount()
+        return total;
+    }
+    async contarInhabilitadas(id_empleador: number) {
+        const total = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = false and vacantes.eliminado = false", { id: id_empleador })
         .getCount()
         return total;
     }
@@ -93,6 +161,7 @@ class VacanteService  implements IVacanteService  {
                         horario: {id: body.id_horario},
                         num_vacantes: body.num_vacantes,
                         num_disponibles: body.num_vacantes,
+                        num_postulantes_aceptados: 0,
                      //   funciones: body.funciones,
                         descripcion: body.descripcion,
                         habilitado: body.habilitado,
@@ -135,7 +204,7 @@ class VacanteService  implements IVacanteService  {
             direccion: body.direccion,
             horario: {id: body.id_horario},
             num_vacantes: body.num_vacantes,
-            num_disponibles: body.num_vacantes,
+            num_disponibles: body.num_disponibles,
             descripcion: body.descripcion,
             habilitado: habilitado,
             tipo_contrato: {id: body.id_tipo_contrato},
@@ -167,8 +236,39 @@ class VacanteService  implements IVacanteService  {
         .execute();
         return respuesta;
     }
+    async eliminarLogico(id: number) {
+        const respuesta = await getRepository(Vacante)
+        .createQueryBuilder()
+        .update(Vacante)
+        .set({
+            eliminado: true,
+            habilitado: false
+        })
+        .where("id = :id", { id: id })
+        .execute();
+        return respuesta;
+    }
+    async eliminarFisico(id: number) {
+        const respuesta = await getRepository(Vacante)
+        .createQueryBuilder()
+        .delete()
+        .where("id = :id", { id: id })
+        .execute();
+        return respuesta;
+    }
+    async habilitar(id: number) {
+        const respuesta = await getRepository(Vacante)
+        .createQueryBuilder()
+        .update(Vacante)
+        .set({
+            habilitado: true,
+        })
+        .where("id = :id", { id: id })
+        .execute();
+        return respuesta;
+    }
     async buscar(id: number) {
-        const body = await 
+        const vacante = await 
         getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
@@ -183,10 +283,26 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.empleador", "empleador")
         .where("vacantes.id = :id", { id: id })
        .getOne();
-       return body;
+       return vacante;
     }
    
-   
+    async busqueda(valor: string, id_empleador: number) {
+        const vacantes = await 
+         getRepository(Vacante)
+        .createQueryBuilder("vacantes")
+        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.horario", "horario")
+        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("requisitos.idioma", "idioma")
+        .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
+        .leftJoinAndSelect("vacantes.ciudad", "ciudad")
+        .leftJoinAndSelect("vacantes.empleador", "empleador")
+        .where("(vacantes.titulo regexp :valor and vacantes.empleador.id = :id) || (ocupacion.nombre regexp :valor and vacantes.empleador.id = :id)",{valor: valor, id: id_empleador})
+        .addOrderBy("vacantes.creado_en", "DESC")
+        .getMany()
+        return vacantes;
+     }
 }
   
 export {VacanteService};  

@@ -149,6 +149,7 @@ class SolicitanteService implements ISolicitanteService  {
         getRepository(Solicitante)
        .createQueryBuilder("solicitantes")
        .leftJoinAndSelect("solicitantes.credenciales", "credenciales")
+       .leftJoinAndSelect("credenciales.rol", "rol")
        .leftJoinAndSelect("solicitantes.imagen", "imagen")
        .leftJoinAndSelect("solicitantes.estado_civil", "estado_civil")
        .leftJoinAndSelect("solicitantes.ciudad", "ciudad")

@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import { IAdministradorService } from '../interfaces/administrador.service';
 import verificaToken from '../middlewares/verificar-token'
 
@@ -16,7 +16,7 @@ import { IEmpleadorService } from '../interfaces/empleador.service';
 import { IEmpresaService } from '../interfaces/empresa.service';
 import { Empresa } from '../entity/empresa';
 import { Empleador } from '../entity/empleador';
-import { cloud_name, api_key, api_secret } from '../../global/environments';
+import { cloud_name, api_key, api_secret } from '../global/environments';
 var cloudinary = require('cloudinary');
 cloudinary.config({ 
     cloud_name: cloud_name, 

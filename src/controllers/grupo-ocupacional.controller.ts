@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import { IGrupoOcupacionalService } from '../interfaces/grupo-ocupacional.service';
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
@@ -40,7 +40,7 @@ export class GrupoOcupacionalController implements interfaces.Controller {
                 return res.status(400).json({
                     ok: false,
                     mensaje:`No existe un grupo laboral con el ID ${id}`
-            });
+                });
             }
             return res.status(200).json({
                 ok: true,
@@ -140,11 +140,17 @@ export class GrupoOcupacionalController implements interfaces.Controller {
         }
     }
     @httpGet("/inhabilitar/:id",verificaToken)
-    private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
+    private async inhabilitar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const grupo = await this.grupoService.eliminar(id)
-            
-            if (grupo.affected === 1){
+            const grupo: GrupoOcupacional = await this.grupoService.buscar(id);
+            if (!grupo){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un grupo laboral con el ID ${id}`
+                });
+            }
+            const grupoInhabilitado = await this.grupoService.inhabilitar(id)    
+            if (grupoInhabilitado.affected === 1){
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Grupo inhabilitado exitosamente',
@@ -159,6 +165,37 @@ export class GrupoOcupacionalController implements interfaces.Controller {
             res.status(500).json({
                 ok: false,
                 mensaje: 'Error al inhabilitar grupo ocupacional', 
+                error: err.message });
+        }
+    }
+
+    @httpGet("/habilitar/:id",verificaToken)
+    private async habilitar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const grupo: GrupoOcupacional = await this.grupoService.buscar(id);
+            if (!grupo){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un grupo laboral con el ID ${id}`
+                });
+            }
+            const grupoHabilitado = await this.grupoService.habilitar(id)
+            
+            if (grupoHabilitado.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Grupo habilitado exitosamente',
+                });
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                    mensaje: 'Error al habilitar grupo ocupacional',
+                });
+            }
+        } catch (err) {
+            res.status(500).json({
+                ok: false,
+                mensaje: 'Error al habilitar grupo ocupacional', 
                 error: err.message });
         }
     }

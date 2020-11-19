@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
@@ -10,6 +10,8 @@ import { ICredencialesService } from '../interfaces/creadenciales.service';
 import { Solicitante as Empleador } from '../entity/solicitante';
 import { sendEmailEmpleador } from '../email/enviar-email';
 import { IEmpleadorService } from '../interfaces/empleador.service';
+import Server from '../classes/server';
+import { usuariosConectados } from '../sockets/socket';
 
 
 

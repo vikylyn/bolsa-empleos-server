@@ -1,7 +1,7 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
@@ -11,17 +11,27 @@ import { IContratacionService } from '../interfaces/contratacion.service';
 import { ISolicitanteService } from '../interfaces/solicitante.service';
 import { Solicitante } from '../entity/solicitante';
 import { Contratacion } from '../entity/contratacion';
+import Server from '../classes/server';
+import { INotificacionEmpleadorService } from '../interfaces/notificacion-empleador.service';
+import { IEmpleadorService } from '../interfaces/empleador.service';
+import { Empleador } from '../entity/empleador';
+import { usuariosConectados } from "../sockets/socket";
+import { INotificacionSolicitanteService } from '../interfaces/notificacion-solicitante.service';
+
  
 @controller("/postulacion")    
 export class PostulacionController implements interfaces.Controller {  
  
     constructor( @inject(TYPES.IPostulacionService) private postulacionService: IPostulacionService,
                  @inject(TYPES.IContratacionService) private contratacionService: IContratacionService,
+                 @inject(TYPES.INotificacionEmpleadorService) private notificacionEmpleadorService: INotificacionEmpleadorService,
+                 @inject(TYPES.INotificacionSolicitanteService) private notificacionSolicitanteService: INotificacionSolicitanteService,
+                 @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService,
                  @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService) {}  
  
     @httpGet("/lista/empleador/:id",verificaToken)
     private async listar(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-        let postulaciones = await this.postulacionService.listar(id, desde);
+        let postulaciones = await this.postulacionService.listarPorIdVacante(id, desde);
         let total = await this.postulacionService.contarPorIdVacante(id);
         return res.status(200).json({
             ok: true,
@@ -29,7 +39,7 @@ export class PostulacionController implements interfaces.Controller {
             total
         });
     }   
-    @httpGet("/buscar/:id",verificaToken)
+    @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const postulacion: Postulacion = await this.postulacionService.buscar(id);
@@ -52,6 +62,7 @@ export class PostulacionController implements interfaces.Controller {
     } // 
     @httpPost("/",verificaToken, 
         body('id_solicitante','El id del Solicitante es oblidatorio').not().isEmpty(),
+        body('id_empleador','El id del Empleador es oblidatorio').not().isEmpty(),
         body('id_vacante','El id de la vacante es oblidatorio').not().isEmpty(),
         validarCampos
         )
@@ -66,14 +77,15 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje: 'Solicitante con un empleo activo',  
                 });
             }
-            const contratacion: Contratacion = await this.contratacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
+  //          const contratacion: Contratacion = await this.contratacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
+ /*           console.log('contratacion ', contratacion)
             if (contratacion) {
                 return res.status(400).json({
                     ok: false,
                     mensaje: 'Error, Ya postulo para la vacante',  
                 });
             }
-
+*/
             const buscar_postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
             if (buscar_postulacion) {
                 return res.status(400).json({
@@ -81,22 +93,35 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje: 'Error, Ya postulo para la vacante',  
                 });
             }
-            const postulacion = await this.postulacionService.postularSolicitante(req.body); 
+           
+
+            const postulacion: Postulacion = await this.postulacionService.postularSolicitante(req.body); 
             if(postulacion) {
+                const server = Server.instance;
+                const empleador: Empleador = await this.empleadorService.buscar( req.body.id_empleador)
+                if(empleador) {
+                    const id_socket = usuariosConectados.getUsuarioByIdAndRol(empleador.id, empleador.credenciales.rol.nombre);
+                    if(id_socket){
+                        server.io.in(id_socket).emit('notificacion-nueva');
+                        const totalNotificaciones: number = await this.notificacionEmpleadorService.contarNoLeidas(empleador.id)
+                        server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+                    }
+                }
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Postulacion adicionada  exitosamente',  
                     postulacion: postulacion
                 });
+         
             }else {
                 return res.status(400).json({
                     ok: false,
                     mensaje: 'Error al adicionar postulacion', 
                 });
-            }
-           
+            }   
            
         } catch (err) {
+            console.log(err);
             res.status(500).json({
                 ok: false, 
                 error: err.message 
@@ -195,18 +220,27 @@ export class PostulacionController implements interfaces.Controller {
     @httpDelete("/:id",verificaToken)  
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const postulacion = await this.postulacionService.eliminar(id);
-            if (postulacion.affected === 1){
-                return res.status(200).json({
-                    ok: true,
-                    mensaje: 'Postulacion eliminada exitosamente'
-                })
+            const postulacion:Postulacion = await this.postulacionService.buscar(id);
+            if(postulacion){
+                const postulacion_eliminada = await this.postulacionService.eliminar(id);
+                if (postulacion_eliminada.affected === 1){
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Postulacion eliminada exitosamente'
+                    })
+                }else {
+                    return res.status(400).json({
+                        ok:false,
+                         mensaje: 'Error al eliminar postulacion',
+                    });
+                }
             }else {
                 return res.status(400).json({
                     ok:false,
-                     mensaje: 'Error al eliminar postulacion',
+                     mensaje: `Error al eliminar, no existe una postulacion con el ID ${id}`,
                 });
             }
+
 
         } catch (err) {
             res.status(500).json({ 
@@ -215,6 +249,133 @@ export class PostulacionController implements interfaces.Controller {
             });  
         }
     }
+    @httpPut("/aceptar/:id",verificaToken)
+    private async aceptarSolicitante(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
+      
+    try {
+        const postulacion = await this.postulacionService.buscar(id);
+        if (!postulacion) {
+            return res.status(400).json({
+                ok: false,
+                mensaje:`No existe una postulacion con el ID ${id}`
+            });
+        }
+        if (postulacion.vacante.num_disponibles === 0) {
+            return res.status(400).json({
+                ok: false,
+                mensaje:`Numero de vacantes disponibles es cero`
+            });
+        }
+        const postulacion_aceptada = await this.postulacionService.aceptarSolicitante(postulacion);
+        if (postulacion_aceptada) {
+            const server = Server.instance;
+            const solicitante: Solicitante = await this.solicitanteService.buscar(postulacion.solicitante.id);
+            const id_socket = usuariosConectados.getUsuarioByIdAndRol(solicitante.id, solicitante.credenciales.rol.nombre);
+            if(id_socket){
+                server.io.in(id_socket).emit('notificacion-nueva');
+                server.io.in(id_socket).emit('verificar-postulacion');
+                const totalNotificaciones: number = await this.notificacionSolicitanteService.contarNoLeidas(solicitante.id)
+                server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+            }
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Solicitante aceptado para la vacante'
+            });
+        } else {
+            
+            return res.status(400).json({
+                ok:false,
+                mensaje: 'Error al aceptar solicitante',
+            });
+        }
+    } catch (err) {
+        res.status(400).json({  
+            ok:false, 
+            error: err.message });
+    }
+   
+    } 
+    @httpPut("/rechazar/:id",verificaToken)  
+    private async rechazar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const postulacion:Postulacion = await this.postulacionService.buscar(id);
+            if(postulacion){
+                const postulacion_eliminada = await this.postulacionService.rechazar(postulacion);
+                console.log(postulacion_eliminada, postulacion)
+                if (postulacion_eliminada){
+                    const server = Server.instance;
+                    const solicitante: Solicitante = await this.solicitanteService.buscar(postulacion.solicitante.id);
+                    const id_socket = usuariosConectados.getUsuarioByIdAndRol(solicitante.id, solicitante.credenciales.rol.nombre);
+                    if(id_socket){
+                        server.io.in(id_socket).emit('notificacion-nueva');
+                        const totalNotificaciones: number = await this.notificacionSolicitanteService.contarNoLeidas(solicitante.id)
+                        server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+                    }
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Postulacion eliminada exitosamente'
+                    })
+                }else {
+                    return res.status(400).json({
+                        ok:false,
+                         mensaje: 'Error al eliminar postulacion',
+                    });
+                }
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: `Error al eliminar, no existe una postulacion con el ID ${id}`,
+                });
+            }
+           
+
+        } catch (err) {
+            res.status(500).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+    @httpPut("/confirmar/:id",verificaToken)
+    private async confirmar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const postulacion: Postulacion = await this.postulacionService.buscar(id);
+            if (!postulacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una postulacion con el ID ${id}`
+                });
+            }
+            const contratacion = await this.postulacionService.confirmar(postulacion);
+            if(contratacion) { 
+                const server = Server.instance;
+                const empleador: Empleador = await this.empleadorService.buscar(postulacion.vacante.empleador.id);
+                if(empleador) {
+                    const id_socket = usuariosConectados.getUsuarioByIdAndRol(empleador.id, empleador.credenciales.rol.nombre);
+                    if(id_socket){
+                        server.io.in(id_socket).emit('notificacion-nueva');
+                        const totalNotificaciones: number = await this.notificacionEmpleadorService.contarNoLeidas(empleador.id)
+                        server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+                    }
+                }
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Confirmacion exitosamente',  
+                    contratacion
+                });
+            }else {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error al confirmar  contratacion', 
+                });
+            }
+        } catch (err) {
+            res.status(400).json({
+                ok: false, 
+                error: err.message 
+            });
+        }
+    } // 
     @httpGet("/lista/solicitante/:id",verificaToken)
     private async listarPorSolicitante(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
         let postulaciones: Postulacion[] = await this.postulacionService.listarPorSolicitante(id, desde);
@@ -245,7 +406,7 @@ export class PostulacionController implements interfaces.Controller {
             // verificando si existe contratacion
             const contratacion: Contratacion = await this.contratacionService.buscarPorSolicitanteVacante(solicitante.id, id_vacante);
             // verificando si la contratacion  a sido confirmada
-            if (contratacion && contratacion.confirmado) {
+            if (contratacion) {
                 return res.status(200).json({
                     ocupado: solicitante.ocupado,
                     contratado: true,
@@ -254,34 +415,22 @@ export class PostulacionController implements interfaces.Controller {
                     contratacion
                 });
             }
-            // si la contratacion no ha sido confirmada
-            if (contratacion && !contratacion.confirmado) {
-                const buscar_postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, id_vacante);
-                if (buscar_postulacion) {
-                    return res.status(200).json({
-                        ocupado: solicitante.ocupado,
-                        contratado: true,
-                        postulando: true,
-                        aceptado: buscar_postulacion.aceptado,
-                        postulacion: buscar_postulacion,
-                        contratacion
-                    });
-                }
-            }
 
-            const buscar_postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, id_vacante);
-            if (buscar_postulacion) {
+            const postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, id_vacante);
+            if (postulacion) {
                 return res.status(200).json({
                     ocupado: solicitante.ocupado,
-                    postulando: false,
-                    aceptado: buscar_postulacion.aceptado,
-                    postulacion: buscar_postulacion,
-                    contratado: false
+                    contratado: false,
+                    postulando: true,
+                 //   postulando: false,
+                    aceptado: postulacion.aceptado,
+                    postulacion: postulacion,
                 });
             }else {
                 return res.status(200).json({
                     ocupado: solicitante.ocupado,
-                    postulando: true,
+                    postulando: false,
+                //    postulando: true,
                     contratado: false,
                     aceptado: false,
                 });
@@ -294,4 +443,25 @@ export class PostulacionController implements interfaces.Controller {
              });
         }
     } 
+
+    @httpGet("/busqueda/:id/:valor",verificaToken)
+    private async busqueda(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones = await this.postulacionService.busqueda(valor,idEmpleador);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
 }

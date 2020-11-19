@@ -2,7 +2,7 @@ import * as express from "express";
 import { interfaces, controller, httpGet, response, requestParam} from "inversify-express-utils";
 import { inject } from "inversify";
 import { IRolService } from '../interfaces/rol.service';
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
  
 @controller("/rol")    

@@ -7,7 +7,11 @@ export class TipoNotificacion {
     @PrimaryGeneratedColumn()
     id: number;
     
-    @Column({type: 'varchar', length: 20,unique: true})
-    tipo: string;   
+    @Column({type: 'varchar', length: 50,unique: true})
+    tipo: string; 
+    
+    @Column({type: 'varchar', length: 150})
+    descripcion: string;  
 
 }
+ 

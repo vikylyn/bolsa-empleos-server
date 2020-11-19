@@ -1,6 +1,5 @@
-import {Router, Request, Response} from 'express';
 import jwt from'jsonwebtoken';
-import { SEED } from '../../config/config';
+import { SEED } from '../config/config';
 
 // *********
 // Verificar token

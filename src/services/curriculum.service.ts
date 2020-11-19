@@ -95,7 +95,7 @@ class CurriculumService  implements ICurriculumService  {
         .leftJoinAndSelect("estado.pais", "pais")
         .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
         
-        .where("curriculums.solicitante.id = :id", { id: id })
+        .where("curriculums.solicitante.id = :id and ocupaciones.habilitado = true", { id: id })
         .getOne();
         respuesta.solicitante.credenciales.password = "xd";
         return respuesta;

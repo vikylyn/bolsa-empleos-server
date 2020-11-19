@@ -60,5 +60,12 @@ export class Vacante {
     @JoinColumn({name:'empleadores_id'})
     @ManyToOne(type => Empleador, empleador => empleador.id,{nullable:false})
     empleador: Empleador;
+
+
+    @Column()
+    eliminado: boolean;
+
+    @Column()
+    num_postulantes_aceptados: number;
  
 }

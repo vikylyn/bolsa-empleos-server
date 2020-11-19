@@ -4,7 +4,8 @@ export interface IOcupacionService {
     listarTodas(): any;
     adicionar(body: any): any;
     modificar(id: number, body: any): any;
-    eliminar(id: number):any;
+    inhabilitar(id: number):any;
+    habilitar(id: number):any;
     buscar(id: number): any;
     contar(): any;
     buscarPorNombre(nombre: string): any;

@@ -31,7 +31,11 @@ const TYPES = {
     IPaisService:Symbol.for("IPaisService"),
     IEstadoService:Symbol.for("IEstadoService"),
     ICiudadService: Symbol.for("ICiudadService"),
-    IOcupacionSolicitanteService: Symbol.for("IOcupacionSolicitanteService")
+    IOcupacionSolicitanteService: Symbol.for("IOcupacionSolicitanteService"),
+    INotificacionEmpleadorService: Symbol.for("INotificacionEmpleadorService"),
+    INotificacionSolicitanteService: Symbol.for("INotificacionSolicitanteService")
+
+
 }
 
 export { TYPES };    

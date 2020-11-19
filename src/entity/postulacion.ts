@@ -23,6 +23,9 @@ export class Postulacion {
     aceptado: boolean;
 
     @Column()
+    rechazado: boolean;
+
+    @Column()
     favorito: boolean;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})

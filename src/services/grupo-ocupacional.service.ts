@@ -54,11 +54,20 @@ class GrupoOcupacionalService  implements IGrupoOcupacionalService  {
         .execute();
         return grupo_m;  
     }
-    async eliminar(id: number) {
+    async inhabilitar(id: number) {
         const grupo = await getRepository(GrupoOcupacional)
         .createQueryBuilder()
         .update(GrupoOcupacional)
         .set({habilitado: false})
+        .where("id = :id", { id: id })
+        .execute(); 
+        return grupo;
+    }
+    async habilitar(id: number) {
+        const grupo = await getRepository(GrupoOcupacional)
+        .createQueryBuilder()
+        .update(GrupoOcupacional)
+        .set({habilitado: true})
         .where("id = :id", { id: id })
         .execute(); 
         return grupo;

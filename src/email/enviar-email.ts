@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer'; 
 const {google} = require ('googleapis'); 
-import {clientId, clientSecret, url_redireccionamiento,refreshToken} from '../../global/environments'
+import {clientId, clientSecret, url_redireccionamiento,refreshToken} from '../global/environments'
 import jwt from 'jsonwebtoken';
-import { SEED } from '../../config/config';
+import { SEED } from '../config/config';
 
 
 

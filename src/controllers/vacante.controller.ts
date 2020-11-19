@@ -1,7 +1,7 @@
 import * as express from "express";
-import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
+import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { inject } from "inversify";
-import { TYPES } from "../../config/types";
+import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
@@ -15,9 +15,31 @@ export class VacanteController implements interfaces.Controller {
     constructor( @inject(TYPES.IVacanteService) private vacanteService: IVacanteService ) {}  
  
     @httpGet("/lista/:id",verificaToken)
-    private async listar(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-        let vacantes = await this.vacanteService.listar(id, desde);
-        let total = await this.vacanteService.contar(id);
+    private async listarTodas(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        let vacantes:Vacante[] = await this.vacanteService.listarTodas(id, desde);
+        let total = await this.vacanteService.contarTodas(id);
+
+        return res.status(200).json({
+            ok: true,
+            vacantes,
+            total
+        });
+    } 
+    @httpGet("/lista-habilitadas/:id",verificaToken)
+    private async listarHabilitadas(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        let vacantes:Vacante[] = await this.vacanteService.listarHabilitadas(id, desde);
+        let total = await this.vacanteService.contarHabilitadas(id);
+
+        return res.status(200).json({
+            ok: true,
+            vacantes,
+            total
+        });
+    } 
+    @httpGet("/lista-inhabilitadas/:id",verificaToken)
+    private async listarInhabiltadas(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        let vacantes:Vacante[] = await this.vacanteService.listarInhabilitadas(id, desde);
+        let total = await this.vacanteService.contarInhabilitadas(id);
 
         return res.status(200).json({
             ok: true,
@@ -155,12 +177,57 @@ export class VacanteController implements interfaces.Controller {
                 error: err.message });
         }
     } 
-
-    @httpPut("/inhabilitar/:id",verificaToken)  
-    private async deshabilitar(@requestParam("id") id: number, @response() res: express.Response) {
+    @httpPut("/eliminacion-logica/:id",verificaToken)  
+    private async  eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const curriculum_habilidad = await this.vacanteService.inhabilitar(id);
-            if (curriculum_habilidad.affected === 1){
+            const vacante = await this.vacanteService.eliminarLogico(id);
+            if (vacante.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Vacante eliminada exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al eliminar vacante',
+                });
+            }
+
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+    @httpDelete("/eliminacion-fisica/:id",verificaToken)  
+    private async  eliminarFisico(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const vacante = await this.vacanteService.eliminarFisico(id);
+            if (vacante.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Vacante eliminada exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al eliminar vacante',
+                });
+            }
+
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+    @httpPut("/inhabilitar/:id",verificaToken)  
+    private async  inhabilitar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const vacante = await this.vacanteService.inhabilitar(id);
+            if (vacante.affected === 1){
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Vacante inhabilitada exitosamente'
@@ -180,6 +247,49 @@ export class VacanteController implements interfaces.Controller {
         }
     }
 
+    @httpPut("/habilitar/:id",verificaToken)  
+    private async habilitar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const vacante = await this.vacanteService.habilitar(id);
+            if (vacante.affected === 1){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Vacante habilitada exitosamente'
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al habilitar vacante',
+                });
+            }
 
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+
+    @httpGet("/busqueda/:id/:valor",verificaToken)
+    private async busqueda(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const vacantes = await this.vacanteService.busqueda(valor,idEmpleador);
+            if (!vacantes){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen vacantes con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                vacantes,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
  
 }

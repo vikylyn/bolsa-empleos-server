@@ -7,6 +7,7 @@ import { Idioma } from '../entity/idioma';
 
 @injectable()
 class IdiomaService  implements IIdiomaService  {
+
     buscar(id: number) {
         const idioma =  getRepository(Idioma).findOne(id);
         return idioma;
@@ -14,8 +15,14 @@ class IdiomaService  implements IIdiomaService  {
   
     listar(): any {
         const idiomas = getRepository(Idioma).find()
-       return idiomas ;
+        return idiomas ;
     }
+    listarNoAsignados(id_curriculum: Number): any {
+        const idiomas = getRepository(Idioma)
+        .query("SELECT * FROM idiomas AS i  WHERE NOT EXISTS (SELECT * FROM curriculums_idiomas AS c  WHERE i.id = c.idioma_id and c.curriculum_id = ?)", [id_curriculum]);
+        return idiomas ;
+    }
+    
    
 }
   
