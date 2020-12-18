@@ -14,5 +14,5 @@ export interface IAdministradorService {
     buscarPorCredencial(id: number): any;
     modificarImagen(id: number, imagen: Imagen): any;
     contar(): any;
-    buscarPorNombre(nombre: string): any;
+    buscarPorValor(nombre: string): any;
 } 

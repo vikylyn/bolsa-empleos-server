@@ -5,13 +5,14 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICredencialesService } from '../interfaces/creadenciales.service';
+import { ICredencialesService } from '../interfaces/ICreadenciales.service';
 
-import { Solicitante as Empleador } from '../entity/solicitante';
 import { sendEmailEmpleador } from '../email/enviar-email';
-import { IEmpleadorService } from '../interfaces/empleador.service';
-import Server from '../classes/server';
-import { usuariosConectados } from '../sockets/socket';
+import { IEmpleadorService } from '../interfaces/IEmpleador.service';
+import { Empleador } from '../entity/empleador';
+import { Empresa } from '../entity/empresa';
+import { IEmpresaService } from '../interfaces/IEmpresa.service';
+
 
 
 
@@ -19,12 +20,13 @@ import { usuariosConectados } from '../sockets/socket';
 export class EmpleadorController implements interfaces.Controller {    
  
     constructor( @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService,
+                 @inject(TYPES.IEmpresaService) private empresaService: IEmpresaService,
                  @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService
      ) {}
  
     @httpGet("/",verificaToken)
     private async listar(@queryParam("desde") desde: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-        let empleadores = await this.empleadorService.listar(desde);
+        let empleadores: Empleador[] = await this.empleadorService.listar(desde);
         return res.status(200).json({
             ok: true,
             empleadores: empleadores
@@ -44,6 +46,34 @@ export class EmpleadorController implements interfaces.Controller {
             return res.status(200).json({
                 ok: true,
                 empleador: empleador,
+            });
+        } catch (err) {
+            res.status(500).json({
+                ok: false, 
+                error: err.message });
+        }
+    }
+    @httpGet("/empresa/:id",verificaToken)
+    private async buscarEmpleadorEmpresa(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const empleador: Empleador = await this.empleadorService.buscar(id);
+            if (!empleador){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe un empleador con el ID ${id}`
+                });
+            }
+            if (!empleador.empresa){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una empresa para el empleador con el ID ${id}`
+                });
+            }
+            const empresa: Empresa = await this.empresaService.buscarPorIdEmpleador(empleador.id);
+            return res.status(200).json({
+                ok: true,
+                empleador: empleador,
+                empresa
             });
         } catch (err) {
             res.status(500).json({
@@ -84,7 +114,7 @@ private async adicionar(@request() req: express.Request, @response() res: expres
      
         if (empleador) {
         
-            await sendEmailEmpleador(empleador.id, empleador.credenciales.email);
+            await sendEmailEmpleador(empleador, false);
 
             return res.status(201).json({
                 ok: true,
@@ -139,12 +169,12 @@ private async adicionar(@request() req: express.Request, @response() res: expres
             }
             
             const empleador = await this.empleadorService.adicionarEmpleadorEmpresa(req.body);
-            
+            console.log(empleador);
            
          
             if (empleador) {
             
-                sendEmailEmpleador(empleador.id, empleador.credenciales.email);
+                sendEmailEmpleador(empleador, false);
     
                 return res.status(201).json({
                     ok: true,

@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { ITipoContratoService } from '../interfaces/tipo-contrato.service';
+import { ITipoContratoService } from '../interfaces/ITipoContrato.service';
 import { TipoContrato } from '../entity/tipo-contrato';
 
 

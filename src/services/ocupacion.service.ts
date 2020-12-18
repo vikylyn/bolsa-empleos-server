@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IOcupacionService } from '../interfaces/ocupacion.service';
+import { IOcupacionService } from '../interfaces/IOcupacion.service';
 import { Ocupacion } from '../entity/ocupacion';
 import { OcupacionSolicitante } from '../entity/ocupacion-solicitante';
 

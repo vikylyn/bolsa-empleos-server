@@ -2,18 +2,18 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
-import { IAdministradorService } from '../interfaces/administrador.service';
+import { IAdministradorService } from '../interfaces/IAdministrador.service';
 import verificaToken from '../middlewares/verificar-token'
 
 import fs from 'fs-extra';
-import { ISolicitanteService } from '../interfaces/solicitante.service';
+import { ISolicitanteService } from '../interfaces/ISolicitante.service';
 
 import path from 'path';
-import { IImagenService } from '../interfaces/imagen.service';
+import { IImagenService } from '../interfaces/IImagen.service';
 import { Imagen } from '../entity/imagen';
 import multer from '../libs/multer'
-import { IEmpleadorService } from '../interfaces/empleador.service';
-import { IEmpresaService } from '../interfaces/empresa.service';
+import { IEmpleadorService } from '../interfaces/IEmpleador.service';
+import { IEmpresaService } from '../interfaces/IEmpresa.service';
 import { Empresa } from '../entity/empresa';
 import { Empleador } from '../entity/empleador';
 import { cloud_name, api_key, api_secret } from '../global/environments';

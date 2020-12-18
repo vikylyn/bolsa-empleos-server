@@ -1,20 +1,20 @@
 import { Entity,PrimaryGeneratedColumn, JoinColumn, ManyToOne, Index } from 'typeorm';
 import { NivelIdioma } from './nivel-idioma';
-import { Curriculum } from './curriculum';
 import { Idioma } from './idioma';
+import { Requisitos } from './requisitos';
 
-@Entity('curriculums_idiomas')
-@Index(["curriculum", "idioma"], { unique: true })
-export class CurriculumIdioma {
+@Entity('requisitos_idiomas')
+@Index(["requisitos", "idioma"], { unique: true })
+export class RequisitosIdioma {
 
     @PrimaryGeneratedColumn()
     id: number;
 
-    @JoinColumn({name:'curriculum_id'})
-    @ManyToOne(type => Curriculum, curriculum => curriculum.id,{nullable: false})
-    curriculum: Curriculum;
+    @JoinColumn({name:'requisitos_id'})
+    @ManyToOne(type => Requisitos, requisitos => requisitos.id,{nullable: false})
+    requisitos: Requisitos;
 
-    @JoinColumn({name:'idiomas_id'})
+    @JoinColumn({name:'idioma_id'})
     @ManyToOne(type => Idioma, idioma => idioma.id,{nullable: false, eager: true})
     idioma: Idioma;
 

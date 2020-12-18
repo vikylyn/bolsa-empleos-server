@@ -15,7 +15,7 @@ export class Curriculum {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: 'varchar', length: 45})
+    @Column({type: 'varchar', length: 100})
     titulo: string;
     
     @Column()
@@ -31,7 +31,7 @@ export class Curriculum {
     experiencias_laborales: ExperienciaLaboral[];
 
     @OneToMany(type => CurriculumHabilidad, curriculum_habilidad => curriculum_habilidad.curriculum)
-    curriculum_habilidades: Habilidad[];
+    curriculum_habilidades: CurriculumHabilidad[];
 
     @OneToMany(type => EstudioBasico, estudios_basicos => estudios_basicos.curriculum)
     estudios_basicos: EstudioBasico[];

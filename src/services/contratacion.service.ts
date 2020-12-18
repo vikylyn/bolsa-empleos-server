@@ -1,5 +1,5 @@
 import { injectable} from "inversify";
-import { IContratacionService } from '../interfaces/contratacion.service';
+import { IContratacionService } from '../interfaces/IContratacion.service';
 import { Postulacion } from '../entity/postulacion';
 import { Contratacion } from '../entity/contratacion';
 import { getRepository, getConnection } from 'typeorm';
@@ -27,15 +27,20 @@ class ContratacionService  implements IContratacionService  {
                     .createQueryBuilder()
                     .update(Vacante)
                     .set({
-                        num_disponibles: postulacion.vacante.num_disponibles + 1
+                        num_disponibles: postulacion.vacante.num_disponibles + 1,
+                        num_postulantes_aceptados: postulacion.vacante.num_postulantes_aceptados - 1
                     })
                     .where("id = :id", { id: postulacion.vacante.id })
                     .execute();
-                await queryRunner.manager.createQueryBuilder()
-                .delete().from(Contratacion).where("solicitante.id = :id_solicitante and vacante.id = :id_vacante", 
-                    {id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id}).execute();
-                const postulacion_eliminada = await queryRunner.manager.createQueryBuilder()
-                .delete().from(Postulacion).where("id = :id",{id: postulacion.id}).execute();
+                await queryRunner.manager
+                .createQueryBuilder()
+                .update(Postulacion)
+                .set({
+                    rechazado: true
+                })
+                .where("id = :id", { id: postulacion.id })
+                .execute();
+                    
 
                 await queryRunner.manager.save(NotificacionEmpleador,
                     {
@@ -47,7 +52,7 @@ class ContratacionService  implements IContratacionService  {
                     });
                 await queryRunner.commitTransaction();
 
-                respuesta = postulacion_eliminada;
+                respuesta = true;
                 
             
             } catch (err) {
@@ -133,7 +138,8 @@ class ContratacionService  implements IContratacionService  {
         .leftJoinAndSelect("vacante.empleador", "empleador")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-       .where("solicitante.id = :id", { id: id })
+       .where("solicitante.id = :id and contrataciones.oculto = false", { id: id })
+       .addOrderBy("contrataciones.creado_en", "DESC")
        .skip(desde)  
        .take(5)
        .getMany();
@@ -146,7 +152,7 @@ class ContratacionService  implements IContratacionService  {
         .createQueryBuilder("contrataciones")
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
-       .where("solicitante.id = :id", { id: id_solicitante })
+       .where("solicitante.id = :id and contrataciones.oculto = false", { id: id_solicitante })
        .getCount();
     
         return total; 
@@ -288,6 +294,41 @@ class ContratacionService  implements IContratacionService  {
                     vacante: {id: contratacion.vacante.id},
                     tipo_notificacion: {id: 4}
                 });
+            await queryRunner.commitTransaction();
+            respuesta = true; 
+                
+            
+        } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
+    }
+    async ocultar(contratacion: Contratacion) {
+        let respuesta: any;
+        const connection = getConnection();
+        const queryRunner = connection.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+                // execute some operations on this transaction:
+                
+            await queryRunner.manager.createQueryBuilder()
+            .update(Contratacion)
+            .set({
+               oculto: true
+            })
+            .where("id = :id", { id: contratacion.id })
+            .execute();
+           
             await queryRunner.commitTransaction();
             respuesta = true; 
                 

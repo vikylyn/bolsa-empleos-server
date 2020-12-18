@@ -1,7 +1,7 @@
 import { injectable} from 'inversify';
 import { getRepository} from "typeorm";
 
-import { IEmpresaService } from '../interfaces/empresa.service';
+import { IEmpresaService } from '../interfaces/IEmpresa.service';
 import { Empresa } from '../entity/empresa';
 import { Imagen } from '../entity/imagen';
 

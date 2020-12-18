@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import { getRepository,getConnection  } from "typeorm";
 import { Credenciales } from '../entity/credenciales';
 import bcrypt from 'bcryptjs';
-import { IEmpleadorService } from '../interfaces/empleador.service';
+import { IEmpleadorService } from '../interfaces/IEmpleador.service';
 import { Empleador } from '../entity/empleador';
 import { Imagen } from '../entity/imagen';
 import { Empresa } from '../entity/empresa';
@@ -173,7 +173,7 @@ class EmpleadorService implements IEmpleadorService  {
             telefono: body.telefono, 
             cedula: body.cedula, 
             genero: body.genero, 
-       //     habilitado: body.habilitado,
+            modificado_en: new Date(),
             nacionalidad: body.nacionalidad,
             direccion:body.direccion,
             ciudad: {id: body.id_ciudad},

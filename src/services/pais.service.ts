@@ -1,6 +1,6 @@
 import { injectable} from "inversify";
 import { getRepository } from "typeorm";
-import { IPaisService } from '../interfaces/pais.service';
+import { IPaisService } from '../interfaces/IPais.service';
 import { Pais } from '../entity/pais';
 
 

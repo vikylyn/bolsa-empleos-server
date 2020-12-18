@@ -1,7 +1,7 @@
 import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
 
 
-@Entity('nivel_idioma')
+@Entity('niveles_idioma')
 export class NivelIdioma {
    
     @PrimaryGeneratedColumn()

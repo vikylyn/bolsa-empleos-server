@@ -3,7 +3,7 @@ import { interfaces, controller, httpGet, response, requestParam} from "inversif
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IHorarioService } from '../interfaces/horario.service';
+import { IHorarioService } from '../interfaces/IHorario.service';
 
  
 @controller("/horario")    

@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICurriculumIdiomaService } from '../interfaces/curriculum-idioma.service';
+import { ICurriculumIdiomaService } from '../interfaces/ICurriculum-idioma.service';
 import { CurriculumIdioma } from '../entity/curriculum-idioma';
 
 @controller("/curriculum/idioma")      

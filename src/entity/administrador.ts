@@ -1,5 +1,5 @@
 import { Usuario } from './usuario';
-import {Entity} from 'typeorm';
+import { Entity, Column } from 'typeorm';
 
 @Entity('administradores')
 export class Administrador extends Usuario {

@@ -5,9 +5,9 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICurriculumService } from '../interfaces/curriculum.service';
+import { ICurriculumService } from '../interfaces/ICurriculum.service';
 import { Curriculum } from '../entity/curriculum';
-import { IPostulacionService } from '../interfaces/postulacion.service';
+import { IPostulacionService } from '../interfaces/IPostulacion.service';
  
 @controller("/curriculum")    
 export class CurriculumController implements interfaces.Controller {  
@@ -68,17 +68,28 @@ export class CurriculumController implements interfaces.Controller {
     @httpGet("/completo/:id_solicitante",verificaToken)
     private async buscarPorIdSolicitanteCompleto(@requestParam("id_solicitante") id_solicitante: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const curriculum: Curriculum = await this.curriculumService.buscarPorIdSolicitanteCompleto(id_solicitante);
-            if (!curriculum){
+
+            const existe =  await this.curriculumService.verificarSiExiste(id_solicitante);
+            if(existe){
+                const curriculum: Curriculum = await this.curriculumService.buscarPorIdSolicitanteCompleto(id_solicitante);
+                if (!curriculum){
+                    return res.status(400).json({
+                        ok: false,
+                        mensaje:`No existe un curriculum para el solicitante con el ID ${id_solicitante}`
+                    });
+                }
+                return res.status(200).json({
+                    ok: true,
+                    curriculum
+                });
+                
+            }else {
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existe un curriculum para el solicitante con el ID ${id_solicitante}`
+                    mensaje:`No existe un curriculum disponible para el solicitante`
                 });
             }
-            return res.status(200).json({
-                ok: true,
-                curriculum
-            });
+            
         } catch (err) {
             res.status(500).json({ 
                 ok: false,

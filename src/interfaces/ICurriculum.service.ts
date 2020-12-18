@@ -9,4 +9,6 @@ export interface ICurriculumService {
     buscarPorIdSolicitante(id: number): any;
     buscarPorIdSolicitanteCompleto(id: number): any;
 
+    verificarSiExiste(id_solicitante: number): any;
+
 } 

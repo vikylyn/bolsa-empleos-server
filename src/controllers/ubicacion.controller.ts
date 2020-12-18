@@ -2,10 +2,9 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
-import verificaToken from '../middlewares/verificar-token'
-import { IPaisService } from '../interfaces/pais.service';
-import { ICiudadService } from '../interfaces/ciudad.service';
-import { IEstadoService } from '../interfaces/estado.service';
+import { IPaisService } from '../interfaces/IPais.service';
+import { ICiudadService } from '../interfaces/ICiudad.service';
+import { IEstadoService } from '../interfaces/IEstado.service';
 
 @controller("/ubicacion")      
 export class UbicacionController implements interfaces.Controller {    

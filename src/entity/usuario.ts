@@ -1,6 +1,7 @@
 import { Column, PrimaryGeneratedColumn, JoinColumn, OneToOne,ManyToOne } from 'typeorm';
 import {Credenciales} from './credenciales';
 import { Imagen } from './imagen';
+import { Ciudad } from './ciudad';
 
 
 export abstract class Usuario {
@@ -14,18 +15,16 @@ export abstract class Usuario {
     @Column({type: 'varchar', length: 60})
     apellidos: string;
 
- 
-
     @Column({type: 'varchar', length: 50})
     telefono: string;
 
-    @Column({type: 'varchar', length: 10})
+    @Column({type: 'varchar', length: 20, unique: true, nullable: false})
     cedula: string;
 
     @Column({type: 'varchar', length: 1})
     genero: string;
 
-    @Column()
+    @Column({nullable: false, default: false})
     habilitado: boolean;
 
     @OneToOne(type => Credenciales,{nullable: false, eager: true})
@@ -36,4 +35,15 @@ export abstract class Usuario {
     @JoinColumn({name: 'imagenes_id'})  
     imagen: Imagen;
 
+    @Column({type: 'varchar', length: 45})
+    direccion: string;   
+
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    creado_en: Date;
+    @JoinColumn({name:'ciudades_id'})
+    @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
+    ciudad: Ciudad;
+    
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    modificado_en: Date;
 }

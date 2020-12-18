@@ -1,10 +1,10 @@
 import * as express from "express";
 import { interfaces, controller, httpGet, response, requestParam} from "inversify-express-utils";
 import { inject } from "inversify";
-import { IRolService } from '../interfaces/rol.service';
+import { IRolService } from '../interfaces/IRol.service';
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IEstadoCivilService } from '../interfaces/estado-civil.service';
+import { IEstadoCivilService } from '../interfaces/IEstadoCivil.service';
  
 @controller("/estado-civil")    
 export class EstadoCivilController implements interfaces.Controller {  

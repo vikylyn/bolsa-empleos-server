@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IEstudioAvanzadoService } from '../interfaces/estudio-avanzado.service';
+import { IEstudioAvanzadoService } from '../interfaces/IEstudioAvanzado.service';
 import { EstudioAvanzado as any } from '../entity/estudio-avanzado';
 
 

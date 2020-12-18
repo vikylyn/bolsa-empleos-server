@@ -1,7 +1,5 @@
 import { Entity,PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, Index } from 'typeorm';
-import { NivelIdioma } from './nivel-idioma';
 import { Curriculum } from './curriculum';
-import { Idioma } from './idioma';
 import { Habilidad } from './habilidad';
 
 @Entity('curriculums_habilidades')

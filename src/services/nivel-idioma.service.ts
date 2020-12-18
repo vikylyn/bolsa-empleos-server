@@ -2,7 +2,7 @@ import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
 
-import { INivelIdiomaService } from '../interfaces/nivel-idioma.service';
+import { INivelIdiomaService } from '../interfaces/INivelIdioma.service';
 import { NivelIdioma } from '../entity/nivel-idioma';
 
 

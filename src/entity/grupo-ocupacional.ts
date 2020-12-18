@@ -5,11 +5,14 @@ import { Administrador } from './administrador';
 export class GrupoOcupacional {
    
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number;  
 
-    @Column({type: 'varchar', length: 100,unique: true})
+    @Column({type: 'varchar', length: 150,unique: true, nullable: false})
     nombre: string;
-    
+
+  //  @Column({type: 'varchar', length: 10,unique: true, nullable: false})
+ //   codigo: string;
+
     @Column()
     habilitado: boolean;
   

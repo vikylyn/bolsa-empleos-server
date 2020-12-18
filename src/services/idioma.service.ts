@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IIdiomaService } from '../interfaces/idioma.service';
+import { IIdiomaService } from '../interfaces/IIdioma.service';
 import { Idioma } from '../entity/idioma';
 
 
@@ -19,7 +19,7 @@ class IdiomaService  implements IIdiomaService  {
     }
     listarNoAsignados(id_curriculum: Number): any {
         const idiomas = getRepository(Idioma)
-        .query("SELECT * FROM idiomas AS i  WHERE NOT EXISTS (SELECT * FROM curriculums_idiomas AS c  WHERE i.id = c.idioma_id and c.curriculum_id = ?)", [id_curriculum]);
+        .query("SELECT * FROM idiomas AS i  WHERE NOT EXISTS (SELECT * FROM curriculums_idiomas AS c  WHERE i.id = c.idiomas_id and c.curriculum_id = ?)", [id_curriculum]);
         return idiomas ;
     }
     

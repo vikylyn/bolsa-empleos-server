@@ -3,7 +3,7 @@ import { interfaces, controller, httpGet, response, requestParam} from "inversif
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IGradoEscolarService } from '../interfaces/grado-escolar.service';
+import { IGradoEscolarService } from '../interfaces/IGradoEscolar.service';
  
 @controller("/grado-escolar")    
 export class GradoEscolarController implements interfaces.Controller {  

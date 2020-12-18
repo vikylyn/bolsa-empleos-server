@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { IEstudioBasicoService } from '../interfaces/estudio-basico.service';
+import { IEstudioBasicoService } from '../interfaces/IEstudioBasico.service';
 import { EstudioBasico } from '../entity/estudio-basico';
 
 @controller("/curriculum/estudio-basico")      

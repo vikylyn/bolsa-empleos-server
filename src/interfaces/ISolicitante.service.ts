@@ -3,7 +3,10 @@ import { Imagen } from '../entity/imagen';
 
 
 export interface ISolicitanteService {
-    listar(desde: number): any;
+    filtrarDescendente(body: any, desde: number): any;
+    filtrarAscendente(body: any, desde: number): any;
+    contarFiltrados(body: any):any;
+    
     adicionar(body:any): any;
     modificar(solicitante: Solicitante, body: any): any;
     eliminar(id: number):any;

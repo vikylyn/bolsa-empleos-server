@@ -2,11 +2,11 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
-import { IAdministradorService } from '../interfaces/administrador.service';
+import { IAdministradorService } from '../interfaces/IAdministrador.service';
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICredencialesService } from '../interfaces/creadenciales.service';
+import { ICredencialesService } from '../interfaces/ICreadenciales.service';
 import { Administrador } from '../entity/administrador';
 
 
@@ -60,6 +60,8 @@ export class AdministradorController implements interfaces.Controller {
         body('email', 'El email es obligatorio').isEmail(),
         body('password', 'El password es Obligatorio').not().isEmpty(),
         body('id_rol', 'El id del Rol es obligatorio').not().isEmpty(),
+        body('direccion', 'La direccion es obligatoria').not().isEmpty(),
+        body('id_ciudad', 'El id de la ciudad es obligatorio').not().isEmpty(),
         validarCampos
         )
     private async adicionar(@request() req: express.Request, @response() res: express.Response) {
@@ -74,16 +76,17 @@ export class AdministradorController implements interfaces.Controller {
                  })
             }
             const admin = await this.adminService.adicionar(req.body);
-            if(admin) {
+            if(admin === true) {
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Administrador creado exitosamente',  
-                    administrador: admin
+                 //   administrador: admin
                 });
             }else {
                 return res.status(400).json({
                     ok: false,
                     mensaje: 'Error al adicionar Administrador',  
+                    err: admin
                 });
             }
            
@@ -106,6 +109,8 @@ export class AdministradorController implements interfaces.Controller {
         body('genero', 'El genero es obligatorio').not().isEmpty(),
         body('habilitado', 'La Habilitacion es obligatoria').not().isEmpty(),
         body('email', 'El email es obligatorio').isEmail(),
+        body('direccion', 'La direccion es obligatoria').not().isEmpty(),
+        body('id_ciudad', 'El id de la ciudad es obligatorio').not().isEmpty(),
         validarCampos
     )
     private async modificar(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
@@ -207,14 +212,14 @@ export class AdministradorController implements interfaces.Controller {
         }
     }
 
-    @httpGet("/busqueda/:nombre",verificaToken)
-    private async buscarPorNombre(@requestParam("nombre") nombre: string, @response() res: express.Response, next: express.NextFunction) {
+    @httpGet("/busqueda/:valor",verificaToken)
+    private async buscarPorValor(@requestParam("valor") valor: string, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const administradores: Administrador[] = await this.adminService.buscarPorNombre(nombre);
+            const administradores: Administrador[] = await this.adminService.buscarPorValor(valor);
             if (!administradores){
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`No existen administradores con el valor ${nombre}`
+                    mensaje:`No existen administradores con el valor ${valor}`
             });
             }  
             return res.status(200).json({

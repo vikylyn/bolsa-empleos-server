@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IEstudioBasicoService } from '../interfaces/estudio-basico.service';
+import { IEstudioBasicoService } from '../interfaces/IEstudioBasico.service';
 import { EstudioBasico } from '../entity/estudio-basico';
 
 

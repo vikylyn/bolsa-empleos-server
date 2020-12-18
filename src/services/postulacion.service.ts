@@ -1,5 +1,5 @@
 import { injectable} from "inversify";
-import { IPostulacionService } from '../interfaces/postulacion.service';
+import { IPostulacionService } from '../interfaces/IPostulacion.service';
 import { Postulacion } from '../entity/postulacion';
 import { getRepository, getConnection } from 'typeorm';
 import { NotificacionEmpleador } from '../entity/notificacion-empleador';
@@ -12,7 +12,7 @@ import { Solicitante } from '../entity/solicitante';
 
 @injectable()
 class PostulacionService  implements IPostulacionService  {
-    async listarPorIdVacante(id: number, desde: number) {
+    async listarConsideradosPorIdVacante(id: number, desde: number) {
         const postulaciones = await 
         getRepository(Postulacion)
        .createQueryBuilder("postulaciones")
@@ -22,7 +22,7 @@ class PostulacionService  implements IPostulacionService  {
        .leftJoinAndSelect("vacante.empleador", "empleador")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-       .where("vacante.id = :id && postulaciones.rechazado != true", { id: id })  
+       .where("vacante.id = :id && postulaciones.rechazado != true && postulaciones.aceptado = true", { id: id })  
      //  .where("vacante.id = :id && postulaciones.aceptado != true", { id: id })
        .addOrderBy("postulaciones.creado_en", "ASC")
        .skip(desde)  
@@ -30,13 +30,69 @@ class PostulacionService  implements IPostulacionService  {
        .getMany();
        return postulaciones;    
     }
-    async contarPorIdVacante(id_vacante: number) {
+    async listarNoConsideradosPorIdVacante(id: number, desde: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+       .createQueryBuilder("postulaciones")
+       .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+       .leftJoinAndSelect("postulaciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("vacante.id = :id && postulaciones.rechazado = false && postulaciones.aceptado = false", { id: id })  
+     //  .where("vacante.id = :id && postulaciones.aceptado != true", { id: id })
+       .addOrderBy("postulaciones.creado_en", "ASC")
+       .skip(desde)  
+       .take(5)
+       .getMany();
+       return postulaciones;    
+    }
+    async contarConsideradosPorIdVacante(id_vacante: number) {
         const total = await 
         getRepository(Postulacion)
              .createQueryBuilder("postulaciones")
              .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
              .leftJoinAndSelect("postulaciones.vacante", "vacante")
-             .where("vacante.id = :id", { id: id_vacante })
+             .where("vacante.id = :id && postulaciones.rechazado != true  && postulaciones.aceptado = true", { id: id_vacante })
+             .getCount();
+       return total;   
+    }
+    async contarNoConsideradosPorIdVacante(id_vacante: number) {
+        const total = await 
+        getRepository(Postulacion)
+             .createQueryBuilder("postulaciones")
+             .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+             .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .where("vacante.id = :id && postulaciones.rechazado = false  && postulaciones.aceptado = false", { id: id_vacante })
+             .getCount();
+       return total;   
+    }
+    async listarRechazadosPorIdVacante(id: number, desde: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+       .createQueryBuilder("postulaciones")
+       .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+       .leftJoinAndSelect("postulaciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("vacante.id = :id && postulaciones.rechazado = true", { id: id })  
+     //  .where("vacante.id = :id && postulaciones.aceptado != true", { id: id })
+       .addOrderBy("postulaciones.creado_en", "ASC")
+       .skip(desde)  
+       .take(5)
+       .getMany();
+       return postulaciones;    
+    }
+    async contarRechazadosPorIdVacante(id_vacante: number) {
+        const total = await 
+        getRepository(Postulacion)
+             .createQueryBuilder("postulaciones")
+             .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+             .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .where("vacante.id = :id && postulaciones.rechazado = true", { id: id_vacante })
              .getCount();
        return total;   
 }
@@ -69,6 +125,60 @@ class PostulacionService  implements IPostulacionService  {
                     .update(Postulacion)
                     .set({
                         aceptado: true
+                    })
+                    .where("id = :id", { id: postulacion.id })
+                    .execute();
+                await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Vacante)
+                    .set({
+                        num_disponibles: postulacion.vacante.num_disponibles - 1,
+                        num_postulantes_aceptados: postulacion.vacante.num_postulantes_aceptados + 1
+                    })
+                    .where("id = :id", { id: postulacion.vacante.id })
+                    .execute();
+
+                await queryRunner.manager.save(NotificacionSolicitante,
+                        {
+                            leido: false,
+                            solicitante: {id: postulacion.solicitante.id},
+                            empleador: {id: postulacion.vacante.empleador.id},
+                            vacante: {id: postulacion.vacante.id},
+                            tipo_notificacion: {id: 2}
+                        });
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+                
+            
+            } catch (err) {
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            } finally {
+                await queryRunner.release();
+            }
+
+            return respuesta;
+    }
+    async aceptarRechazado(postulacion: Postulacion) {
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+             
+    
+                await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Postulacion)
+                    .set({
+                        aceptado: true,
+                        rechazado: false
                     })
                     .where("id = :id", { id: postulacion.id })
                     .execute();
@@ -160,11 +270,52 @@ class PostulacionService  implements IPostulacionService  {
 
             return respuesta;
     }
-    async eliminar(id: number) {
-        const respuesta = await getRepository(Postulacion).delete(id);
-        return respuesta;
+    async eliminar(postulacion: Postulacion) {
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+              
+                await queryRunner.manager
+                .getRepository(Postulacion)
+                
+                .createQueryBuilder("postulaciones")
+                .delete()
+                .where("postulaciones.id = :id", { id: postulacion.id})
+                .execute();
+                await queryRunner.manager
+                .getRepository(NotificacionEmpleador)
+                .createQueryBuilder()
+                .delete()
+                .where(" vacante.id = :id_vacante and solicitante.id = :id_solicitante ", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                .execute();
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+            
+            
+            } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+                console.log(err);
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
     }
-    // Empleador elimina la postulacion cuando la rechaza
+    // Empleador rechaza postulacion que no ha sido aceptada
     async rechazar(postulacion: Postulacion) {
      
 
@@ -178,15 +329,6 @@ class PostulacionService  implements IPostulacionService  {
             // lets now open a new transaction:
             await queryRunner.startTransaction();
             try {
-                await queryRunner.manager
-                .createQueryBuilder()
-                .update(Vacante)
-                .set({
-                    num_postulantes_aceptados: postulacion.vacante.num_postulantes_aceptados - 1,
-                    num_disponibles: postulacion.vacante.num_disponibles + 1
-                })
-                .where("id = :id", { id: postulacion.vacante.id })
-                .execute();
                 await queryRunner.manager
                     .createQueryBuilder()
                     .update(Postulacion)
@@ -276,6 +418,50 @@ class PostulacionService  implements IPostulacionService  {
             return respuesta;
         
     }
+
+    async invitarPostulacion(body: any) {
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+                
+                await queryRunner.manager.save(NotificacionSolicitante,
+                    {
+                        leido: false,
+                        solicitante: {id: body.id_solicitante},
+                        empleador: {id: body.id_empleador},
+                        vacante: {id: body.id_vacante},
+                        tipo_notificacion: {id: 7}
+                    });
+
+                    
+        
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+            
+            
+            } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
+        
+    }
     async favorito(id: number) {
         const respuesta = await getRepository(Postulacion)
         .createQueryBuilder()
@@ -293,7 +479,11 @@ class PostulacionService  implements IPostulacionService  {
        .createQueryBuilder("postulaciones")
        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
        .leftJoinAndSelect("postulaciones.vacante", "vacante")
-       .where("vacante.id = :id and postulaciones.favorito = true", { id: id })
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("vacante.id = :id and postulaciones.favorito = true and postulaciones.rechazado != true", { id: id })
        .skip(desde)  
        .take(5)
        .getMany();
@@ -310,7 +500,7 @@ class PostulacionService  implements IPostulacionService  {
         .execute();
         return respuesta;
     }
-   async listarPorSolicitante(id: number,desde: number) {
+   async listarPendientesPorIdSolicitante(id: number,desde: number) {
          const postulaciones = await 
               getRepository(Postulacion)
              .createQueryBuilder("postulaciones")
@@ -320,19 +510,71 @@ class PostulacionService  implements IPostulacionService  {
              .leftJoinAndSelect("vacante.empleador", "empleador")
              .leftJoinAndSelect("vacante.requisitos", "requisitos")
              .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-             .where("solicitante.id = :id", { id: id })
+             .where("solicitante.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false", { id: id })
              .skip(desde)  
              .take(5)
              .getMany();
         return postulaciones;
    }
-   async contarPorIdSolicitante(id_solicitante: number) {
+   async contarPendientesPorIdSolicitante(id_solicitante: number) {
             const total = await 
             getRepository(Postulacion)
                 .createQueryBuilder("postulaciones")
                 .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
                 .leftJoinAndSelect("postulaciones.vacante", "vacante")
-                .where("solicitante.id = :id", { id: id_solicitante })
+                .where("solicitante.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false", { id: id_solicitante })
+                .getCount();
+            return total;
+   }
+    async listarConsideradosPorIdSolicitante(id: number,desde: number) {
+        const postulaciones = await 
+         getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where("solicitante.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false", { id: id })
+        .skip(desde)  
+        .take(5)
+        .getMany();
+        return postulaciones;
+    }
+    async contarConsideradosPorIdSolicitante(id_solicitante: number) {
+        const total = await 
+        getRepository(Postulacion)
+            .createQueryBuilder("postulaciones")
+            .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+            .leftJoinAndSelect("postulaciones.vacante", "vacante")
+            .where("solicitante.id = :id and postulaciones.aceptado = true  and postulaciones.rechazado = false", { id: id_solicitante })
+            .getCount();
+        return total;
+    }
+   async listarRechazadosPorSolicitante(id: number,desde: number) {
+         const postulaciones = await 
+              getRepository(Postulacion)
+             .createQueryBuilder("postulaciones")
+             .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+             .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .leftJoinAndSelect("vacante.sueldo", "sueldo")
+             .leftJoinAndSelect("vacante.empleador", "empleador")
+             .leftJoinAndSelect("vacante.requisitos", "requisitos")
+             .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+             .where("solicitante.id = :id and postulaciones.rechazado = true", { id: id })
+             .skip(desde)  
+             .take(5)
+             .getMany();
+        return postulaciones;
+   }
+   async contarRechazadosPorIdSolicitante(id_solicitante: number) {
+            const total = await 
+            getRepository(Postulacion)
+                .createQueryBuilder("postulaciones")
+                .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+                .leftJoinAndSelect("postulaciones.vacante", "vacante")
+                .where("solicitante.id = :id and postulaciones.rechazado = true", { id: id_solicitante })
                 .getCount();
             return total;
    }

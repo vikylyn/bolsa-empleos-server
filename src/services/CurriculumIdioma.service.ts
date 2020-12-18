@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { ICurriculumIdiomaService } from '../interfaces/curriculum-idioma.service';
+import { ICurriculumIdiomaService } from '../interfaces/ICurriculum-idioma.service';
 import { CurriculumIdioma } from '../entity/curriculum-idioma';
 import { Curriculum } from '../entity/curriculum';
 

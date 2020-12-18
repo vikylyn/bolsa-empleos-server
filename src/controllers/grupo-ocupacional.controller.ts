@@ -2,7 +2,7 @@ import * as express from "express";
 import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
-import { IGrupoOcupacionalService } from '../interfaces/grupo-ocupacional.service';
+import { IGrupoOcupacionalService } from '../interfaces/IGrupoOcupacional.service';
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';

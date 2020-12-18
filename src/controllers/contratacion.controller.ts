@@ -3,16 +3,16 @@ import { interfaces, controller, httpGet, httpPost, request, response, requestPa
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
-import { IContratacionService } from '../interfaces/contratacion.service';
-import { IPostulacionService } from '../interfaces/postulacion.service';
+import { IContratacionService } from '../interfaces/IContratacion.service';
+import { IPostulacionService } from '../interfaces/IPostulacion.service';
 import { Postulacion } from '../entity/postulacion';
 import { Contratacion } from '../entity/contratacion';
 import Server from '../classes/server';
 import { usuariosConectados } from '../sockets/socket';
-import { ISolicitanteService } from '../interfaces/solicitante.service';
-import { INotificacionSolicitanteService } from '../interfaces/notificacion-solicitante.service';
-import { INotificacionEmpleadorService } from '../interfaces/notificacion-empleador.service';
-import { IEmpleadorService } from '../interfaces/empleador.service';
+import { ISolicitanteService } from '../interfaces/ISolicitante.service';
+import { INotificacionSolicitanteService } from '../interfaces/INotificacionSolicitante.service';
+import { INotificacionEmpleadorService } from '../interfaces/INotificacionEmpleador.service';
+import { IEmpleadorService } from '../interfaces/IEmpleador.service';
 import { Empleador } from '../entity/empleador';
 import { Solicitante } from '../entity/solicitante';
 
@@ -137,6 +137,7 @@ export class ContratacionController implements interfaces.Controller {
                     mensaje:`Error, Existe un numero de vacantes igual al numero de disponibles ${id}`
                 }); 
             }
+    
             if (postulacion.aceptado === false) {
                 return res.status(400).json({
                     ok: false,
@@ -144,12 +145,13 @@ export class ContratacionController implements interfaces.Controller {
                 }); 
             }
             const contratacion_rechazada = await this.contratacionService.rechazar(postulacion);
-            if (contratacion_rechazada.affected === 1){
+            if (contratacion_rechazada === true){
                 const server = Server.instance;
                 const empleador: Empleador = await this.empleadorService.buscar(postulacion.vacante.empleador.id);
                 const id_socket = usuariosConectados.getUsuarioByIdAndRol(empleador.id, empleador.credenciales.rol.nombre);
                 if(id_socket){
                     server.io.in(id_socket).emit('notificacion-nueva');
+                    server.io.in(id_socket).emit('actualizar-postulaciones', postulacion.id);
                     const totalNotificaciones: number = await this.notificacionEmpleadorService.contarNoLeidas(empleador.id)
                     server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
                 }
@@ -161,6 +163,36 @@ export class ContratacionController implements interfaces.Controller {
                 return res.status(400).json({
                     ok:false,
                      mensaje: 'Error al rechazar contratacion'                
+                    });
+            }
+
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+    @httpPut("/oculto/:id",verificaToken)
+    private async ocultar(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const contratacion: Contratacion = await this.contratacionService.buscar(id);
+            if (!contratacion) { 
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una contratacion con el ID ${id}`
+                });
+            }
+            const contratacion_modificada = await this.contratacionService.ocultar(contratacion);
+            if (contratacion_modificada){
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Contratacion eliminada exitosamente',
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al eliminar contratacion'                
                     });
             }
 

@@ -5,8 +5,8 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICredencialesService } from '../interfaces/creadenciales.service';
-import { ISolicitanteService } from '../interfaces/solicitante.service';
+import { ICredencialesService } from '../interfaces/ICreadenciales.service';
+import { ISolicitanteService } from '../interfaces/ISolicitante.service';
 import { Solicitante } from '../entity/solicitante';
 import {sendEmailSolicitante}  from '../email/enviar-email';
 
@@ -19,13 +19,26 @@ export class SolicitanteController implements interfaces.Controller {
                  @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService
      ) {}
  
-    @httpGet("/",verificaToken)
-    private async listar(@queryParam("desde") desde: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-        let solicitates = await this.solicitanteService.listar(desde);
-        return res.status(200).json({
-            ok: true,
-            solicitantes: solicitates
-        });
+    @httpPost("/filtrar",verificaToken)
+    private async filtrar(@queryParam("desde") desde: number, req: express.Request, res: express.Response, next: express.NextFunction) {
+        
+        if(req.body.ascendente === true || req.body.ascendente === 'true'){
+            let solicitates = await this.solicitanteService.filtrarAscendente(req.body, desde);
+            let total = await this.solicitanteService.contarFiltrados(req.body);
+            return res.status(200).json({
+                ok: true,
+                solicitantes: solicitates,
+                total
+            });
+        }else {
+            let solicitates = await this.solicitanteService.filtrarDescendente(req.body, desde);
+            let total = await this.solicitanteService.contarFiltrados(req.body);
+            return res.status(200).json({
+                ok: true,
+                solicitantes: solicitates,
+                total
+            });
+        }
     } 
     @httpGet("/:id",verificaToken)
     private async buscar(@requestParam("id") id: number, @response() res: express.Response) {
@@ -43,7 +56,7 @@ export class SolicitanteController implements interfaces.Controller {
                 solicitante: solicitante,
             });
         } catch (err) {
-            res.status(400).json({
+            res.status(500).json({
                 ok: false, 
                 error: err.message });
         }
@@ -69,6 +82,7 @@ export class SolicitanteController implements interfaces.Controller {
 
         
         try {
+            console.log(req.body.email)
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
             if (existe_email) {
                 return res.status(400).json({
@@ -76,11 +90,11 @@ export class SolicitanteController implements interfaces.Controller {
                     mensaje: 'Existe un usuario con ese email'
                  })
             }
-            
             const solicitante = await this.solicitanteService.adicionar(req.body);
+            console.log(solicitante);
             if (solicitante) {
             
-                sendEmailSolicitante(solicitante.id, solicitante.credenciales.email);
+                sendEmailSolicitante(solicitante, false);
     
                 return res.status(201).json({
                     ok: true,

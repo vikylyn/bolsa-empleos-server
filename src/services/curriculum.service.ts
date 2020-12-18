@@ -1,6 +1,6 @@
 import { injectable} from "inversify";
-import { getRepository } from "typeorm";
-import { ICurriculumService } from '../interfaces/curriculum.service';
+import { getRepository, getConnection } from 'typeorm';
+import { ICurriculumService } from '../interfaces/ICurriculum.service';
 import { Curriculum } from '../entity/curriculum';
 
 
@@ -101,7 +101,41 @@ class CurriculumService  implements ICurriculumService  {
         return respuesta;
     }
   
-   
+    async verificarSiExiste(id_solicitante: number) {
+        let respuesta: boolean;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+            await queryRunner.connect();
+            await queryRunner.startTransaction();
+            try {
+               const curriculum = await queryRunner.manager.getRepository(Curriculum)
+                .createQueryBuilder("curriculums")
+                .leftJoinAndSelect("curriculums.solicitante", "solicitante")
+                .where("curriculums.solicitante.id = :id", { id: id_solicitante })
+                .getOne();
+                
+                await queryRunner.commitTransaction();
+                if (curriculum) {
+                    respuesta = true;
+                }else {
+                    respuesta = false;
+                }
+            
+            
+            } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
+    }
 }
   
 export { CurriculumService};  

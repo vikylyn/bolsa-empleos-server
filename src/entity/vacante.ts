@@ -58,7 +58,7 @@ export class Vacante {
     ciudad: Ciudad;
 
     @JoinColumn({name:'empleadores_id'})
-    @ManyToOne(type => Empleador, empleador => empleador.id,{nullable:false})
+    @ManyToOne(type => Empleador, empleador => empleador.id,{nullable:false, eager: true})
     empleador: Empleador;
 
 

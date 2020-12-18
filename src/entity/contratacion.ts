@@ -22,6 +22,9 @@ export class Contratacion {
     @Column()
     habilitado: boolean;
 
+    @Column({default: false})
+    oculto: boolean;
+
  //   @Column()
  //   confirmado: boolean;
     

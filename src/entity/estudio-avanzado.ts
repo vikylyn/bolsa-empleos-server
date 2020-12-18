@@ -12,7 +12,7 @@ export class EstudioAvanzado {
     @Column({type: 'varchar', length: 45})
     institucion: string;
 
-    @Column({type: 'varchar', length: 30})
+    @Column({type: 'varchar', length: 70})
     carrera: string;
 
     @Column({type: 'date'})

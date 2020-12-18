@@ -33,8 +33,11 @@ const TYPES = {
     ICiudadService: Symbol.for("ICiudadService"),
     IOcupacionSolicitanteService: Symbol.for("IOcupacionSolicitanteService"),
     INotificacionEmpleadorService: Symbol.for("INotificacionEmpleadorService"),
-    INotificacionSolicitanteService: Symbol.for("INotificacionSolicitanteService")
-
+    INotificacionSolicitanteService: Symbol.for("INotificacionSolicitanteService"),
+    IReportesSolicitanteService: Symbol.for("IReportesSolicitanteService"),
+    IReportesEmpleadorService: Symbol.for("IReportesEmpleadorService"),
+    IReportesContratacionService: Symbol.for("IReportesContratacionService"),
+    IReportesVacanteService: Symbol.for("IReportesVacantesService"),
 
 }
 

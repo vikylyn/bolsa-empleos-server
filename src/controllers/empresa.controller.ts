@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { IEmpresaService } from '../interfaces/empresa.service';
+import { IEmpresaService } from '../interfaces/IEmpresa.service';
 import { Empresa } from '../entity/empresa';
 
 

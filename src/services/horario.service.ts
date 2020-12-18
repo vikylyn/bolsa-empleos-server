@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IHorarioService } from '../interfaces/horario.service';
+import { IHorarioService } from '../interfaces/IHorario.service';
 import { Horario } from '../entity/horario';
 
 

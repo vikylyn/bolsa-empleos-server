@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IRangoSueldoService } from '../interfaces/rango-sueldo.service';
+import { IRangoSueldoService } from '../interfaces/IRangoSueldo.service';
 import { RangoSueldo } from '../entity/rango-sueldo';
 
 

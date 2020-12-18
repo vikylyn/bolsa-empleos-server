@@ -3,7 +3,7 @@ import { interfaces, controller, httpGet, httpPost, request, response, requestPa
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IOcupacionService } from '../interfaces/ocupacion.service';
+import { IOcupacionService } from '../interfaces/IOcupacion.service';
 
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';

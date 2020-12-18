@@ -3,7 +3,7 @@ import { interfaces, controller, httpGet, response, requestParam} from "inversif
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IRangoSueldoService } from '../interfaces/rango-sueldo.service';
+import { IRangoSueldoService } from '../interfaces/IRangoSueldo.service';
  
 @controller("/sueldo")    
 export class RangoSueldoController implements interfaces.Controller {  

@@ -50,6 +50,7 @@ import '../controllers/ubicacion.controller';
 import '../controllers/credenciales.controller';
 import '../controllers/ocupacion-solicitante.controller'
 import '../controllers/notificacion.controller'
+import '../controllers/reportes.controller'
 
 
 

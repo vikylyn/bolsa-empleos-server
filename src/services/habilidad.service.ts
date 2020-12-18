@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IHabilidadService } from '../interfaces/habilidad.service';
+import { IHabilidadService } from '../interfaces/IHabilidad.service';
 import { Habilidad } from '../entity/habilidad';
 
 

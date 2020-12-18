@@ -13,7 +13,7 @@ export class Empresa {
     @Column({type: 'varchar', length: 45})
     nombre: string;
     
-    @Column({type: 'varchar', length: 100})
+    @Column({type: 'varchar', length: 100, nullable: true})
     dominio_web: string;
 
     @Column({type: 'varchar', length: 45})

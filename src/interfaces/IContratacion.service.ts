@@ -10,6 +10,8 @@ export interface IContratacionService {
     listarPorIdSolicitante(id: number, desde: number): any;
     eliminar(contratacion: Contratacion): any;
     rechazar(postulacion: Postulacion): any;
+    ocultar(contratacion: Contratacion): any;
+
     buscarPorSolicitanteVacante(id_solicitante: number, id_vacante: number):any;
 
  

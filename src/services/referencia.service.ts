@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IReferenciaService } from '../interfaces/referencias.service';
+import { IReferenciaService } from '../interfaces/IReferencias.service';
 import { Referencia } from '../entity/referencia';
 
 

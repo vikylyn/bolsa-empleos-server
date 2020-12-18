@@ -8,8 +8,11 @@ export class Ocupacion {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: 'varchar', length: 100,unique: true})
+    @Column({type: 'varchar', length: 150,unique: true})
     nombre: string;
+
+ //   @Column({type: 'varchar', length: 10,unique: true, nullable: false})
+ //   codigo: string;
       
     @Column()
     habilitado: boolean; 

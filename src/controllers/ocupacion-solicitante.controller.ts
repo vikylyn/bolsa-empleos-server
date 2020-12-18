@@ -6,7 +6,7 @@ import verificaToken from '../middlewares/verificar-token';
 
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { IOcupacionSolicitanteService } from '../interfaces/ocupacion-solicitante.service';
+import { IOcupacionSolicitanteService } from '../interfaces/IOcupacionSolicitante.service';
  
 @controller("/ocupacion-solicitante")    
 export class OcupacionSolicitanteController implements interfaces.Controller { 

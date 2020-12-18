@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { INivelEstudioService } from '../interfaces/nivel-estudio.service';
+import { INivelEstudioService } from '../interfaces/INivelEstudio.service';
 import { NivelEstudio } from '../entity/nivel-estudio';
 
 

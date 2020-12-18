@@ -2,7 +2,7 @@
 import { injectable} from "inversify";
 import { getRepository } from "typeorm";
 import { Estado } from '../entity/estado';
-import { ICiudadService } from '../interfaces/ciudad.service';
+import { ICiudadService } from '../interfaces/ICiudad.service';
 import { Ciudad } from '../entity/ciudad';
 
 

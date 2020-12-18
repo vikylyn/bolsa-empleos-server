@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository, getConnection } from 'typeorm';
-import { ICurriculumHabilidadService } from '../interfaces/curriculum-habilidad.service';
+import { ICurriculumHabilidadService } from '../interfaces/ICurriculumHabilidad.service';
 import { CurriculumHabilidad } from '../entity/curriculum-habilidad';
 
 
@@ -76,7 +76,7 @@ class CurriculumHabilidadService  implements ICurriculumHabilidadService  {
         .getCount();
         return total;
     }
-   
+    
    
 }
   

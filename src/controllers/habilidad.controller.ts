@@ -3,9 +3,9 @@ import { interfaces, controller, httpGet, response, requestParam} from "inversif
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { IIdiomaService } from '../interfaces/idioma.service';
-import { INivelIdiomaService } from '../interfaces/nivel-idioma.service';
-import { IHabilidadService } from '../interfaces/habilidad.service';
+import { IIdiomaService } from '../interfaces/IIdioma.service';
+import { INivelIdiomaService } from '../interfaces/INivelIdioma.service';
+import { IHabilidadService } from '../interfaces/IHabilidad.service';
  
 @controller("/habilidad")    
 export class HabilidadController implements interfaces.Controller {  

@@ -2,7 +2,7 @@ import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
 import { GradoEscolar } from '../entity/grado-escolar';
-import { IGradoEscolarService } from '../interfaces/grado-escolar.service';
+import { IGradoEscolarService } from '../interfaces/IGradoEscolar.service';
 
 
 @injectable()

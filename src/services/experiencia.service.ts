@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IExperienciaService } from '../interfaces/experiencia.service';
+import { IExperienciaService } from '../interfaces/IExperiencia.service';
 import { ExperienciaLaboral } from '../entity/experiencia-laboral';
 
 

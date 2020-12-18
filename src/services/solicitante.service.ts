@@ -4,7 +4,7 @@ import { getRepository,getConnection  } from "typeorm";
 import { Credenciales } from '../entity/credenciales';
 
 import bcrypt from 'bcryptjs';
-import { ISolicitanteService } from '../interfaces/solicitante.service';
+import { ISolicitanteService } from '../interfaces/ISolicitante.service';
 import { Solicitante } from '../entity/solicitante';
 import { Imagen } from '../entity/imagen';
 import { OcupacionSolicitante } from '../entity/ocupacion-solicitante';
@@ -24,13 +24,96 @@ class SolicitanteService implements ISolicitanteService  {
         return solicitante;
     }  
 
-    async listar(desde: number) {
-        const solicitantes = await getRepository(Solicitante)
-        .createQueryBuilder("solicitantes")
-        .skip(desde)  
-        .take(5)
-        .getMany();
-        return solicitantes ;
+    async filtrarAscendente(body: any, desde: number) {
+        let fecha = new Date();
+        let mes = fecha.getMonth() + 1;
+        let fechaActual = `${fecha.getFullYear()}-${mes}-${fecha.getDate()}`;
+        let consulta = "ocupacion.id = :ocupacion ";
+        if(parseInt(body.id_ciudad) > 0) {
+            consulta +="and ciudad.id = :ciudad_id ";
+        }
+        if(fechaActual != body.fecha) {
+            fechaActual += ' 00:00:00';
+            consulta += "and solicitantes.creado_en >= :creado_en ";
+        }
+
+        consulta += "and solicitantes.habilitado = true";
+        console.log(consulta);
+        const solicitantes = await 
+        getRepository(Solicitante)
+       .createQueryBuilder("solicitantes")
+       .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
+       .leftJoinAndSelect("solicitantes.imagen", "imagen")
+       .leftJoinAndSelect("solicitantes.ocupaciones", "ocupaciones")
+       .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
+       .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, creado_en: body.fecha })
+       .addOrderBy("solicitantes.creado_en", "ASC")
+       .skip(desde)  
+       .take(6)
+       .getMany();
+       return solicitantes;
+    }
+    async filtrarDescendente(body: any, desde: number) {
+        let fecha = new Date();
+        let mes = fecha.getMonth() + 1;
+        let fechaActual = `${fecha.getFullYear()}-${mes}-${fecha.getDate()}`;
+        let consulta = "ocupacion.id = :ocupacion ";
+        if(parseInt(body.id_ciudad) > 0) {
+            consulta +="and ciudad.id = :ciudad_id ";
+        }
+        if(fechaActual != body.fecha) {
+            fechaActual += ' 00:00:00';
+            consulta += "and solicitantes.creado_en >= :creado_en ";
+        }
+
+        consulta += "and solicitantes.habilitado = true";
+        console.log(consulta);
+        const solicitantes = await 
+        getRepository(Solicitante)
+       .createQueryBuilder("solicitantes")
+       .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
+       .leftJoinAndSelect("solicitantes.imagen", "imagen")
+       .leftJoinAndSelect("solicitantes.ocupaciones", "ocupaciones")
+       .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
+       .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, creado_en: body.fecha })
+       .addOrderBy("solicitantes.creado_en", "DESC")
+       .skip(desde)  
+       .take(6)
+       .getMany();
+       return solicitantes;
+    }
+    async contarFiltrados(body: any) {
+        let fecha = new Date();
+        let mes = fecha.getMonth() + 1;
+        let fechaActual = `${fecha.getFullYear()}-${mes}-${fecha.getDate()}`;
+        let consulta = "ocupacion.id = :ocupacion ";
+        if(parseInt(body.id_ciudad) > 0) {
+            consulta +="and ciudad.id = :ciudad_id ";
+        }
+        if(fechaActual != body.fecha) {
+            fechaActual += ' 00:00:00';
+            consulta += "and solicitantes.creado_en >= :creado_en ";
+        }
+
+        consulta += "and solicitantes.habilitado = true";
+        console.log(consulta);
+        const solicitantes = await 
+        getRepository(Solicitante)
+       .createQueryBuilder("solicitantes")
+       .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
+       .leftJoinAndSelect("solicitantes.imagen", "imagen")
+       .leftJoinAndSelect("solicitantes.ocupaciones", "ocupaciones")
+       .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
+       .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, creado_en: body.fecha })
+       .addOrderBy("solicitantes.creado_en", "ASC")
+       .getCount();
+       return solicitantes;
     }
     async adicionar(body: any) {
         let respuesta: any;
@@ -120,6 +203,7 @@ class SolicitanteService implements ISolicitanteService  {
             nacionalidad: body.nacionalidad,
             direccion:body.direccion,
             fecha_nac: body.fecha_nac,
+            modificado_en: new Date(),
             estado_civil: {id: body.id_estado_civil},
             ciudad: {id: body.id_ciudad},
         })
@@ -153,8 +237,11 @@ class SolicitanteService implements ISolicitanteService  {
        .leftJoinAndSelect("solicitantes.imagen", "imagen")
        .leftJoinAndSelect("solicitantes.estado_civil", "estado_civil")
        .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
+       .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("estado.pais", "pais")
        .where("solicitantes.id = :id", { id: id })
        .getOne();
+    
         if(solicitante){
             solicitante.credenciales.password = 'xd' 
         }

@@ -1,12 +1,12 @@
 import { injectable } from 'inversify';
 
 import { getRepository,getConnection  } from "typeorm";
-import { IAdministradorService } from '../interfaces/administrador.service';
 import { Administrador } from "../entity/administrador";
 import { Credenciales } from '../entity/credenciales';
 
 import bcrypt from 'bcryptjs';
 import { Imagen } from '../entity/imagen';
+import { IAdministradorService } from '../interfaces/IAdministrador.service';
 
 @injectable()
 class AdministradorService implements IAdministradorService  {
@@ -29,7 +29,7 @@ class AdministradorService implements IAdministradorService  {
         return administradores ;
     }
     async adicionar(body: any) {
-        let adm: any;
+        let respuesta: boolean;
         const connection = getConnection();
             const queryRunner = connection.createQueryRunner();
 
@@ -59,18 +59,20 @@ class AdministradorService implements IAdministradorService  {
                     cedula: body.cedula, 
                     genero: body.genero, 
                     habilitado: body.habilitado,
+                    direccion: body.direccion,
+                    ciudad: {id: body.id_ciudad},
                     credenciales: credencial})
                 await queryRunner.commitTransaction();
 
                 admin.credenciales.password = 'xd';
-                adm = admin;
+                respuesta = true;
                 
             
             } catch (err) {
             
                 // since we have errors let's rollback changes we made
                 await queryRunner.rollbackTransaction();
-                adm = err;
+                respuesta = err;
             
             } finally {
             
@@ -78,7 +80,7 @@ class AdministradorService implements IAdministradorService  {
                 await queryRunner.release();
             }
 
-            return adm;
+            return respuesta;
     }
     async modificarImagen(id: number, imagen: Imagen) {
         const admin = await getRepository(Administrador)
@@ -103,7 +105,10 @@ class AdministradorService implements IAdministradorService  {
             apellidos: body.apellidos,
             telefono: body.telefono, 
             cedula: body.cedula, 
-            genero: body.genero, 
+            genero: body.genero,
+            direccion: body.direccion,
+            ciudad: {id: body.id_ciudad},
+            modificado_en: new Date(),
             habilitado: habilitar})
         .where("id = :id", { id: administrador.id })
         .execute();
@@ -148,7 +153,7 @@ class AdministradorService implements IAdministradorService  {
         .createQueryBuilder("administradores").getCount()
         return total;
     }
-    async buscarPorNombre(nombre: string) {
+    async buscarPorValor(nombre: string) {
         const administradores =  await getRepository(Administrador)
         .createQueryBuilder("administradores")
         .where("administradores.nombre regexp :nombre || administradores.apellidos regexp :nombre || administradores.cedula regexp :nombre",{nombre: nombre})

@@ -1,7 +1,7 @@
 import { injectable} from "inversify";
 
 import { getRepository } from "typeorm";
-import { IRolService } from '../interfaces/rol.service';
+import { IRolService } from '../interfaces/IRol.service';
 import { Rol } from "../entity/rol";
 
 

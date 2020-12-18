@@ -5,9 +5,9 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { ICurriculumHabilidadService } from '../interfaces/curriculum-habilidad.service';
+import { ICurriculumHabilidadService } from '../interfaces/ICurriculumHabilidad.service';
 import { CurriculumHabilidad } from '../entity/curriculum-habilidad';
-import { IExperienciaService } from '../interfaces/experiencia.service';
+import { IExperienciaService } from '../interfaces/IExperiencia.service';
 import { ExperienciaLaboral } from '../entity/experiencia-laboral';
 
 @controller("/experiencia")      

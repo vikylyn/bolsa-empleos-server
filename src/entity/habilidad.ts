@@ -7,7 +7,7 @@ export class Habilidad {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: 'varchar', length: 100})
+    @Column({type: 'varchar', length: 50, unique: true})
     habilidad: string;
 
 }

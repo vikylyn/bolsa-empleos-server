@@ -3,7 +3,7 @@ import { interfaces, controller, httpGet, response, requestParam} from "inversif
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { INivelEstudioService } from '../interfaces/nivel-estudio.service';
+import { INivelEstudioService } from '../interfaces/INivelEstudio.service';
  
 @controller("/nivel-estudio")    
 export class NivelEstudioController implements interfaces.Controller {  

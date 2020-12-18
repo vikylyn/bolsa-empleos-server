@@ -12,12 +12,6 @@ export class Solicitante extends Usuario {
     @Column({type: 'varchar', length: 20})
     nacionalidad: string;
 
-    @Column({type: 'varchar', length: 45})
-    direccion: string;
-
-    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
-    creado_en: Date;
-
     @Column({ type: "date"})
     fecha_nac: Date;
 
@@ -27,10 +21,6 @@ export class Solicitante extends Usuario {
     @JoinColumn({name:'estado_civil_id'})
     @ManyToOne(type => EstadoCivil, estado => estado.id, {nullable: false, eager: true})  
     estado_civil: EstadoCivil
-
-    @JoinColumn({name:'ciudades_id'})
-    @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
-    ciudad: Ciudad
 
  /*   @OneToMany(type => OcupacionSolicitante, ocupacion_solicitante => ocupacion_solicitante.ocupacion)  
     ocupaciones: Ocupacion[];
@@ -43,6 +33,6 @@ export class Solicitante extends Usuario {
     @OneToMany(type => Postulacion, postulacion => postulacion.solicitante)
     postulaciones: Postulacion[];
 */
-    @OneToMany(type => OcupacionSolicitante, ocupacion => ocupacion.solicitante)
+    @OneToMany(type => OcupacionSolicitante, ocupacion => ocupacion.solicitante, {eager: true})
     ocupaciones: OcupacionSolicitante[];
 }

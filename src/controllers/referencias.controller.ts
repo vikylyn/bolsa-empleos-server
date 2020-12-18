@@ -5,7 +5,7 @@ import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token'
 import validarCampos from '../middlewares/administrador/validar-campos';
 import { body } from 'express-validator';
-import { IReferenciaService } from '../interfaces/referencias.service';
+import { IReferenciaService } from '../interfaces/IReferencias.service';
 import { Referencia } from '../entity/referencia';
 
 @controller("/curriculum/referencia")      

@@ -1,10 +1,10 @@
 import * as express from "express";
-import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
+import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { id, inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
-import { INotificacionEmpleadorService } from '../interfaces/notificacion-empleador.service';
-import { INotificacionSolicitanteService } from '../interfaces/notificacion-solicitante.service';
+import { INotificacionEmpleadorService } from '../interfaces/INotificacionEmpleador.service';
+import { INotificacionSolicitanteService } from '../interfaces/INotificacionSolicitante.service';
 import { NotificacionEmpleador } from '../entity/notificacion-empleador';
 import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
 
@@ -84,8 +84,81 @@ export class NotificacionController implements interfaces.Controller {
         
     }
     
-  
+    @httpGet("/buscar/:id_notificacion/:id_rol",verificaToken)
+    private async buscar(@requestParam("id_notificacion") id_notificacion: number,@requestParam("id_rol") id_rol: number,req: express.Request, res: express.Response, next: express.NextFunction) {
 
- 
+        if( 3 == id_rol) { 
+            let notificacion: NotificacionEmpleador = await this.notificacionEmpleadorService.buscar(id_notificacion);
+            if(!notificacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `No existe una notificacion con el id ${id_notificacion}`,
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                notificacion,
+            });
+        }else {
+            let notificacion: NotificacionSolicitante = await this.notificacionSolicitanteService.buscar(id_notificacion);
+            if(!notificacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `No existe una notificacion con el id ${id_notificacion}`,
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                notificacion,
+            })
+        }
+    }
+
+    @httpDelete("/:id_notificacion/:id_rol",verificaToken)
+    private async eliminar(@requestParam("id_notificacion") id_notificacion: number,@requestParam("id_rol") id_rol: number,req: express.Request, res: express.Response, next: express.NextFunction) {
+
+        if( 3 == id_rol) { 
+            let notificacion: NotificacionEmpleador = await this.notificacionEmpleadorService.buscar(id_notificacion);
+            if(!notificacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `No existe una notificacion con el id ${id_notificacion}`,
+                });
+            }
+            let notificacion_eliminada = await this.notificacionEmpleadorService.eliminar(id_notificacion);
+            if (notificacion_eliminada === true) {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: `Notificacion eliminada exitosamente`
+                });
+            }else {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: `No se pudo eliminar la notificacion`
+                })
+            }
+
+        }else {
+            let notificacion: NotificacionSolicitante = await this.notificacionSolicitanteService.buscar(id_notificacion);
+            if(!notificacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `No existe una notificacion con el id ${id_notificacion}`,
+                });
+            }
+            let notificacion_eliminada = await this.notificacionSolicitanteService.eliminar(id_notificacion);
+            if (notificacion_eliminada === true) {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: `Notificacion eliminada exitosamente`
+                });
+            }else {
+                return res.status(400).json({
+                    ok: true,
+                    mensaje: `No se pudo eliminar la notificacion`
+                })
+            }
+        }
+    }
 
 }

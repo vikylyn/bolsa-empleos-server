@@ -1,6 +1,6 @@
 import { injectable} from "inversify";
 import { getRepository } from "typeorm";
-import { IGrupoOcupacionalService } from '../interfaces/grupo-ocupacional.service';
+import { IGrupoOcupacionalService } from '../interfaces/IGrupoOcupacional.service';
 import { GrupoOcupacional } from '../entity/grupo-ocupacional';
 
 

@@ -1,7 +1,7 @@
 
 import { injectable} from "inversify";
 import { getRepository } from "typeorm";
-import { IEstadoService } from '../interfaces/estado.service';
+import { IEstadoService } from '../interfaces/IEstado.service';
 import { Estado } from '../entity/estado';
 
 
