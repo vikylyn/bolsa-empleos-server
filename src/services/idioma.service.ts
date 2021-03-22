@@ -17,6 +17,7 @@ class IdiomaService  implements IIdiomaService  {
         const idiomas = getRepository(Idioma).find()
         return idiomas ;
     }
+
     listarNoAsignados(id_curriculum: Number): any {
         const idiomas = getRepository(Idioma)
         .query("SELECT * FROM idiomas AS i  WHERE NOT EXISTS (SELECT * FROM curriculums_idiomas AS c  WHERE i.id = c.idiomas_id and c.curriculum_id = ?)", [id_curriculum]);

@@ -80,11 +80,10 @@ export class CredencialesController implements interfaces.Controller {
     private async enviarEmail(@request() req: express.Request, @response() res: express.Response) {
         try {
             const credenciales = await this.credencialesService.buscarCredenciales(req.body.email);
-            console.log(credenciales)
             if (!credenciales){
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'No existe ese email',
+                    mensaje: 'No existe ese email', 
                 });
             }
 

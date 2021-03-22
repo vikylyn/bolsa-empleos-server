@@ -18,7 +18,7 @@ export class Curriculum {
     @Column({type: 'varchar', length: 100})
     titulo: string;
     
-    @Column()
+    @Column({nullable: true})
     pretension_salarial: number;
 
     @Column({type: 'varchar', length: 500})
@@ -26,6 +26,9 @@ export class Curriculum {
       
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
+
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    modificado_en: Date;
   
     @OneToMany(type => ExperienciaLaboral, experiencias => experiencias.curriculum)
     experiencias_laborales: ExperienciaLaboral[];

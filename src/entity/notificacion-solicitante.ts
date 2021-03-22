@@ -26,10 +26,10 @@ export class NotificacionSolicitante {
     @ManyToOne(type => Solicitante, solicitante => solicitante.id, {nullable: false, eager: true})  
     solicitante: Solicitante;
 
-    @JoinColumn({name:'empleadores_id'})
+ /*   @JoinColumn({name:'empleadores_id'})
     @ManyToOne(type => Empleador, empleador => empleador.id,{nullable:false, eager: true})
     empleador: Empleador;
-
+*/
     @JoinColumn({name:'vacantes_id'}) 
     @ManyToOne(type => Vacante, vacante => vacante.id, {nullable: false, eager: true})  
     vacante: Vacante;

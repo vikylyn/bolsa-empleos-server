@@ -14,8 +14,8 @@ export interface ISolicitanteService {
     buscarPorCredencial(id: number): any;
     modificarImagen(id: number, imagen: Imagen): any;
     // Ver si poner estos en vacantes
-    activar_ocupacion(id: number):any;
-    desactivar_ocupacion(id: number):any;
+  //  activar_ocupacion(id: number):any;
+ //   desactivar_ocupacion(id: number):any;
     habilitar(id: number):any;
 
 } 

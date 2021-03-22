@@ -13,6 +13,9 @@ insert into roles(id,nombre) values(2,'ROLE_SOLICITANTE');
 insert into roles(id,nombre) values(3,'ROLE_EMPLEADOR');
 
 INSERT INTO paises(nombre) values('Bolivia');
+insert into paises(id, nombre) values (2, 'Otro');
+insert into estados(id, nombre, paises_id) values(10, 'Otro', 2);
+insert into ciudades(id, nombre, estados_id) values(203, 'Otro', 10);
 
 
 insert into estado_civil(estado) values('Casado');
@@ -66,6 +69,7 @@ insert into horarios(nombre) values('Diurno');
 insert into horarios(nombre) values('Nocturno');
 insert into horarios(nombre) values('Mañana');
 insert into horarios(nombre) values('Tarde');
+insert into horarios(nombre) values('otros');
 
 insert into tipo_notificacion(id,tipo,descripcion) values(1,'nueva_postulacion','Notificacion enviada al empleador cuando hay un nuevo postulante para su vacante');
 insert into tipo_notificacion(id,tipo,descripcion) values(2,'postulacion_aceptada', 'Notificacion enviada al solicitante cuando el empleador acepta su postulacion pero todavia no es un contrato');
@@ -76,3 +80,5 @@ insert into tipo_notificacion(id,tipo,descripcion) values(6, 'postulacion_rechaz
 insert into tipo_notificacion(id,tipo,descripcion) values(7, 'invitacion_postulacion', 'Notificacion enviada al solicitante para que postule a un vacante');
 
 
+insert into imagenes(id,id_cloudinary,formato,url,url_segura) values(43,'no-image2_uyivib','png','http://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png','https://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png');
+insert into informacion_app(id,nombre,eslogan,descripcion,telefono,email,direccion,imagenes_id,ciudades_id) values(1,'JOBBO','JOBS IN BOLIVIA','Brindamos una alternativa para encontrar tu empleo ideal','75120011','fernandezvirgilio05@gmail.com','Barrio 101 familias Pje. La Cruz # 2179',43,12);

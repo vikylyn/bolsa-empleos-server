@@ -69,7 +69,6 @@ export class LoginController implements interfaces.Controller {
                         }); 
                     }
                     admin.credenciales = credenciales;
-                    console.log(admin);
                     return res.status(200).json({
                         ok: true,
                         usuario: admin,
@@ -99,17 +98,11 @@ export class LoginController implements interfaces.Controller {
                         mensaje: 'Debe activar su cuenta ingresando al enlace enviado a su correo'
                     }); 
                 }
-                let empresa: Empresa = null;
-                if(empleador.empresa){
-                    empresa = await this.empresaService.buscarPorIdEmpleador(empleador.id);
-                }
                 empleador.credenciales = credenciales;
-                console.log(empleador);
                 return res.status(200).json({
                     ok: true,
                     token,
                     usuario: empleador,
-                    empresa
                 });   
             }
         } catch (err) {

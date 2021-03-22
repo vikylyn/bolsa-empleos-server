@@ -76,6 +76,10 @@ import { IHorarioService } from '../interfaces/IHorario.service';
 import { IPostulacionService } from '../interfaces/IPostulacion.service';
 import { IContratacionService } from '../interfaces/IContratacion.service';
 import { ICiudadService } from '../interfaces/ICiudad.service';
+import { IReportePostulacionesService } from '../interfaces/IReporte-postulaciones.service';
+import { ReportePostulacionesService } from "../services/Reporte-portulaciones.service";
+import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
+import { InformacionAppService } from "../services/InformacionApp.service";
 
 const myContainer = new Container();
 
@@ -117,6 +121,7 @@ myContainer.bind<IReportesSolicitanteService>(TYPES.IReportesSolicitanteService)
 myContainer.bind<IReportesContratacionService>(TYPES.IReportesContratacionService).to(ReportesContratacionService);
 myContainer.bind<IReportesVacanteService>(TYPES.IReportesVacanteService).to(ReportesVacanteService);
 myContainer.bind<IReportesEmpleadorService>(TYPES.IReportesEmpleadorService).to(ReportesEmpleadorService);
-
+myContainer.bind<IReportePostulacionesService>(TYPES.IReportePostulacionesService).to(ReportePostulacionesService);
+myContainer.bind<IInformacionAppService>(TYPES.IInformacionAppService).to(InformacionAppService);
 
 export { myContainer };     

@@ -9,10 +9,6 @@ export class OcupacionSolicitante {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    habilitado: boolean;
-
-
     @JoinColumn({name:'solicitante_id'})
     @ManyToOne(type => Solicitante, solicitante => solicitante.id,{nullable: false})
     solicitante: Solicitante;

@@ -11,9 +11,9 @@ class NotificacionEmpleadorService  implements INotificacionEmpleadorService  {
     async listar(id_empleador: number) {
         const notificaciones: NotificacionEmpleador [] = await getRepository(NotificacionEmpleador)
         .createQueryBuilder("notificaciones_empleadores")
-        .leftJoinAndSelect("notificaciones_empleadores.empleador", "empleador")
         .leftJoinAndSelect("notificaciones_empleadores.solicitante", "solicitante")
         .leftJoinAndSelect("notificaciones_empleadores.vacante", "vacante")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
         .leftJoinAndSelect("notificaciones_empleadores.tipo_notificacion", "tipo_notificacion")
@@ -25,7 +25,8 @@ class NotificacionEmpleadorService  implements INotificacionEmpleadorService  {
     async contarNoLeidas(id_empleador: number) {
         const total: number = await getRepository(NotificacionEmpleador)
         .createQueryBuilder("notificaciones_empleadores")
-        .leftJoinAndSelect("notificaciones_empleadores.empleador", "empleador")
+        .leftJoinAndSelect("notificaciones_empleadores.vacante", "vacante")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
         .where("empleador.id = :id_empleador and notificaciones_empleadores.leido = false", {id_empleador: id_empleador})
         .getCount();  
         return total;
@@ -45,42 +46,9 @@ class NotificacionEmpleadorService  implements INotificacionEmpleadorService  {
     async buscar(id_notificacion: number) {
             let notificacion: NotificacionEmpleador;
             notificacion = await  getRepository(NotificacionEmpleador).findOne(id_notificacion);
-            console.log('dentro del llamando', notificacion);
             if(notificacion){
               notificacion.solicitante.credenciales.password = "xd";
-              notificacion.empleador.credenciales.password = "xd";
             }
-    
-
-/*        const notificacion: NotificacionEmpleador = await getRepository(NotificacionEmpleador)
-        .createQueryBuilder("notificaciones_empleadores")
-        .leftJoinAndSelect("notificaciones_empleadores.empleador", "empleador")
-        .leftJoinAndSelect("notificaciones_empleadores.solicitante", "solicitante")
-        .leftJoinAndSelect("solicitante.imagen", "imagen")
-        .leftJoinAndSelect("solicitante.ciudad", "ciudad_solicitante")
-        .leftJoinAndSelect("ciudad_solicitante.estado", "estado_solicitante")
-        .leftJoinAndSelect("estado_solicitante.pais", "pais_solicitante")
-        .leftJoinAndSelect("solicitante.credenciales", "credenciales")
-        .leftJoinAndSelect("notificaciones_empleadores.vacante", "vacante")
-        .leftJoinAndSelect("vacante.sueldo", "sueldo")
-        .leftJoinAndSelect("vacante.horario", "horario")
-        .leftJoinAndSelect("vacante.requisitos", "requisitos")
-        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-        .leftJoinAndSelect("requisitos.idiomas", "idiomas")
-        .leftJoinAndSelect("idiomas.idioma", "idioma")
-        .leftJoinAndSelect("idiomas.nivel_escrito", "nivel_escrito")
-        .leftJoinAndSelect("idiomas.nivel_oral", "nivel_oral")
-        .leftJoinAndSelect("idiomas.nivel_lectura", "nivel_lectura")
-        .leftJoinAndSelect("vacante.tipo_contrato", "tipo_contrato") 
-        .leftJoinAndSelect("vacante.ciudad", "ciudad")
-        .leftJoinAndSelect("ciudad.estado", "estado")
-        .leftJoinAndSelect("estado.pais", "pais")
-        .leftJoinAndSelect("notificaciones_empleadores.tipo_notificacion", "tipo_notificacion")
-        .where("notificaciones_empleadores.id = :id", {id: id_notificacion})
-        .getOne();
-*/
-       
-
         return notificacion;
     }
     async eliminar(id_notificacion: number) {
@@ -96,10 +64,10 @@ class NotificacionEmpleadorService  implements INotificacionEmpleadorService  {
             try {
                 // execute some operations on this transaction:
                 await getRepository(NotificacionEmpleador)
-                    .createQueryBuilder("notificaciones")
-                    .delete()
-                    .where("notificaciones.id = :id", { id: id_notificacion })
-                    .execute();
+                .createQueryBuilder()
+                .delete()
+                .where("id = :id", { id: id_notificacion })
+                .execute();
     
                 await queryRunner.commitTransaction();
 
@@ -119,6 +87,37 @@ class NotificacionEmpleadorService  implements INotificacionEmpleadorService  {
             }
 
             return respuesta;
+    }
+
+    async listarConPaginacion(id_empleador: number, desde: number) {
+        const notificaciones: NotificacionEmpleador [] = await getRepository(NotificacionEmpleador)
+        .createQueryBuilder("notificaciones_empleadores")
+        .leftJoinAndSelect("notificaciones_empleadores.solicitante", "solicitante")
+        .leftJoinAndSelect("notificaciones_empleadores.vacante", "vacante")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("notificaciones_empleadores.tipo_notificacion", "tipo_notificacion")
+        .where("empleador.id = :id_empleador", {id_empleador: id_empleador})
+        .addOrderBy("notificaciones_empleadores.creado_en", "DESC")
+        .skip(desde)  
+        .take(5)
+        .getMany();
+        return notificaciones;
+    }
+
+    async contarTodas(id_empleador: number) {
+        const notificaciones: number = await getRepository(NotificacionEmpleador)
+        .createQueryBuilder("notificaciones_empleadores")
+        .leftJoinAndSelect("notificaciones_empleadores.solicitante", "solicitante")
+        .leftJoinAndSelect("notificaciones_empleadores.vacante", "vacante")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("notificaciones_empleadores.tipo_notificacion", "tipo_notificacion")
+        .where("empleador.id = :id_empleador", {id_empleador: id_empleador})
+        .getCount();
+        return notificaciones;
     }
 }
   

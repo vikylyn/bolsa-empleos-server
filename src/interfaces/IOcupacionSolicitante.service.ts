@@ -3,5 +3,5 @@ export interface IOcupacionSolicitanteService {
     adicionar(body: any): any;
     eliminar(id: number):any;
     contar(id_solicitante: number): any;
-    habilitar(id: number): any;
+    // habilitar(id: number): any;
 } 

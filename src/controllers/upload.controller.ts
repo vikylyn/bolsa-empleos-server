@@ -17,6 +17,9 @@ import { IEmpresaService } from '../interfaces/IEmpresa.service';
 import { Empresa } from '../entity/empresa';
 import { Empleador } from '../entity/empleador';
 import { cloud_name, api_key, api_secret } from '../global/environments';
+import { InformacionApp } from '../entity/informacionApp';
+import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
+import Server from '../classes/server';
 var cloudinary = require('cloudinary');
 cloudinary.config({ 
     cloud_name: cloud_name, 
@@ -33,6 +36,7 @@ export class UploadController implements interfaces.Controller {
                  @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService,
                  @inject(TYPES.IImagenService) private imagenService: IImagenService,
                  @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService,
+                 @inject(TYPES.IInformacionAppService) private infoService: IInformacionAppService,
                  @inject(TYPES.IEmpresaService) private empresaService: IEmpresaService) {}
     
     @httpGet("/:id",verificaToken)
@@ -57,161 +61,6 @@ export class UploadController implements interfaces.Controller {
         }
                   
     } ; 
- /*   @httpPut("/solicitante/:id", subirImagen)  
-    private async cambiarImagen(@requestParam("tipo") tipo: string,@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
-                    
-         
-        // Obtener nombre del archivo
-        let archivo: any = req.files.image;  
- 
-        let nombreCortado = archivo.name.split('.');
-        let extensionArchivo = nombreCortado[nombreCortado.length -1];     
-        // solo estas extensiones aceptamos
-        var extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];      
-        if( extensionesValidas.indexOf( extensionArchivo) < 0){
-            return res.status(400).json({
-                ok: false,
-                mensaje: 'extension no valida',
-                errors: { message: 'Las extensiones validas son '+ extensionesValidas.join(', ')}
-
-            });
-        }
-       
-
-        // Nombre de archivo personalizado id-milisegundos.extension
-       
-
-        // Mover el archivo del temporal a un path
-        let pathImg = path.join(__dirname,  `../uploads/${ nombreArchivo }`);
-        console.log(pathImg);
-     
-        archivo.mv( pathImg, async (err: any) => {
-
-            if( err ) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error al mover archivo',  
-                    errors: err
-                
-                });
-            }
-           
-              
-        });
-
-        
-     
-           if(tipo === 'administrador') {
-                    try {
-
-                    
-                    
-                        const administrador = await this.adminService.buscar(id);
-                        if (!administrador) {
-                            return res.status(400).json({
-                                ok: false,
-                                mensaje:`No existe un administrador con ese ID ${id}`
-                            });
-                        }
-                    
-                    
-                        let result = await cloudinary.v2.uploader.upload(pathImg);  
-                        administrador.imagen = result.url;
-                        var pathTemporal =  path.join(__dirname,  `../uploads/${ nombreArchivo }`);
-                        if ( fs.existsSync(pathTemporal)) {
-                         fs.unlink(pathTemporal, () => {});
-                        
-                        }
-                        const administrador_modificado = await this.adminService.modificarImagen(administrador.id, administrador.imagen);
-                    
-                        if (administrador_modificado.affected === 1){
-                            return res.status(200).json({
-                                ok:true,
-                                mensaje: 'Imagen modificada exitosamente'
-                            });
-                        }else {
-                            return res.status(400).json({
-                                ok: false,
-                                mensaje: 'Error al modificar Imagen',
-                            });
-                        }
-
-
-                    } catch (error) {
-                        console.log(error);
-                    }
-           }
-           if (tipo === 'solicitante') {
-            try {
-                const solicitante = await this.solicitanteService.buscar(id);
-                if (!solicitante){
-                    return res.status(400).json({
-                        ok: false,
-                        mensaje:`No existe un solicitante con ese ID ${id}`
-                    });
-                }
-                let resultSolicitante = await cloudinary.v2.uploader.upload(pathImg); 
-                console.log(resultSolicitante)
-
-               // const solicitante = await this.solicitanteService.buscar(id);
-
-                
-                var pathTemporal =  path.join(__dirname,  `../uploads/${ nombreArchivo }`);
-
-                if ( fs.existsSync(pathTemporal)) {
-                 fs.unlink(pathTemporal, () => {});
-                
-                }
-                if(solicitante.imagen.id_cloudinary != 'no-image2_uyivib') {
-                    let eliminar = await cloudinary.uploader.destroy(solicitante.imagen.id_cloudinary);
-                }
-                
-                const imagen = await this.imagenService.buscar(solicitante.imagen.id);
-                
-                imagen.id_cloudinary = resultSolicitante.public_id;
-                imagen.formato = resultSolicitante.format;
-                imagen.url_segura = resultSolicitante.secure_url;
-                imagen.url = resultSolicitante.url;
-                
-                const imagen_modificada = await this.imagenService.modificar(solicitante.imagen.id,imagen);
-                solicitante.imagen = imagen;
-
-                const solicitante_modificado = await this.solicitanteService.modificar(solicitante.id, solicitante);
-                if (solicitante_modificado.affected === 1){
-                    return res.status(200).json({
-                        ok:true,
-                        mensaje: 'Imagen modificada exitosamente'
-                    });
-                }else {
-                    
-                    return res.status(400).json({
-                        ok:false,
-                        mensaje: 'Error al modificar imagen'
-                    });
-                }
-            } catch (err) {
-                res.status(400).json({  
-                    ok:false, 
-                    error: err.message });
-            }
-        }
-       
-
-
-
-  
-                
-    }
-*/
-    async subirImagen(url:string, id: number , res: express.Response) {
-        try {
-            
-        } catch (err) {
-                res.status(400).json({  
-                ok:false, 
-                error: err.message });
-        }
-    }
 @httpPut("/administrador/:id",multer.single('image'))  
     private async cambiarImagenAdministrador(@requestParam("tipo") tipo: string,@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
                 
@@ -230,7 +79,6 @@ export class UploadController implements interfaces.Controller {
     
         // subiendo a cloudinary
         let resultAdministrador = await cloudinary.v2.uploader.upload(req.file.path); 
-        console.log(resultAdministrador)
         // borrando imagen de la app
         await fs.unlink(path.resolve(req.file.path))
 
@@ -246,22 +94,19 @@ export class UploadController implements interfaces.Controller {
         imagen.url = resultAdministrador.url;
         
         const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-        administrador.imagen = imagen;
-
-        const administrador_modificado = await this.adminService.modificarImagen(administrador.id, administrador.imagen);
-        if (administrador_modificado.affected === 1){
+        if (imagen_modificada.affected === 1){
             return res.status(200).json({
                 ok:true,
                 mensaje: 'Imagen modificada exitosamente',
-                imagen: administrador.imagen
+                imagen: imagen
             });
-        }else {
-            
-            return res.status(400).json({
-                ok:false,
-                mensaje: 'Error al modificar imagen'
-            });
-        }
+          }else {
+      
+              return res.status(500).json({
+                  ok:false,
+                  mensaje: 'Error al modificar imagen'
+              });
+          }
 
     } catch (error) {
         console.log(error);
@@ -283,7 +128,6 @@ export class UploadController implements interfaces.Controller {
     
         // subiendo a cloudinary
         let resultSolicitante = await cloudinary.v2.uploader.upload(req.file.path); 
-        console.log(resultSolicitante)
         // borrando imagen de la app
         await fs.unlink(path.resolve(req.file.path))
 
@@ -299,22 +143,19 @@ export class UploadController implements interfaces.Controller {
         imagen.url = resultSolicitante.url;
         
         const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-        solicitante.imagen = imagen;
-
-        const solicitante_modificado = await this.solicitanteService.modificarImagen(solicitante.id, solicitante.imagen);
-        if (solicitante_modificado.affected === 1){
+        if (imagen_modificada.affected === 1){
             return res.status(200).json({
                 ok:true,
                 mensaje: 'Imagen modificada exitosamente',
-                imagen: solicitante.imagen
+                imagen: imagen
             });
-        }else {
-            
-            return res.status(400).json({
-                ok:false,
-                mensaje: 'Error al modificar imagen'
-            });
-        }
+          }else {
+      
+              return res.status(500).json({
+                  ok:false,
+                  mensaje: 'Error al modificar imagen'
+              });
+          }
 
     } catch (error) {
         console.log(error);
@@ -335,7 +176,6 @@ export class UploadController implements interfaces.Controller {
   
       // subiendo a cloudinary
       let resultEmpleador = await cloudinary.v2.uploader.upload(req.file.path); 
-      console.log(resultEmpleador)
       // borrando imagen de la app
       await fs.unlink(path.resolve(req.file.path))
 
@@ -351,18 +191,16 @@ export class UploadController implements interfaces.Controller {
       imagen.url = resultEmpleador.url;
       
       const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-      empleador.imagen = imagen;
 
-      const empleado_modificado = await this.empleadorService.modificarImagen(empleador.id, empleador.imagen);
-      if (empleado_modificado.affected === 1){
-          return res.status(200).json({
-              ok:true,
-              mensaje: 'Imagen modificada exitosamente',
-              imagen: empleador.imagen
-          });
+      if (imagen_modificada.affected === 1){
+        return res.status(200).json({
+            ok:true,
+            mensaje: 'Imagen modificada exitosamente',
+            imagen: imagen
+        });
       }else {
-          
-          return res.status(400).json({
+  
+          return res.status(500).json({
               ok:false,
               mensaje: 'Error al modificar imagen'
           });
@@ -403,17 +241,66 @@ private async cambiarImagenEmpresa(@requestParam("id") id: number,@request() req
             imagen.url = resultEmpresa.url;
 
             const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-            empresa.logo = imagen;
-
-            const solicitante_modificado = await this.empresaService.modificarImagen(empresa.id, empresa.logo);
-            if (solicitante_modificado.affected === 1){
+          
+            if (imagen_modificada.affected === 1){
                 return res.status(200).json({
                     ok:true,
                     mensaje: 'Imagen modificada exitosamente',
-                    imagen: empresa.logo
+                    imagen: imagen
                 });
             }else {
 
+                return res.status(500).json({
+                    ok:false,
+                    mensaje: 'Error al modificar imagen'
+                });
+            }
+
+        } catch (error) {
+            console.log(error);
+        }           
+    }
+    @httpPut("/logo-app/:id",multer.single('image'))  
+    private async cambiarLogoApp(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
+            
+
+        try {
+            const informacion: InformacionApp = await this.infoService.buscar(id);
+            if (!informacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una apliacacion con el ID ${id}`
+                });
+            }
+
+            // subiendo a cloudinary
+            let resultInfoLogo = await cloudinary.v2.uploader.upload(req.file.path); 
+          
+            // borrando imagen de la app
+            await fs.unlink(path.resolve(req.file.path))
+
+            if(informacion.imagen.id_cloudinary != 'no-image2_uyivib') {
+                await cloudinary.uploader.destroy(informacion.imagen.id_cloudinary);
+            }
+
+            const imagen = await this.imagenService.buscar(informacion.imagen.id);
+
+            imagen.id_cloudinary = resultInfoLogo.public_id;
+            imagen.formato = resultInfoLogo.format;
+            imagen.url_segura = resultInfoLogo.secure_url;
+            imagen.url = resultInfoLogo.url;
+
+            const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
+            const server = Server.instance;      
+            server.io.emit('actualizando-informacion-app');    
+               
+            if (imagen_modificada.affected === 1){
+                return res.status(200).json({
+                    ok:true,
+                    mensaje: 'Logo modificado exitosamente',
+                    imagen: informacion.imagen
+                });
+            }else {
                 return res.status(400).json({
                     ok:false,
                     mensaje: 'Error al modificar imagen'

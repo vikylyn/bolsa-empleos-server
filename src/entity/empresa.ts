@@ -26,15 +26,19 @@ export class Empresa {
     descripcion: string;
 
     
-    @OneToOne(type => Imagen,{nullable: false, eager: true})
+    @OneToOne(type => Imagen, logo => logo.id ,{nullable: false, eager: true})
     @JoinColumn({name: 'imagenes_id'})  
     logo: Imagen;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
   
-    @JoinColumn({name:'empleadores_id'}) 
+ /*   @JoinColumn({name:'empleadores_id'}) 
     @OneToOne(type => Empleador, empleador => empleador.id, {nullable: false, eager: true})  
+    empleador: Empleador;
+*/
+    @JoinColumn({name:'empleadores_id'}) 
+    @OneToOne(type => Empleador, empleador => empleador.id, {nullable: false})  
     empleador: Empleador;
 
     @JoinColumn({name:'ciudades_id'}) 

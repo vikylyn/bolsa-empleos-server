@@ -53,10 +53,11 @@ export class ExperienciaController implements interfaces.Controller {
         body('descripcion','La descripcion es obligatoria').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
-        body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
+      //  body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
+      //  body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
+        body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
+        body('id_ciudad','El id de la ciudad es obligatorio').not().isEmpty(),
         body('id_tipo_contrato','El id del tipo de contrato laboral es obligatorio').not().isEmpty(),
    //     body('id_grupo_ocupacional','El id del grupo ocupacional laboral es obligatorio').not().isEmpty(),
         validarCampos
@@ -95,9 +96,10 @@ export class ExperienciaController implements interfaces.Controller {
         body('descripcion','La descripcion es obligatoria').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
+     //   body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
+     //   body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
+        body('id_ciudad','El id de la ciudad es obligatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
         body('id_tipo_contrato','El id del tipo de contrato laboral es obligatorio').not().isEmpty(),
     //    body('id_grupo_ocupacional','El id del grupo ocupacional laboral es obligatorio').not().isEmpty(),
@@ -113,8 +115,8 @@ export class ExperienciaController implements interfaces.Controller {
                     mensaje:`No existe una experiencia con el ID ${id}`
             });
             }
-            const experiencia_modificada = await this.experienciaService.modificar(experiencia.id, req.body);
-            if (experiencia_modificada.affected === 1) {
+            const experiencia_modificada = await this.experienciaService.modificar(experiencia, req.body);
+            if (experiencia_modificada === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Experiencia modificada exitosamente'
@@ -137,7 +139,7 @@ export class ExperienciaController implements interfaces.Controller {
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const experiencia = await this.experienciaService.eliminar(id);
-            if (experiencia.affected === 1){
+            if (experiencia === true){
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Experiencia Eliminada exitosamente'

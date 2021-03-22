@@ -95,12 +95,6 @@ export class PostulacionController implements interfaces.Controller {
         
         try { 
             const solicitante: Solicitante = await this.solicitanteService.buscar(req.body.id_solicitante);
-            if(solicitante.ocupado === true) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje: 'Solicitante con un empleo activo',  
-                });
-            }
             const vacante: Vacante = await this.vacanteService.buscar(req.body.id_vacante);
             if(!vacante) {
                 return res.status(400).json({
@@ -114,15 +108,6 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje: `No existen vacantes disponibles`,  
                 });
             }
-  //          const contratacion: Contratacion = await this.contratacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
- /*           console.log('contratacion ', contratacion)
-            if (contratacion) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje: 'Error, Ya postulo para la vacante',  
-                });
-            }
-*/
             const buscar_postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
             if (buscar_postulacion) {
                 return res.status(400).json({
@@ -166,45 +151,15 @@ export class PostulacionController implements interfaces.Controller {
         }
     } 
 
- /*   @httpPut("/aceptar-solicitante/:id",
-        verificaToken
-    )
-    private async aceptarSlicitante(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
-          
-        try {
-            const postulacion = await this.postulacionService.buscar(id);
-            if (!postulacion) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje:`No existe una postulacion con el ID ${id}`
-            });
-            }
-            const postulacion_modificada = await this.postulacionService.aceptarSolicitante(postulacion.id);
-            if (postulacion_modificada.affected === 1) {
-                return res.status(200).json({
-                    ok: true,
-                    mensaje: 'Solicitante aceptado para la vacante'
-                });
-            } else {
-                
-                return res.status(400).json({
-                    ok:false,
-                    mensaje: 'Error al aceptar solicitante',
-                });
-            }
-        } catch (err) {
-            res.status(400).json({  
-                ok:false, 
-                error: err.message });
-        }
-    } 
-*/
+
     @httpGet("/favoritos/:id",verificaToken)
     private async listarFavoritos(@queryParam("desde") desde: number,@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction) {
-        let postulaciones = await this.postulacionService.listarFavoritos(id, desde);
+        let postulaciones: Postulacion [] = await this.postulacionService.listarFavoritos(id, desde);
+        const total: number = await this.postulacionService.contarFavoritos(id);
         return res.status(200).json({
             ok: true,
-            postulaciones: postulaciones
+            postulaciones: postulaciones,
+            total
         });
     } 
     @httpPut("/favorito/:id",verificaToken)  
@@ -306,12 +261,6 @@ export class PostulacionController implements interfaces.Controller {
             return res.status(400).json({
                 ok: false,
                 mensaje:`No existe una postulacion con el ID ${id}`
-            });
-        }
-        if (postulacion.solicitante.ocupado){
-            return res.status(400).json({
-                ok: false,
-                mensaje:`el solicitante tiene  un empleo asignado`
             });
         }
         if (postulacion.vacante.num_disponibles === 0) {
@@ -453,12 +402,6 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje:`No existe una postulacion con el ID ${id}`
                 });
             }
-            if(postulacion.solicitante.ocupado) {
-                return res.status(400).json({
-                    ok: false,
-                    mensaje:`Ya tiene un empleo asignado, no puede confirmar otro`
-                });
-            }
             const contratacion = await this.postulacionService.confirmar(postulacion);
             if(contratacion) { 
                 const server = Server.instance;
@@ -544,13 +487,8 @@ export class PostulacionController implements interfaces.Controller {
             // verificando si la contratacion  a sido confirmada
             if (contratacion) {
                 return res.status(200).json({
-     /*               ocupado: solicitante.ocupado,
-                    contratado: true,
-                    postulando: false,
-                    aceptado: true,
-                    contratacion
-*/
-                    ocupado: solicitante.ocupado,
+ 
+                    ocupado: false, /// estudiar este atributo para borrar
                     postulacion: null,
                     contratacion
                 });
@@ -559,30 +497,15 @@ export class PostulacionController implements interfaces.Controller {
             const postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, id_vacante);
             if (postulacion) {
                 return res.status(200).json({
-                    ocupado: solicitante.ocupado,
+                    ocupado: false, /// estudiar este atributo efectos en el front
                     contratacion: null,
                     postulacion,
-
-             /*       ocupado: solicitante.ocupado,
-                    contratado: false,
-                    postulando: true,
-                 //   postulando: false,
-                    aceptado: postulacion.aceptado,
-                    postulacion: postulacion,
-            */
                 });
             }else {
                 return res.status(200).json({
-                    ocupado: solicitante.ocupado,
+                    ocupado: false,
                     portulacion: null,
                     contratacion: null
-
-              /*      ocupado: solicitante.ocupado,
-                    postulando: false,
-                //    postulando: true,
-                    contratado: false,
-                    aceptado: false,
-            */
                 });
             }
         

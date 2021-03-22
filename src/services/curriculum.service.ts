@@ -33,7 +33,8 @@ class CurriculumService  implements ICurriculumService  {
         .createQueryBuilder()
         .update(Curriculum)
         .set({titulo: curriculum.titulo, 
-              pretension_salarial: curriculum.pretension_salarial, 
+              pretension_salarial: curriculum.pretension_salarial,
+              modificado_en: new Date(), 
               biografia: curriculum.biografia})
         .where("id = :id", { id: id })
         .execute();
@@ -61,7 +62,10 @@ class CurriculumService  implements ICurriculumService  {
         const respuesta = await getRepository(Curriculum)
         .createQueryBuilder("curriculums")
         .leftJoinAndSelect("curriculums.experiencias_laborales", "experiencias_laborales")
-        .leftJoinAndSelect("experiencias_laborales.pais", "experiencia_pais")
+        .leftJoinAndSelect("experiencias_laborales.ciudad", "experiencias_laborales_ciudad")
+        .leftJoinAndSelect("experiencias_laborales_ciudad.estado", "experiencias_laborales_estado")
+        .leftJoinAndSelect("experiencias_laborales_estado.pais", "experiencias_laborales_pais")
+        .leftJoinAndSelect("experiencias_laborales.otraCiudad", "experiencias_laborales_otraCiudad")
 
         .leftJoinAndSelect("curriculums.curriculum_habilidades", "curriculum_habilidades")
         .leftJoinAndSelect("curriculum_habilidades.habilidad", "habilidad")
@@ -71,12 +75,17 @@ class CurriculumService  implements ICurriculumService  {
         .leftJoinAndSelect("grado_inicio.nivel_escolar", "inicio_nivel.escolar")
         .leftJoinAndSelect("estudios_basicos.grado_fin", "grado_fin")
         .leftJoinAndSelect("grado_fin.nivel_escolar", "fin_nivel.escolar")
-        .leftJoinAndSelect("estudios_basicos.pais", "estudio_pais")
-
+        .leftJoinAndSelect("estudios_basicos.ciudad", "basico_ciudad")
+        .leftJoinAndSelect("basico_ciudad.estado", "basico_estado")
+        .leftJoinAndSelect("basico_estado.pais", "basico_pais")
+        .leftJoinAndSelect("estudios_basicos.otraCiudad", "otraCiudad")
 
         .leftJoinAndSelect("curriculums.estudios_avanzados", "estudios_avanzados")
         .leftJoinAndSelect("estudios_avanzados.nivel_estudio", "nivel_estudio")
-        .leftJoinAndSelect("estudios_avanzados.pais", "avanzado_pais")
+        .leftJoinAndSelect("estudios_avanzados.ciudad", "avanzado_ciudad")
+        .leftJoinAndSelect("avanzado_ciudad.estado", "avanzado_estado")
+        .leftJoinAndSelect("avanzado_estado.pais", "avanzado_pais")
+        .leftJoinAndSelect("estudios_avanzados.otraCiudad", "estudios_avanzados_otraCiudad")
 
         .leftJoinAndSelect("curriculums.referencias", "referencias")
 
@@ -95,7 +104,7 @@ class CurriculumService  implements ICurriculumService  {
         .leftJoinAndSelect("estado.pais", "pais")
         .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
         
-        .where("curriculums.solicitante.id = :id and ocupaciones.habilitado = true", { id: id })
+        .where("curriculums.solicitante.id = :id", { id: id })
         .getOne();
         respuesta.solicitante.credenciales.password = "xd";
         return respuesta;

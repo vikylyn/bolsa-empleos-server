@@ -49,8 +49,8 @@ export class EstudioBasicoController implements interfaces.Controller {
         body('colegio','El colegio es obligatorio').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),  
+     //   body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
+    //    body('ciudad','La ciudad es obligatoria').not().isEmpty(),  
         body('id_grado_inicio','El id del grado de inicio es oblidatorio').not().isEmpty(),
         body('id_grado_fin','El id del grado de finalizacion es oblidatorio').not().isEmpty(),
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
@@ -89,8 +89,6 @@ export class EstudioBasicoController implements interfaces.Controller {
         body('colegio','El colegio es obligatorio').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_grado_inicio','El id del grado de inicio es oblidatorio').not().isEmpty(),
         body('id_grado_fin','El id del grado de finalizacion es oblidatorio').not().isEmpty(),
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
@@ -107,8 +105,8 @@ export class EstudioBasicoController implements interfaces.Controller {
                     mensaje:`No existe un estudio basico con el ID ${id}`
             });
             }
-            const estudio_modificado = await this.estudio_basicoService.modificar(estudio.id, req.body);
-            if (estudio_modificado.affected === 1) {
+            const estudio_modificado = await this.estudio_basicoService.modificar(estudio, req.body);
+            if (estudio_modificado === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Estudio basico modificado exitosamente'
@@ -131,7 +129,7 @@ export class EstudioBasicoController implements interfaces.Controller {
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const estudio = await this.estudio_basicoService.eliminar(id);
-            if (estudio.affected === 1) {
+            if (estudio === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Estudio basico eliminado exitosamente'

@@ -41,6 +41,11 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("estado.pais", "pais")
        .leftJoinAndSelect("vacantes.empleador", "empleador")
        .leftJoinAndSelect("empleador.imagen", "imagen")
+       .leftJoinAndSelect("empleador.empresa", "empresa")
+       .leftJoinAndSelect("empresa.logo", "logo")
+       .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
+       .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
+       .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
        .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, tipo_contrato_id: body.id_tipo_contrato, creado_en: body.fecha })
        .addOrderBy("vacantes.creado_en", "ASC")
        .skip(desde)  
@@ -80,6 +85,11 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("estado.pais", "pais")
        .leftJoinAndSelect("vacantes.empleador", "empleador")
        .leftJoinAndSelect("empleador.imagen", "imagen")
+       .leftJoinAndSelect("empleador.empresa", "empresa")
+       .leftJoinAndSelect("empresa.logo", "logo")
+       .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
+       .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
+       .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
        .where( consulta, { ocupacion: body.id_ocupacion, ciudad_id: body.id_ciudad, tipo_contrato_id: body.id_tipo_contrato, creado_en: body.fecha })
        .addOrderBy("vacantes.creado_en", "DESC")
        .skip(desde)  
@@ -297,7 +307,6 @@ class VacanteService  implements IVacanteService  {
             return respuesta;
     }
     async modificar(id: number, body: any) {
-        console.log(body.habilitado);
         let habilitado = false;
         if(body.habilitado === true || body.habilitado === 'true') {
             habilitado = true;
@@ -312,8 +321,8 @@ class VacanteService  implements IVacanteService  {
             // lets now open a new transaction:
             await queryRunner.startTransaction();
             try {
-       
-                const requisitos = await getRepository(Requisitos)
+
+                await getRepository(Requisitos)
                     .createQueryBuilder()
                     .update(Requisitos)
                     .set( {
@@ -325,11 +334,12 @@ class VacanteService  implements IVacanteService  {
                     .execute();
 
                 await getRepository(RequisitosIdioma)
-                    .createQueryBuilder()
+                    .createQueryBuilder("requisitos_idiomas")
+                    .leftJoinAndSelect("requisitos_idiomas.requisitos","requisitos")
                     .delete()
                     .where("requisitos.id = :id", { id: body.id_requisitos })
                     .execute();
-               
+
                 await getRepository(Vacante)
                 .createQueryBuilder()
                 .update(Vacante)
@@ -347,6 +357,7 @@ class VacanteService  implements IVacanteService  {
                 })
                 .where("id = :id", { id: id })
                 .execute();
+               
 
                 const idiomas: RequisitosIdioma[] = body.idiomas;
                 for (let index = 0; index < idiomas.length; index++) {
@@ -389,19 +400,7 @@ class VacanteService  implements IVacanteService  {
         .execute();
         return respuesta;
     }
-    async eliminarLogico(id: number) {
-        const respuesta = await getRepository(Vacante)
-        .createQueryBuilder()
-        .update(Vacante)
-        .set({
-            eliminado: true,
-            habilitado: false
-        })
-        .where("id = :id", { id: id })
-        .execute();
-        return respuesta;
-    }
-    async eliminarFisico(id: number) {
+    async eliminar(id: number) {
         const respuesta = await getRepository(Vacante)
         .createQueryBuilder()
         .delete()
@@ -443,7 +442,11 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("ciudad_empleador.estado", "estado_empleador")
         .leftJoinAndSelect("estado_empleador.pais", "pais_empleador")
         .leftJoinAndSelect("empleador.credenciales", "credenciales")
-
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.logo", "logo")
+        .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
+        .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
+        .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
         .where("vacantes.id = :id", { id: id })
        .getOne();
         if(vacante){

@@ -16,6 +16,8 @@ import { IReportesEmpleadorService } from '../interfaces/IReportes-empleador.ser
 import { IReportesVacanteService } from '../interfaces/IReportes-vacante.service';
 import { IReportesContratacionService } from '../interfaces/IReportes-contratacion.service';
 import { Empresa } from '../entity/empresa';
+import { IReportePostulacionesService } from '../interfaces/IReporte-postulaciones.service';
+import { Postulacion } from '../entity/postulacion';
  
 @controller("/reportes")    
 export class ReportesController implements interfaces.Controller {  
@@ -23,6 +25,7 @@ export class ReportesController implements interfaces.Controller {
     constructor( @inject(TYPES.IReportesSolicitanteService) private reporteSolicitanteService: IReportesSolicitanteService,
                  @inject(TYPES.IReportesEmpleadorService) private reporteEmpleadorService: IReportesEmpleadorService,
                  @inject(TYPES.IReportesVacanteService) private reporteVacanteService: IReportesVacanteService,
+                 @inject(TYPES.IReportePostulacionesService) private reportePostulacionesService: IReportePostulacionesService,
                  @inject(TYPES.IReportesContratacionService) private reporteContratacionService: IReportesContratacionService,
                  @inject(TYPES.IOcupacionService) private ocupacionService: IOcupacionService ) {} 
 
@@ -136,4 +139,46 @@ export class ReportesController implements interfaces.Controller {
         });
     }  
    
+    
+    @httpPost("/postulaciones-rechazadas",verificaToken, 
+        body('id_ciudad','El id de la ciudad es oblidatorio').not().isEmpty(),
+        body('id_ocupacion','El id de la ocupacion es obligatorio').not().isEmpty(),
+        body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
+        body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
+        body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
+        validarCampos)
+    private async generarListadoPostulacionesRechadas(
+            req: express.Request, 
+            res: express.Response, 
+            next: express.NextFunction) {
+        let postulaciones: Postulacion [] = await this.reportePostulacionesService.generarListadoPostulacionesRechazadasPorOcupacion(req.body);
+        let ocupacion: Ocupacion = await this.ocupacionService.buscar(req.body.id_ocupacion);
+       // let total: number = await this.reporteSolicitanteService.contarSolicitantes(req.body);
+        return res.status(200).json({
+            ok: true,
+            postulaciones,
+            ocupacion,
+            total: 0
+        });
+    }
+
+        @httpPost("/solicitantes-aceptados",verificaToken, 
+        body('id_ciudad','El id de la ciudad es oblidatorio').not().isEmpty(),
+        body('id_ocupacion','El id de la ocupacion es obligatorio').not().isEmpty(),
+        body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
+        body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
+        body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
+        validarCampos)
+    private async generarListadoSolicitantesAceptados(
+            req: express.Request, 
+            res: express.Response, 
+            next: express.NextFunction) {
+        let contrataciones = await this.reporteContratacionService.generarListadoContratacionesPorNumeroDeContrataciones(req.body);
+        let ocupacion: Ocupacion = await this.ocupacionService.buscar(req.body.id_ocupacion);
+        return res.status(200).json({
+            ok: true,
+            contrataciones,
+            ocupacion
+        });
+    }
 }

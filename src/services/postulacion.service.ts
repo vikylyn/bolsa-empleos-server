@@ -234,14 +234,6 @@ class PostulacionService  implements IPostulacionService  {
                        vacante: postulacion.vacante,
                        confirmado: false
                     });
-                
-                await queryRunner.manager.createQueryBuilder()
-                    .update(Solicitante)
-                    .set({
-                       ocupado: true
-                    })
-                    .where("id = :id", { id: postulacion.solicitante.id })
-                    .execute();
                 await queryRunner.manager.delete(Postulacion,postulacion);
                 await queryRunner.manager.save(NotificacionEmpleador,
                     {
@@ -488,6 +480,20 @@ class PostulacionService  implements IPostulacionService  {
        .take(5)
        .getMany();
        return postulaciones; 
+    }
+    async contarFavoritos(id: number) {
+        const total = await 
+        getRepository(Postulacion)
+       .createQueryBuilder("postulaciones")
+       .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+       .leftJoinAndSelect("postulaciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+       .where("vacante.id = :id and postulaciones.favorito = true and postulaciones.rechazado != true", { id: id })
+       .getCount();
+       return total; 
     }
     async quitarFavorito(id: number) {
         const respuesta = await getRepository(Postulacion)

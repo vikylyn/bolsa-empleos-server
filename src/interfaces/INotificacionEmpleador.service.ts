@@ -5,4 +5,7 @@ export interface INotificacionEmpleadorService {
     buscar(id_notificacion: number): any;
     eliminar(id_notificacion: number): any;
 
+
+    listarConPaginacion(id_empleador: number,desde: number): any;
+    contarTodas(id_empleador: number): any;
 } 

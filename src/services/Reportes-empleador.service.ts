@@ -24,7 +24,7 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
             empresa = true;
         }
         if(body.empresa != 'cualquiera'){
-            consulta += "and empleadores.empresa = :empresa"
+            consulta += "and empleadores.existe_empresa = :empresa"
         }
  
          const empleadores = await 
@@ -33,6 +33,7 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
         .leftJoinAndSelect("empleadores.ciudad", "ciudad")
         .leftJoinAndSelect("ciudad.estado", "estado")
         .leftJoinAndSelect("estado.pais", "pais")
+        .leftJoinAndSelect("empleadores.empresa", "empresa")
         .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, empresa: empresa, id_ciudad: body.id_ciudad })
         .addOrderBy("empleadores.creado_en", "ASC")
         .getMany();
@@ -56,7 +57,7 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
               empresa = true;
           }
           if(body.empresa != 'cualquiera'){
-              consulta += "and empleadores.empresa = :empresa"
+               consulta += "and empleadores.existe_empresa = :empresa"
           }
    
            const total = await 

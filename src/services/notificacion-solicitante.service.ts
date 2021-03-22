@@ -12,10 +12,11 @@ class NotificacionSolicitanteService  implements INotificacionSolicitanteService
         const notificaciones: NotificacionSolicitante [] = await getRepository(NotificacionSolicitante)
         .createQueryBuilder("notificaciones_solicitantes")
         .leftJoinAndSelect("notificaciones_solicitantes.solicitante", "solicitante")
-        .leftJoinAndSelect("notificaciones_solicitantes.empleador", "empleador")
         .leftJoinAndSelect("notificaciones_solicitantes.vacante", "vacante")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("empleador.imagen", "imagen")
         .leftJoinAndSelect("notificaciones_solicitantes.tipo_notificacion", "tipo_notificacion")
         .where("solicitante.id = :id_solicitante", {id_solicitante: id_solicitante})
         .addOrderBy("notificaciones_solicitantes.creado_en", "DESC")
@@ -47,7 +48,7 @@ class NotificacionSolicitanteService  implements INotificacionSolicitanteService
         notificacion = await  getRepository(NotificacionSolicitante).findOne(id_notificacion);
         if(notificacion){
           notificacion.solicitante.credenciales.password = "xd";
-          notificacion.empleador.credenciales.password = "xd";
+      //    notificacion.empleador.credenciales.password = "xd";
         }
      /*   const notificacion: NotificacionSolicitante = await getRepository(NotificacionSolicitante)
         .createQueryBuilder("notificaciones_solicitantes")
@@ -110,6 +111,39 @@ class NotificacionSolicitanteService  implements INotificacionSolicitanteService
             }
 
             return respuesta;
+    }
+
+    async listarConPaginacion(id_solicitante: number, desde: number) {
+        const notificaciones = await getRepository(NotificacionSolicitante)
+        .createQueryBuilder("notificaciones_solicitantes")
+        .leftJoinAndSelect("notificaciones_solicitantes.solicitante", "solicitante")
+        .leftJoinAndSelect("notificaciones_solicitantes.vacante", "vacante")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("empleador.imagen", "imagen")
+        .leftJoinAndSelect("notificaciones_solicitantes.tipo_notificacion", "tipo_notificacion")
+        .where("solicitante.id = :id_solicitante", {id_solicitante: id_solicitante})
+        .addOrderBy("notificaciones_solicitantes.creado_en", "DESC")
+        .skip(desde)  
+        .take(5)
+        .getMany();
+        return notificaciones;
+    }
+
+    async contarTodas(id_solicitante: number) {
+        const notificaciones: number= await getRepository(NotificacionSolicitante)
+        .createQueryBuilder("notificaciones_solicitantes")
+        .leftJoinAndSelect("notificaciones_solicitantes.solicitante", "solicitante")
+        .leftJoinAndSelect("notificaciones_solicitantes.vacante", "vacante")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("empleador.imagen", "imagen")
+        .leftJoinAndSelect("notificaciones_solicitantes.tipo_notificacion", "tipo_notificacion")
+        .where("solicitante.id = :id_solicitante", {id_solicitante: id_solicitante})
+        .getCount();
+        return notificaciones;
     }
 }
   

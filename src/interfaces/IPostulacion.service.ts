@@ -16,6 +16,8 @@ export interface IPostulacionService {
     favorito(id: number):any;
     quitarFavorito(id: number):any;
     listarFavoritos(id: number, desde: number): any;
+    contarFavoritos(id: number): any;
+
     listarPendientesPorIdSolicitante(id: number,desde: number): any;
     listarConsideradosPorIdSolicitante(id: number,desde: number): any;
     buscarPorSolicitanteVacante(id_solicitante: number, id_vacante: number):any;
@@ -27,6 +29,8 @@ export interface IPostulacionService {
     contarRechazadosPorIdVacante(id_vacante: number): any;
     listarRechazadosPorSolicitante(id: number,desde: number): any;
     contarRechazadosPorIdSolicitante(id_solicitante: number): any;
+
+    
 
 
     busqueda(valor: string,id_empleador: number): any;

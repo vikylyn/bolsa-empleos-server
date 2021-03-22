@@ -1,5 +1,5 @@
 import * as express from "express";
-import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam } from 'inversify-express-utils';
+import { interfaces, controller, httpGet, httpPost, request, response, requestParam, httpPut, queryParam, httpDelete } from 'inversify-express-utils';
 import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
@@ -29,7 +29,6 @@ export class OcupacionSolicitanteController implements interfaces.Controller {
         verificaToken,
         body('solicitante','El solicitante es oblidatorio').not().isEmpty(),
         body('ocupacion', 'La ocupacion es obligatoria').not().isEmpty(),
-        body('habilitado', 'La habilitacion es obligatoria').not().isEmpty(),
         validarCampos
     )
     private async adicionar(@request() req: express.Request, @response() res: express.Response, next: express.NextFunction) {
@@ -49,7 +48,24 @@ export class OcupacionSolicitanteController implements interfaces.Controller {
             });
         }
     }
-    @httpPut("/inhabilitar/:id",verificaToken) 
+    @httpDelete("/:id",verificaToken) 
+    private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const ocupacion = await this.ocupacionService.eliminar(id);
+            if(ocupacion.affected === 1) {
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Ocupacion Eliminada exitosamente',
+                })
+            }
+           
+        } catch (err) {
+            res.status(500).json({
+                ok: false,
+                error: err.message });
+        }
+    }
+ /*   @httpPut("/inhabilitar/:id",verificaToken) 
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
             const ocupacion = await this.ocupacionService.eliminar(id);
@@ -66,7 +82,8 @@ export class OcupacionSolicitanteController implements interfaces.Controller {
                 error: err.message });
         }
     }
-    @httpPut("/habilitar/:id",verificaToken) 
+*/
+ /*   @httpPut("/habilitar/:id",verificaToken) 
     private async habilitar(@requestParam("id") id: number, @response() res: express.Response, next: express.NextFunction) {
         try {
             const ocupacion = await this.ocupacionService.habilitar(id);
@@ -83,7 +100,7 @@ export class OcupacionSolicitanteController implements interfaces.Controller {
                 error: err.message });
         }
     }
-
+*/
  
 
 }

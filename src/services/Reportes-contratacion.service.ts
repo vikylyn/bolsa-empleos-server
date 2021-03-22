@@ -68,6 +68,43 @@ class ReportesContratacionService  implements IReportesContratacionService  {
           .getCount();
           return total;
      }
+     async generarListadoContratacionesPorNumeroDeContrataciones(body: any) {
+          let habilitado: boolean = false;
+          if(body.habilitado === true || body.habilitado === 'true') {
+               habilitado = true;
+          }       
+          let consulta:string = "";
+          if(body.habilitado != 'cualquiera'){
+               consulta +="and solicitante.habilitado = :habilitado ";
+          }
+          if(body.id_ciudad > 0) {
+               consulta += "and ciudad.id = :id_ciudad ";
+          }
+          consulta += "and ocupacion.id = :id_ocupacion"
+              const contrataciones = await getRepository(Contratacion)
+                  .createQueryBuilder("contrataciones")
+                  .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+                  .leftJoinAndSelect("solicitante.estado_civil", "estado_civil")
+                  .leftJoinAndSelect("solicitante.ocupaciones", "ocupaciones")
+                  .leftJoinAndSelect("solicitante.ciudad", "ciudad")
+                  .leftJoinAndSelect("ciudad.estado", "estado")
+                  .leftJoinAndSelect("estado.pais", "pais")
+                  .leftJoinAndSelect("contrataciones.vacante", "vacante")
+                  .leftJoinAndSelect("vacante.requisitos", "requisitos")
+                  .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+                  .where("(select count(*) from contrataciones  as c where  solicitante.id = c.solicitantes_id and (c.creado_en between :fecha_inicio and :fecha_fin)"+consulta+") in (:num_contrataciones) ",
+                       {fecha_inicio: body.fecha_inicio, 
+                        fecha_fin: body.fecha_fin, 
+                        habilitado: habilitado, 
+                        id_ocupacion: body.id_ocupacion, 
+                        id_ciudad: body.id_ciudad,
+                        num_contrataciones: body.num_contrataciones
+                       })
+                  .groupBy("solicitante.id")
+                  .getMany();
+             return contrataciones
+       }
+       
 }
   
 export {ReportesContratacionService};  

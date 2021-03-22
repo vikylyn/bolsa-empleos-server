@@ -18,13 +18,17 @@ export abstract class Usuario {
     @Column({type: 'varchar', length: 50})
     telefono: string;
 
-    @Column({type: 'varchar', length: 20, unique: true, nullable: false})
+    @Column({type: 'varchar', length: 20, nullable: false})
     cedula: string;
+
+    @Column({type: 'varchar', length: 10, nullable: true})
+    num_complemento_ci: string;
+
 
     @Column({type: 'varchar', length: 1})
     genero: string;
 
-    @Column({nullable: false, default: false})
+    @Column({nullable: false, default: false})  
     habilitado: boolean;
 
     @OneToOne(type => Credenciales,{nullable: false, eager: true})

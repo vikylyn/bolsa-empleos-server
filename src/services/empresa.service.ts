@@ -41,9 +41,6 @@ class EmpresaService implements IEmpresaService  {
 
     async buscar(id: number) {
         const empresa = await  getRepository(Empresa).findOne(id);
-        if(empresa){
-            empresa.empleador.credenciales.password = 'xd' 
-        }
         return empresa;
     } 
     async buscarPorIdEmpleador(id_empleador: number) {

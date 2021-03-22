@@ -11,8 +11,7 @@ export interface IVacanteService {
     modificar(id: number,vacante: Vacante): any;  
     inhabilitar(id: number):any;
     habilitar(id: number):any;
-    eliminarLogico(id: number):any;
-    eliminarFisico(id: number):any;
+    eliminar(id: number):any;
     buscar(id: number): any;
     // solicitantes
     filtrarVacantesAscendente(body: any, desde: number):any;

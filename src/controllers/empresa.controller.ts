@@ -80,7 +80,7 @@ export class EmpresaController implements interfaces.Controller {
           
         try {
             const empresa = await this.empresaService.buscar(id);
-            if (!empresa){
+            if (!empresa){  
                 return res.status(400).json({
                     ok: false,
                     mensaje:`No existe una empresa con ese ID ${id}`
@@ -100,6 +100,8 @@ export class EmpresaController implements interfaces.Controller {
                 });
             }
         } catch (err) {
+            console.log(err);
+
             res.status(500).json({  
                 ok:false, 
                 error: err.message });

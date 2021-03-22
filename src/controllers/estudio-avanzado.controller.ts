@@ -50,10 +50,11 @@ export class EstudioAvanzadoController implements interfaces.Controller {
         body('carrera','La Carrera es obligatoria').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
+     //   body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
+     //   body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
+        body('id_ciudad','El id de la ciudad es obligatorio').not().isEmpty(),
         body('id_nivel_estudio','El id del nivel de estudio es obligatorio').not().isEmpty(),
         validarCampos
         )
@@ -90,10 +91,11 @@ export class EstudioAvanzadoController implements interfaces.Controller {
         body('carrera','La Carrera es obligatoria').not().isEmpty(), 
         body('fecha_fin','La fecha de culminacion es obligatoria').not().isEmpty(),
         body('fecha_inicio','La fecha de inicio es obligatoria').not().isEmpty(),
-        body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
-        body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
+     //   body('estado','El Estado o Departamento es obligatorio').not().isEmpty(),
+     //   body('ciudad','La ciudad es obligatoria').not().isEmpty(),   
         body('id_curriculum','El id del curriculum es oblidatorio').not().isEmpty(),
         body('id_pais','El id del pais es obligatorio').not().isEmpty(),
+        body('id_ciudad','El id de la ciudad es obligatorio').not().isEmpty(),
         body('id_nivel_estudio','El id del nivel de estudio es obligatorio').not().isEmpty(),
         validarCampos
     )
@@ -107,8 +109,8 @@ export class EstudioAvanzadoController implements interfaces.Controller {
                     mensaje:`No existe un estudio avanzado con el ID ${id}`
             });
             }
-            const estudio_modificado = await this.estudio_avanzadoService.modificar(estudio.id, req.body);
-            if (estudio_modificado.affected === 1) {
+            const estudio_modificado = await this.estudio_avanzadoService.modificar(estudio, req.body);
+            if (estudio_modificado === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Estudio avanzado modificado exitosamente'
@@ -131,7 +133,7 @@ export class EstudioAvanzadoController implements interfaces.Controller {
     private async eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const estudio = await this.estudio_avanzadoService.eliminar(id);
-            if (estudio.affected === 1) {
+            if (estudio === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Estudio avanzado eliminado exitosamente'

@@ -22,22 +22,27 @@ class OcupacionSolicitanteService  implements IOcupacionSolicitanteService  {
     async adicionar(body: any) {
         const nuevaOcupacion = getRepository(OcupacionSolicitante).create({
             solicitante: body.solicitante,
-            ocupacion: body.ocupacion,
-            habilitado: body.habilitado
+            ocupacion: body.ocupacion
         })
         const ocupacion_n =  getRepository(OcupacionSolicitante).save(nuevaOcupacion);
         return ocupacion_n;  
     }
     async eliminar(id: number) {
-        const ocupacion = await getRepository(OcupacionSolicitante)
+     /*   const ocupacion = await getRepository(OcupacionSolicitante)
         .createQueryBuilder()
         .update(OcupacionSolicitante)
         .set({habilitado: false})
         .where("id = :id", { id: id })
         .execute(); 
+    */
+        const ocupacion = await getRepository(OcupacionSolicitante)
+        .createQueryBuilder()
+        .delete()
+        .where("id = :id", { id: id })
+        .execute();
         return ocupacion;
     }
-    async habilitar(id: number) {
+ /*   async habilitar(id: number) {
         const ocupacion = await getRepository(OcupacionSolicitante)
         .createQueryBuilder()
         .update(OcupacionSolicitante)
@@ -46,6 +51,7 @@ class OcupacionSolicitanteService  implements IOcupacionSolicitanteService  {
         .execute(); 
         return ocupacion;
     }
+*/
     async contar(id_solicitante: number) {
         const total = await getRepository(OcupacionSolicitante)
         .createQueryBuilder("ocupaciones_solicitantes")

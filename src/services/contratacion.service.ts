@@ -279,13 +279,6 @@ class ContratacionService  implements IContratacionService  {
             })
             .where("id = :id", { id: contratacion.id })
             .execute();
-            await queryRunner.manager.createQueryBuilder()
-            .update(Solicitante)
-            .set({
-               ocupado: false
-            })
-            .where("id = :id", { id: contratacion.solicitante.id })
-            .execute();
             await queryRunner.manager.save(NotificacionSolicitante,
                 {
                     leido: false,

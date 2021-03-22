@@ -209,7 +209,8 @@ export class VacanteController implements interfaces.Controller {
             });
             }
             const vacante_modificada = await this.vacanteService.modificar(vacante.id, req.body);
-            if (vacante_modificada) {
+            
+            if (vacante_modificada === true) {
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Vacante modificada exitosamente'
@@ -227,34 +228,19 @@ export class VacanteController implements interfaces.Controller {
                 error: err.message });
         }
     } 
-    @httpPut("/eliminacion-logica/:id",verificaToken)  
+
+    @httpDelete("/:id",verificaToken)  
     private async  eliminar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
-            const vacante = await this.vacanteService.eliminarLogico(id);
-            if (vacante.affected === 1){
-                return res.status(200).json({
-                    ok: true,
-                    mensaje: 'Vacante eliminada exitosamente'
-                })
-            }else {
+            const vacante: Vacante = await this.vacanteService.buscar(id);
+            if (vacante.num_postulantes_aceptados > 0) {
                 return res.status(400).json({
                     ok:false,
-                     mensaje: 'Error al eliminar vacante',
+                     mensaje: 'No es posible eliminar la vacante porque tiene postulantes aceptados',
                 });
             }
-
-        } catch (err) {
-            res.status(400).json({ 
-                ok: false,  
-                error: err.message 
-            });  
-        }
-    }
-    @httpDelete("/eliminacion-fisica/:id",verificaToken)  
-    private async  eliminarFisico(@requestParam("id") id: number, @response() res: express.Response) {
-        try {
-            const vacante = await this.vacanteService.eliminarFisico(id);
-            if (vacante.affected === 1){
+            const vacante_eliminda = await this.vacanteService.eliminar(id);
+            if (vacante_eliminda.affected === 1){
                 return res.status(200).json({
                     ok: true,
                     mensaje: 'Vacante eliminada exitosamente'

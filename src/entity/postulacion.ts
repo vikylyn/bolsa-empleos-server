@@ -19,18 +19,22 @@ export class Postulacion {
     @ManyToOne(type => Solicitante, solicitante => solicitante.id, {nullable: false})
     solicitante: Solicitante;
 
-    @Column()
+    @Column({default: false})
     aceptado: boolean;
 
-    @Column()
+    @Column({default: false})
     rechazado: boolean;
 
-    @Column()
+    @Column({default: false})
     favorito: boolean;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
 
+    @Column({ type: "timestamp", nullable: true})
+    rechazado_en: Date;
 
+    @Column({default: false})
+    oculto: boolean;
 
 }

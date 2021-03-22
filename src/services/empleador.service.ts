@@ -15,6 +15,11 @@ class EmpleadorService implements IEmpleadorService  {
         const empleador = await  getRepository(Empleador) 
         .createQueryBuilder("empleador")
         .leftJoinAndSelect("empleador.imagen", "imagen")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.logo", "logo")
+        .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
+        .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
+        .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
         .where("empleador.credenciales_id = :id", { id: id })  
         .getOne();
         return empleador;
@@ -60,13 +65,14 @@ class EmpleadorService implements IEmpleadorService  {
                         imagen: imagen, 
                         telefono: body.telefono, 
                         cedula: body.cedula, 
+                        num_complemento_ci: body.num_complemento_ci,
                         genero: body.genero, 
                         habilitado: true,
+                        existe_empresa: false,
                         nacionalidad: body.nacionalidad,
                         direccion:body.direccion,
                         ciudad: {id: body.id_ciudad},
-                        credenciales: credencial,
-                        empresa: body.empresa
+                        credenciales: credencial
                     });
                 await queryRunner.commitTransaction();
 
@@ -119,13 +125,14 @@ class EmpleadorService implements IEmpleadorService  {
                         imagen: imagen, 
                         telefono: body.telefono, 
                         cedula: body.cedula, 
+                        num_complemento_ci: body.num_complemento_ci,
                         genero: body.genero, 
                         habilitado: true,
+                        existe_empresa: true,
                         nacionalidad: body.nacionalidad,
                         direccion:body.direccion,
                         ciudad: {id: body.id_ciudad},
-                        credenciales: credencial,
-                        empresa: body.empresa
+                        credenciales: credencial
                     });
                 let imagen2 = await queryRunner.manager.save(Imagen, 
                         { id_cloudinary: 'no-image2_uyivib',
@@ -172,13 +179,12 @@ class EmpleadorService implements IEmpleadorService  {
             apellidos: body.apellidos, 
             telefono: body.telefono, 
             cedula: body.cedula, 
+            num_complemento_ci: body.num_complemento_ci,
             genero: body.genero, 
             modificado_en: new Date(),
             nacionalidad: body.nacionalidad,
             direccion:body.direccion,
-            ciudad: {id: body.id_ciudad},
-            empresa: body.empresa
-
+            ciudad: {id: body.id_ciudad}
         })
         .where("id = :id", { id: empleador.id })
         .execute();

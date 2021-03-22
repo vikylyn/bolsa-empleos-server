@@ -118,7 +118,7 @@ export let sendEmailSolicitante = function(solicitante: Solicitante, restablecer
                                 <div style="font-size:12px;font-family:Arial,Helvetica,sans-serif;color:#002b55">
                                     <br>
                                     <p><strong>Hola, ${solicitante.nombre} ${solicitante.apellidos}</strong>,</p>
-                                    <p>Si deseas restablecer tu contraseña haz clic en el botón de abajo. Si no deseas restablecerla no tienes de que preocuparte, puedes omitir esta notificacion</p>  
+                                    <p>Si deseas restablecer tu contraseña haz clic en el botón de abajo. Si no deseas restablecerla no tienes de que preocuparte, puedes omitir esta notificación</p>  
                                 </div>
                                     
                             </td>

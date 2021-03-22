@@ -82,7 +82,6 @@ export class SolicitanteController implements interfaces.Controller {
 
         
         try {
-            console.log(req.body.email)
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
             if (existe_email) {
                 return res.status(400).json({
@@ -90,12 +89,9 @@ export class SolicitanteController implements interfaces.Controller {
                     mensaje: 'Existe un usuario con ese email'
                  })
             }
-            const solicitante = await this.solicitanteService.adicionar(req.body);
-            console.log(solicitante);
+            const solicitante: Solicitante = await this.solicitanteService.adicionar(req.body);
             if (solicitante) {
-            
                 sendEmailSolicitante(solicitante, false);
-    
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Solicitante adicionado exitosamente',  
@@ -109,6 +105,7 @@ export class SolicitanteController implements interfaces.Controller {
             }  
         
         } catch (err) {
+            console.log(err);
             res.status(400).json({
                 ok: false, 
                 error: err.message 
@@ -153,7 +150,7 @@ export class SolicitanteController implements interfaces.Controller {
                 return res.status(200).json({
                     ok:true,
                     mensaje: 'Solicitante modificado exitosamente', 
-                });
+                });  
             }else {
                 
                 return res.status(400).json({
@@ -190,7 +187,7 @@ export class SolicitanteController implements interfaces.Controller {
                 error: err.message });  
         }
     }
-    @httpPut("/activar-ocupacion/:id",verificaToken)  
+ /*   @httpPut("/activar-ocupacion/:id",verificaToken)  
     private async activarOcupacion(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const solicitante = await this.solicitanteService.activar_ocupacion(id);
@@ -211,8 +208,8 @@ export class SolicitanteController implements interfaces.Controller {
                 error: err.message });  
         }
     }
-
-    @httpPut("/desactivar-ocupacion/:id",verificaToken)  
+*/
+ /*   @httpPut("/desactivar-ocupacion/:id",verificaToken)  
     private async desactivarOcupacion(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const solicitante = await this.solicitanteService.desactivar_ocupacion(id);
@@ -233,7 +230,7 @@ export class SolicitanteController implements interfaces.Controller {
                 error: err.message });  
         }
     }
-
+*/
     @httpPut("/activacion/:id", verificaToken)
     private async activarCuenta(@requestParam("id") id: number, @response() res: express.Response) {
         try {
@@ -254,6 +251,5 @@ export class SolicitanteController implements interfaces.Controller {
                 ok: false,  
                 error: err.message });  
         }
-    } // 
-
+    } 
 }

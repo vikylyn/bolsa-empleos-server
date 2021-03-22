@@ -10,7 +10,6 @@ import { ICredencialesService } from '../interfaces/ICreadenciales.service';
 import { sendEmailEmpleador } from '../email/enviar-email';
 import { IEmpleadorService } from '../interfaces/IEmpleador.service';
 import { Empleador } from '../entity/empleador';
-import { Empresa } from '../entity/empresa';
 import { IEmpresaService } from '../interfaces/IEmpresa.service';
 
 
@@ -53,34 +52,6 @@ export class EmpleadorController implements interfaces.Controller {
                 error: err.message });
         }
     }
-    @httpGet("/empresa/:id",verificaToken)
-    private async buscarEmpleadorEmpresa(@requestParam("id") id: number, @response() res: express.Response) {
-        try {
-            const empleador: Empleador = await this.empleadorService.buscar(id);
-            if (!empleador){
-                return res.status(400).json({
-                    ok: false,
-                    mensaje:`No existe un empleador con el ID ${id}`
-                });
-            }
-            if (!empleador.empresa){
-                return res.status(400).json({
-                    ok: false,
-                    mensaje:`No existe una empresa para el empleador con el ID ${id}`
-                });
-            }
-            const empresa: Empresa = await this.empresaService.buscarPorIdEmpleador(empleador.id);
-            return res.status(200).json({
-                ok: true,
-                empleador: empleador,
-                empresa
-            });
-        } catch (err) {
-            res.status(500).json({
-                ok: false, 
-                error: err.message });
-        }
-    } 
     @httpPost("/",
     body('nombre','El nombre es oblidatorio').not().isEmpty(),
     body('apellidos','Los apellidos son obligatorios').not().isEmpty(),

@@ -1,7 +1,8 @@
-import {Entity, Column, PrimaryGeneratedColumn,JoinColumn, ManyToOne} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Curriculum } from './curriculum';
-import { Pais } from './pais';
 import { NivelEstudio } from './nivel-estudio';
+import { OtraCiudadEAvanzado } from './OtraCiudadEstudioAvanzado';
+import { Ciudad } from './ciudad';
 
 @Entity('estudios_avanzados')
 export class EstudioAvanzado {
@@ -21,22 +22,18 @@ export class EstudioAvanzado {
     @Column({type: 'date'})
     fecha_fin: Date;
 
-    @Column({type: 'varchar', length: 20})
-    estado: string;
-
-    @Column({type: 'varchar', length: 20})
-    ciudad: string;
-
     @JoinColumn({name:'curriculums_id'})
     @ManyToOne(type => Curriculum, curriculum => curriculum.id,{nullable:false})
     curriculum: Curriculum;
 
-    @JoinColumn({name:'paises_id'})
-    @ManyToOne(type => Pais, pais => pais.id,{nullable:false, eager: true})
-    pais: Pais;
+    @JoinColumn({name:'ciudades_id'})
+    @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
+    ciudad: Ciudad;
 
     @JoinColumn({name:'niveles_estudio_id'})
     @ManyToOne(type => NivelEstudio, nivel_estudio => nivel_estudio.id,{nullable:false, eager: true})
     nivel_estudio: NivelEstudio;
-
+    
+    @OneToOne(type => OtraCiudadEAvanzado, ciudad => ciudad.estudio, {eager: true})
+    otraCiudad: OtraCiudadEAvanzado; 
 }

@@ -1,10 +1,12 @@
 import { injectable} from "inversify";
-import { getRepository} from 'typeorm';
+import { createQueryBuilder, getRepository} from 'typeorm';
 import { IReportesSolicitanteService } from '../interfaces/IReportes-solicitante.service';
 import { Solicitante } from '../entity/solicitante';
+import { Contratacion } from '../entity/contratacion';
 
 @injectable()
 class ReportesSolicitanteService  implements IReportesSolicitanteService  {
+    
     async generarListadoSolicitantes(body: any) {
        let habilitado: boolean = false;
        if(body.habilitado === true || body.habilitado === 'true') {

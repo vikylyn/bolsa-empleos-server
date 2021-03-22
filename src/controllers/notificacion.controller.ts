@@ -160,5 +160,30 @@ export class NotificacionController implements interfaces.Controller {
             }
         }
     }
+    @httpGet("/paginacion/:id_usuario/:id_rol/:desde",verificaToken)
+    private async listarConPaginacion(@requestParam("id_usuario") id_usuario: number,@requestParam("id_rol") id_rol: number,
+        @requestParam("desde") desde: number,req: express.Request, res: express.Response, next: express.NextFunction) {
 
-}
+        if( 3 == id_rol) { 
+            let notificaciones: NotificacionEmpleador[] = await this.notificacionEmpleadorService.listarConPaginacion(id_usuario,desde);
+            let totalNoLeidas = await this.notificacionEmpleadorService.contarNoLeidas(id_usuario);
+            let total = await this.notificacionEmpleadorService.contarTodas(id_usuario);
+            return res.status(200).json({
+                ok: true,
+                notificaciones,
+                totalNoLeidas,
+                total
+            });
+        }else {
+            let notificaciones: NotificacionSolicitante[] = await this.notificacionSolicitanteService.listarConPaginacion(id_usuario,desde);
+            let totalNoLeidas = await this.notificacionSolicitanteService.contarNoLeidas(id_usuario);
+            let total = await this.notificacionSolicitanteService.contarTodas(id_usuario);
+            return res.status(200).json({
+                ok: true,
+                notificaciones,
+                totalNoLeidas,
+                total
+            })
+        }
+    }
+} 

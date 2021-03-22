@@ -148,6 +148,7 @@ class SolicitanteService implements ISolicitanteService  {
                     imagen: imagen, 
                     telefono: body.telefono, 
                     cedula: body.cedula, 
+                    num_complemento_ci: body.num_complemento_ci,
                     genero: body.genero, 
                     habilitado: true,
                     nacionalidad: body.nacionalidad,
@@ -157,7 +158,6 @@ class SolicitanteService implements ISolicitanteService  {
                     estado_civil: {id: body.id_estado_civil},
                     ciudad: {id: body.id_ciudad},
                     credenciales: credencial})
-                console.log(solicitante_guardado);
                 const idProfesiones: string = body.id_profesion;
                 for (let index = 0; index < idProfesiones.length; index++) {
                     let ocupacion = await queryRunner.manager.save(OcupacionSolicitante,
@@ -198,6 +198,7 @@ class SolicitanteService implements ISolicitanteService  {
             apellidos: body.apellidos, 
             telefono: body.telefono, 
             cedula: body.cedula, 
+            num_complemento_ci: body.num_complemento_ci,
             genero: body.genero, 
             habilitado: body.habilitado,
             nacionalidad: body.nacionalidad,
@@ -222,8 +223,7 @@ class SolicitanteService implements ISolicitanteService  {
         .createQueryBuilder()
         .update(Solicitante)
         .set({ 
-            habilitado: false,
-            ocupado: false})
+            habilitado: false})
         .where("id = :id", { id: id })
         .execute(); 
         return respuesta;
@@ -238,6 +238,8 @@ class SolicitanteService implements ISolicitanteService  {
        .leftJoinAndSelect("solicitantes.estado_civil", "estado_civil")
        .leftJoinAndSelect("solicitantes.ciudad", "ciudad")
        .leftJoinAndSelect("ciudad.estado", "estado")
+       .leftJoinAndSelect("solicitantes.ocupaciones", "ocupaciones")
+       .leftJoinAndSelect("ocupaciones.ocupacion", "ocupacion")
        .leftJoinAndSelect("estado.pais", "pais")
        .where("solicitantes.id = :id", { id: id })
        .getOne();
@@ -248,7 +250,7 @@ class SolicitanteService implements ISolicitanteService  {
         return solicitante;
     } 
 
-    async activar_ocupacion(id: number) {
+ /*   async activar_ocupacion(id: number) {
         const respuesta = await getRepository(Solicitante)
         .createQueryBuilder()
         .update(Solicitante)
@@ -257,7 +259,8 @@ class SolicitanteService implements ISolicitanteService  {
         .execute(); 
         return respuesta;
     }
-    async desactivar_ocupacion(id: number) {
+*/
+ /*   async desactivar_ocupacion(id: number) {
         const respuesta = await getRepository(Solicitante)
         .createQueryBuilder()
         .update(Solicitante)
@@ -266,6 +269,7 @@ class SolicitanteService implements ISolicitanteService  {
         .execute(); 
         return respuesta;
     }
+*/
     async habilitar(id: number) {
         const respuesta = await getRepository(Solicitante)
         .createQueryBuilder()
