@@ -25,6 +25,7 @@ class EmpresaService implements IEmpresaService  {
         .update(Empresa)
         .set({
             nombre:body.nombre, 
+            razon_social: {id: body.id_razon_social},
             dominio_web: body.dominio_web, 
             direccion: body.direccion, 
             telefono: body.telefono, 
@@ -51,6 +52,7 @@ class EmpresaService implements IEmpresaService  {
         .leftJoinAndSelect("empresas.ciudad", "ciudad")
         .leftJoinAndSelect("ciudad.estado", "estado")
         .leftJoinAndSelect("estado.pais", "pais")
+        .leftJoinAndSelect("empresas.razon_social", "razon_social")
         .where("empresas.empleador.id = :id", { id: id_empleador })
         .getOne();
     

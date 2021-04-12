@@ -229,36 +229,7 @@ export class VacanteController implements interfaces.Controller {
         }
     } 
 
-    @httpDelete("/:id",verificaToken)  
-    private async  eliminar(@requestParam("id") id: number, @response() res: express.Response) {
-        try {
-            const vacante: Vacante = await this.vacanteService.buscar(id);
-            if (vacante.num_postulantes_aceptados > 0) {
-                return res.status(400).json({
-                    ok:false,
-                     mensaje: 'No es posible eliminar la vacante porque tiene postulantes aceptados',
-                });
-            }
-            const vacante_eliminda = await this.vacanteService.eliminar(id);
-            if (vacante_eliminda.affected === 1){
-                return res.status(200).json({
-                    ok: true,
-                    mensaje: 'Vacante eliminada exitosamente'
-                })
-            }else {
-                return res.status(400).json({
-                    ok:false,
-                     mensaje: 'Error al eliminar vacante',
-                });
-            }
-
-        } catch (err) {
-            res.status(400).json({ 
-                ok: false,  
-                error: err.message 
-            });  
-        }
-    }
+ 
     @httpPut("/inhabilitar/:id",verificaToken)  
     private async  inhabilitar(@requestParam("id") id: number, @response() res: express.Response) {
         try {

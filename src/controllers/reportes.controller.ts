@@ -60,7 +60,7 @@ export class ReportesController implements interfaces.Controller {
     body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
     body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
     validarCampos)
-    private async generarListadoEmpresa(
+    private async generarListadoEmpresas(
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {
@@ -95,7 +95,7 @@ export class ReportesController implements interfaces.Controller {
         let total: number = await this.reporteSolicitanteService.contarSolicitantes(req.body);
         return res.status(200).json({
             ok: true,
-            solicitantes,
+            solicitantes, 
             ocupacion,
             total
         });
@@ -107,7 +107,7 @@ export class ReportesController implements interfaces.Controller {
     body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
     body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
     validarCampos)
-    private async generarListadoVacante(
+    private async generarListadoVacantes(
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {
@@ -126,7 +126,7 @@ export class ReportesController implements interfaces.Controller {
     body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
     body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
     validarCampos)
-    private async generarListadoContratacion(
+    private async generarListadoContrataciones(
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {
@@ -169,7 +169,7 @@ export class ReportesController implements interfaces.Controller {
         body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
         body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
         validarCampos)
-    private async generarListadoSolicitantesAceptados(
+    private async generarListadoSolicitantesContratados(
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {

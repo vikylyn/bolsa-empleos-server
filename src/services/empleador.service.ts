@@ -67,7 +67,7 @@ class EmpleadorService implements IEmpleadorService  {
                         cedula: body.cedula, 
                         num_complemento_ci: body.num_complemento_ci,
                         genero: body.genero, 
-                        habilitado: true,
+                        habilitado: false,
                         existe_empresa: false,
                         nacionalidad: body.nacionalidad,
                         direccion:body.direccion,
@@ -127,7 +127,7 @@ class EmpleadorService implements IEmpleadorService  {
                         cedula: body.cedula, 
                         num_complemento_ci: body.num_complemento_ci,
                         genero: body.genero, 
-                        habilitado: true,
+                        habilitado: false,
                         existe_empresa: true,
                         nacionalidad: body.nacionalidad,
                         direccion:body.direccion,
@@ -141,6 +141,7 @@ class EmpleadorService implements IEmpleadorService  {
                           url_segura: 'https://res.cloudinary.com/dl8ifr7sr/image/upload/v1595442138/no-image2_uyivib.png'});
                 let empresa_guardada = await queryRunner.manager.save(Empresa,{
                         nombre: body.empresa_nombre,
+                        razon_social: {id: body.id_razon_social},
                         dominio_web: body.empresa_dominio_web,
                         direccion: body.empresa_direccion,
                         telefono: body.empresa_telefono,

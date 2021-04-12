@@ -150,7 +150,7 @@ class SolicitanteService implements ISolicitanteService  {
                     cedula: body.cedula, 
                     num_complemento_ci: body.num_complemento_ci,
                     genero: body.genero, 
-                    habilitado: true,
+                    habilitado: false,
                     nacionalidad: body.nacionalidad,
                     direccion:body.direccion,
                     ocupado: false,

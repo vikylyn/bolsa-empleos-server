@@ -80,6 +80,12 @@ import { IReportePostulacionesService } from '../interfaces/IReporte-postulacion
 import { ReportePostulacionesService } from "../services/Reporte-portulaciones.service";
 import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
 import { InformacionAppService } from "../services/InformacionApp.service";
+import { IRazonSocialService } from '../interfaces/IRazonSocial.service';
+import { RazonSocialService } from "../services/RazonSocial.service";
+import { PeriodoPagoService } from "../services/PeriodoPago.service";
+import { IPeriodoPagoService } from '../interfaces/IPeriodoPago.service';
+import { TipoJornadaService } from "../services/TipoJornada.service";
+import { ITipoJornadaService } from '../interfaces/ITipoJornada.service';
 
 const myContainer = new Container();
 
@@ -123,5 +129,7 @@ myContainer.bind<IReportesVacanteService>(TYPES.IReportesVacanteService).to(Repo
 myContainer.bind<IReportesEmpleadorService>(TYPES.IReportesEmpleadorService).to(ReportesEmpleadorService);
 myContainer.bind<IReportePostulacionesService>(TYPES.IReportePostulacionesService).to(ReportePostulacionesService);
 myContainer.bind<IInformacionAppService>(TYPES.IInformacionAppService).to(InformacionAppService);
-
+myContainer.bind<IRazonSocialService>(TYPES.IRazonSocialService).to(RazonSocialService);
+myContainer.bind<IPeriodoPagoService>(TYPES.IPeriodoPagoService).to(PeriodoPagoService);
+myContainer.bind<ITipoJornadaService>(TYPES.ITipoJornadaService).to(TipoJornadaService);
 export { myContainer };     

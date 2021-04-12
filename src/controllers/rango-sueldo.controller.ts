@@ -4,11 +4,13 @@ import { inject } from "inversify";
 import { TYPES } from "../config/types";
 import verificaToken from '../middlewares/verificar-token';
 import { IRangoSueldoService } from '../interfaces/IRangoSueldo.service';
+import { IPeriodoPagoService } from '../interfaces/IPeriodoPago.service';
  
 @controller("/sueldo")    
 export class RangoSueldoController implements interfaces.Controller {  
  
-    constructor( @inject(TYPES.IRangoSueldoService) private rango_sueldo: IRangoSueldoService) {}
+    constructor( @inject(TYPES.IRangoSueldoService) private rango_sueldo: IRangoSueldoService,
+                 @inject(TYPES.IPeriodoPagoService) private periodo_de_pago: IPeriodoPagoService) {}
  
     @httpGet("/",verificaToken)
     private async listar(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -16,6 +18,15 @@ export class RangoSueldoController implements interfaces.Controller {
         return res.status(200).json({
             ok: true,
             rango_sueldos: sueldos
+        });
+    }
+
+    @httpGet("/periodo-pago",verificaToken)
+    private async listarPeriodosDePago(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let periodos = await this.periodo_de_pago.listar();
+        return res.status(200).json({
+            ok: true,
+            periodos
         });
     }
 

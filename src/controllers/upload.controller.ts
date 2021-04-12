@@ -82,9 +82,7 @@ export class UploadController implements interfaces.Controller {
         // borrando imagen de la app
         await fs.unlink(path.resolve(req.file.path))
 
-        if(administrador.imagen.id_cloudinary != 'no-image2_uyivib') {
-            let eliminar = await cloudinary.uploader.destroy(administrador.imagen.id_cloudinary);
-        }
+
         
         const imagen = await this.imagenService.buscar(administrador.imagen.id);
         
@@ -94,14 +92,17 @@ export class UploadController implements interfaces.Controller {
         imagen.url = resultAdministrador.url;
         
         const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-        if (imagen_modificada.affected === 1){
+        if (imagen_modificada === true){
+            if(administrador.imagen.id_cloudinary != 'no-image2_uyivib') {
+              let borrar =  await cloudinary.uploader.destroy(administrador.imagen.id_cloudinary);
+            }
             return res.status(200).json({
                 ok:true,
                 mensaje: 'Imagen modificada exitosamente',
                 imagen: imagen
             });
           }else {
-      
+              let borrar = await cloudinary.uploader.destroy(resultAdministrador.public_id);
               return res.status(500).json({
                   ok:false,
                   mensaje: 'Error al modificar imagen'
@@ -131,9 +132,7 @@ export class UploadController implements interfaces.Controller {
         // borrando imagen de la app
         await fs.unlink(path.resolve(req.file.path))
 
-        if(solicitante.imagen.id_cloudinary != 'no-image2_uyivib') {
-            let eliminar = await cloudinary.uploader.destroy(solicitante.imagen.id_cloudinary);
-        }
+
         
         const imagen = await this.imagenService.buscar(solicitante.imagen.id);
         
@@ -143,15 +142,18 @@ export class UploadController implements interfaces.Controller {
         imagen.url = resultSolicitante.url;
         
         const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
-        if (imagen_modificada.affected === 1){
+        if (imagen_modificada === true){
+            if(solicitante.imagen.id_cloudinary != 'no-image2_uyivib') {
+               let borrar = await cloudinary.uploader.destroy(solicitante.imagen.id_cloudinary);
+            }
             return res.status(200).json({
                 ok:true,
                 mensaje: 'Imagen modificada exitosamente',
                 imagen: imagen
             });
           }else {
-      
-              return res.status(500).json({
+              let borrar = await cloudinary.uploader.destroy(resultSolicitante.public_id);
+              return res.status(400).json({
                   ok:false,
                   mensaje: 'Error al modificar imagen'
               });
@@ -179,9 +181,7 @@ export class UploadController implements interfaces.Controller {
       // borrando imagen de la app
       await fs.unlink(path.resolve(req.file.path))
 
-      if(empleador.imagen.id_cloudinary != 'no-image2_uyivib') {
-          let eliminar = await cloudinary.uploader.destroy(empleador.imagen.id_cloudinary);
-      }
+
       
       const imagen = await this.imagenService.buscar(empleador.imagen.id);
       
@@ -192,14 +192,17 @@ export class UploadController implements interfaces.Controller {
       
       const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
 
-      if (imagen_modificada.affected === 1){
+      if (imagen_modificada === true){
+        if(empleador.imagen.id_cloudinary != 'no-image2_uyivib') {
+           let borrar =  await cloudinary.uploader.destroy(empleador.imagen.id_cloudinary);
+        }
         return res.status(200).json({
             ok:true,
             mensaje: 'Imagen modificada exitosamente',
             imagen: imagen
         });
       }else {
-  
+          let borrar =  await cloudinary.uploader.destroy(resultEmpleador.public_id);
           return res.status(500).json({
               ok:false,
               mensaje: 'Error al modificar imagen'
@@ -225,13 +228,8 @@ private async cambiarImagenEmpresa(@requestParam("id") id: number,@request() req
 
             // subiendo a cloudinary
             let resultEmpresa = await cloudinary.v2.uploader.upload(req.file.path); 
-            console.log(resultEmpresa)
             // borrando imagen de la app
             await fs.unlink(path.resolve(req.file.path))
-
-            if(empresa.logo.id_cloudinary != 'no-image2_uyivib') {
-                let eliminar = await cloudinary.uploader.destroy(empresa.logo.id_cloudinary);
-            }
 
             const imagen = await this.imagenService.buscar(empresa.logo.id);
 
@@ -242,14 +240,17 @@ private async cambiarImagenEmpresa(@requestParam("id") id: number,@request() req
 
             const imagen_modificada = await this.imagenService.modificar(imagen.id,imagen);
           
-            if (imagen_modificada.affected === 1){
+            if (imagen_modificada === true){
+                if(empresa.logo.id_cloudinary != 'no-image2_uyivib') {
+                   let borrar =  await cloudinary.uploader.destroy(empresa.logo.id_cloudinary);
+                }
                 return res.status(200).json({
                     ok:true,
                     mensaje: 'Imagen modificada exitosamente',
                     imagen: imagen
                 });
             }else {
-
+                let borrar = await cloudinary.uploader.destroy(resultEmpresa.public_id);
                 return res.status(500).json({
                     ok:false,
                     mensaje: 'Error al modificar imagen'
@@ -275,13 +276,8 @@ private async cambiarImagenEmpresa(@requestParam("id") id: number,@request() req
 
             // subiendo a cloudinary
             let resultInfoLogo = await cloudinary.v2.uploader.upload(req.file.path); 
-          
-            // borrando imagen de la app
-            await fs.unlink(path.resolve(req.file.path))
-
-            if(informacion.imagen.id_cloudinary != 'no-image2_uyivib') {
-                await cloudinary.uploader.destroy(informacion.imagen.id_cloudinary);
-            }
+            // borrando imagen de la carpeta de imagenes temporales de la app
+            let imagen_borrada = await fs.unlink(path.resolve(req.file.path))
 
             const imagen = await this.imagenService.buscar(informacion.imagen.id);
 
@@ -294,13 +290,18 @@ private async cambiarImagenEmpresa(@requestParam("id") id: number,@request() req
             const server = Server.instance;      
             server.io.emit('actualizando-informacion-app');    
                
-            if (imagen_modificada.affected === 1){
+            if (imagen_modificada === true){
+               
+                if(informacion.imagen.id_cloudinary != 'no-image2_uyivib') {
+                    let borrar = await cloudinary.uploader.destroy(informacion.imagen.id_cloudinary);
+                }
                 return res.status(200).json({
                     ok:true,
                     mensaje: 'Logo modificado exitosamente',
                     imagen: informacion.imagen
                 });
             }else {
+                let borrar = await cloudinary.uploader.destroy(resultInfoLogo.public_id);
                 return res.status(400).json({
                     ok:false,
                     mensaje: 'Error al modificar imagen'

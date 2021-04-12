@@ -39,7 +39,10 @@ const TYPES = {
     IReportesContratacionService: Symbol.for("IReportesContratacionService"),
     IReportesVacanteService: Symbol.for("IReportesVacantesService"),
     IReportePostulacionesService: Symbol.for("IReportePostulacionesService"),
-    IInformacionAppService: Symbol.for("IInformacionAppService")
+    IRazonSocialService: Symbol.for("IRazonSocialService"),
+    IInformacionAppService: Symbol.for("IInformacionAppService"),
+    IPeriodoPagoService: Symbol.for("IPeriodoPagoService"),
+    ITipoJornadaService:Symbol.for("ITipoJornadaService")
 }
 
 export { TYPES };    

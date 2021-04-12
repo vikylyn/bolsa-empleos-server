@@ -34,6 +34,7 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
         .leftJoinAndSelect("ciudad.estado", "estado")
         .leftJoinAndSelect("estado.pais", "pais")
         .leftJoinAndSelect("empleadores.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
         .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, empresa: empresa, id_ciudad: body.id_ciudad })
         .addOrderBy("empleadores.creado_en", "ASC")
         .getMany();
@@ -84,6 +85,9 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
           if(body.id_ciudad > 0) {
                consulta += "and ciudad.id = :id_ciudad ";
           }
+          if(body.id_razon_social > 0) {
+               consulta += "and razon_social.id = :id_razon_social ";
+          }
           if(body.empresa === true || body.empresa === 'true') {
               empresa = true;
           }
@@ -92,10 +96,11 @@ class ReportesEmpleadorService  implements IReportesEmpleadorService  {
            getRepository(Empresa)
           .createQueryBuilder("empresas")
           .leftJoinAndSelect("empresas.empleador", "empleador")
+          .leftJoinAndSelect("empresas.razon_social", "razon_social")
           .leftJoinAndSelect("empresas.ciudad", "ciudad")
           .leftJoinAndSelect("ciudad.estado", "estado")
           .leftJoinAndSelect("estado.pais", "pais")
-          .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, id_ciudad: body.id_ciudad })
+          .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, id_ciudad: body.id_ciudad, id_razon_social: body.id_razon_social })
           .addOrderBy("empresas.creado_en", "ASC")
           .getMany();
           return empleadores;

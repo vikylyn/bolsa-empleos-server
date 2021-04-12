@@ -61,12 +61,12 @@ export class CurriculumHabilidadController implements interfaces.Controller {
             if(curriculum_habilidad) {
                 return res.status(201).json({
                     ok: true,
-                    mensaje: 'Habilidades adicionadas  exitosamente',  
+                    mensaje: 'Habilidad adicionada exitosamente',  
                 });
             }else {
                 return res.status(500).json({
                     ok: false,
-                    mensaje: 'Error al adicionar habilidades', 
+                    mensaje: 'Error al adicionar habilidad', 
                 });
             }
            
@@ -85,12 +85,12 @@ export class CurriculumHabilidadController implements interfaces.Controller {
             if (curriculum_habilidad.affected === 1){
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Asignacion de habilidad Eliminada exitosamente'
+                    mensaje: 'Habilidad Eliminada exitosamente'
                 })
             }else {
                 return res.status(400).json({
                     ok:false,
-                     mensaje: 'Error al eliminar la asignacion de habilidad',
+                     mensaje: 'Error al eliminar la Habilidad',
                 });
             }
 

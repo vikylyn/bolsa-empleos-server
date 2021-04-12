@@ -120,7 +120,7 @@ export class ContratacionController implements interfaces.Controller {
         }
     } //
 
-
+/*
     @httpDelete("/rechazar/:id",verificaToken)  
     private async rechazar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
@@ -173,6 +173,7 @@ export class ContratacionController implements interfaces.Controller {
             });  
         }
     }
+*/
     @httpPut("/oculto/:id",verificaToken)
     private async ocultar(@requestParam("id") id: number, @response() res: express.Response) {
         try {
@@ -204,10 +205,31 @@ export class ContratacionController implements interfaces.Controller {
         }
     }
 
-    @httpGet("/busqueda/:id/:valor",verificaToken)
-    private async busqueda(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+    @httpGet("/busqueda-empleador/:id/:valor",verificaToken)
+    private async busquedaEmpleador(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const contrataciones = await this.contratacionService.busqueda(valor,idEmpleador);
+            const contrataciones = await this.contratacionService.busquedaEmpleador(valor,idEmpleador);
+            if (!contrataciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen contrataciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                contrataciones,
+            });
+        } catch (err) {
+            res.status(500).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+
+    @httpGet("/busqueda-solicitante/:id/:valor",verificaToken)
+    private async busquedaSolicitante(@requestParam("valor") valor: string,@requestParam("id") idSolicitante: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const contrataciones = await this.contratacionService.busquedaSolicitante(valor,idSolicitante);
             if (!contrataciones){
                 return res.status(400).json({
                     ok: false,

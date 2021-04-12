@@ -77,7 +77,7 @@ class OcupacionService  implements IOcupacionService  {
         return ocupacion_m;
     }
     async inhabilitar(id: number) {
-        console.log(id);
+        
         const ocupacion = await getRepository(Ocupacion)
         .createQueryBuilder()
         .update(Ocupacion)

@@ -48,10 +48,12 @@ import '../controllers/postulacion.controller';
 import '../controllers/contratacion.controller';
 import '../controllers/ubicacion.controller';
 import '../controllers/credenciales.controller';
-import '../controllers/ocupacion-solicitante.controller'
-import '../controllers/notificacion.controller'
-import '../controllers/reportes.controller'
-import '../controllers/informacion-app.controller'
+import '../controllers/ocupacion-solicitante.controller';
+import '../controllers/notificacion.controller';
+import '../controllers/reportes.controller';
+import '../controllers/informacion-app.controller';
+import '../controllers/razon-social.controller';
+import '../controllers/tipo-jornada.controller';
 
 export default class Server {
 

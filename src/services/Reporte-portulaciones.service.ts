@@ -9,6 +9,9 @@ class ReportePostulacionesService  implements IReportePostulacionesService  {
      // filtrado por el id de Ocupacion de la ocupacion solicitada en la vacante
      async generarListadoPostulacionesRechazadasPorOcupacion(body: any) {
        let habilitado: boolean = false;
+       let f1: Date = new Date(body.fecha_inicio);
+       let f2: Date = new Date(body.fecha_fin);
+     
        if(body.habilitado === true || body.habilitado === 'true') {
             habilitado = true;
        }       
@@ -21,7 +24,7 @@ class ReportePostulacionesService  implements IReportePostulacionesService  {
        if(body.id_ciudad > 0) {
             consulta += "and ciudad.id = :id_ciudad ";
        }
-       consulta += "and ocupacion.id = :id_ocupacion "
+       consulta += "and p.vacantes_id = v.id and v.requisitos_id = r.id and  o.id = r.ocupaciones_id and o.id = :id_ocupacion "
 
         const postulaciones = await 
         getRepository(Postulacion)
@@ -34,9 +37,9 @@ class ReportePostulacionesService  implements IReportePostulacionesService  {
        .leftJoinAndSelect("postulaciones.vacante", "vacante")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-       .where( "(select count(*) from postulaciones  as p where  solicitante.id = p.solicitantes_id and (p.rechazado_en between :fecha_inicio and :fecha_fin) and (p.rechazado = true and p.aceptado = false) "+consulta+") in (:num_rechazos) ", 
-          {fecha_inicio: body.fecha_inicio, 
-           fecha_fin: body.fecha_fin, 
+       .where( "(select count(*) from postulaciones  as p, vacantes as v, requisitos as r, ocupaciones as o where  solicitante.id = p.solicitantes_id and (p.rechazado_en between :fecha_inicio and :fecha_fin) and (p.rechazado = true and p.aceptado = false) "+consulta+") in (:num_rechazos) ", 
+          {fecha_inicio: f1, 
+           fecha_fin: f2, 
            habilitado: habilitado, 
            id_ocupacion: body.id_ocupacion, 
            id_ciudad: body.id_ciudad,

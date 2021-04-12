@@ -97,14 +97,7 @@ class PostulacionService  implements IPostulacionService  {
        return total;   
 }
     async buscar(id: number) {
-        const postulacion = await 
-        getRepository(Postulacion)
-        .createQueryBuilder("postulaciones")
-        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
-        .leftJoinAndSelect("postulaciones.vacante", "vacante")
-        .leftJoinAndSelect("vacante.empleador", "empleador")
-        .where("postulaciones.id = :id", { id: id })
-        .getOne();
+       let postulacion: Postulacion = await  getRepository(Postulacion).findOne(id);
        return postulacion;
     }
     async aceptarSolicitante(postulacion: Postulacion) {
@@ -124,7 +117,9 @@ class PostulacionService  implements IPostulacionService  {
                     .createQueryBuilder()
                     .update(Postulacion)
                     .set({
-                        aceptado: true
+                        aceptado: true,
+                        rechazado: false,
+                        rechazado_en: ''
                     })
                     .where("id = :id", { id: postulacion.id })
                     .execute();
@@ -137,7 +132,14 @@ class PostulacionService  implements IPostulacionService  {
                     })
                     .where("id = :id", { id: postulacion.vacante.id })
                     .execute();
-
+                    
+                await getRepository(NotificacionSolicitante)
+                    .createQueryBuilder("notificaciones")
+                    .leftJoinAndSelect("notificaciones.solicitante","solicitante")
+                    .leftJoinAndSelect("notificaciones.vacante","vacante")
+                    .delete()
+                    .where("solicitante.id = :id_solicitante && vacante.id = :id_vacante", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                    .execute();
                 await queryRunner.manager.save(NotificacionSolicitante,
                         {
                             leido: false,
@@ -160,7 +162,7 @@ class PostulacionService  implements IPostulacionService  {
 
             return respuesta;
     }
-    async aceptarRechazado(postulacion: Postulacion) {
+ /*   async aceptarRechazado(postulacion: Postulacion) {
         let respuesta: any;
         const connection = getConnection();
             const queryRunner = connection.createQueryRunner();
@@ -178,7 +180,8 @@ class PostulacionService  implements IPostulacionService  {
                     .update(Postulacion)
                     .set({
                         aceptado: true,
-                        rechazado: false
+                        rechazado: false,
+                        rechazado_en: ''
                     })
                     .where("id = :id", { id: postulacion.id })
                     .execute();
@@ -191,7 +194,13 @@ class PostulacionService  implements IPostulacionService  {
                     })
                     .where("id = :id", { id: postulacion.vacante.id })
                     .execute();
-
+                await getRepository(NotificacionSolicitante)
+                    .createQueryBuilder("notificaciones")
+                    .leftJoinAndSelect("notificaciones.solicitante","solicitante")
+                    .leftJoinAndSelect("notificaciones.vacante","vacante")
+                    .delete()
+                    .where("solicitante.id = :id_solicitante && vacante.id = :id_vacante", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                    .execute();
                 await queryRunner.manager.save(NotificacionSolicitante,
                         {
                             leido: false,
@@ -199,6 +208,68 @@ class PostulacionService  implements IPostulacionService  {
                             empleador: {id: postulacion.vacante.empleador.id},
                             vacante: {id: postulacion.vacante.id},
                             tipo_notificacion: {id: 2}
+                        });
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+                
+            
+            } catch (err) {
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            } finally {
+                await queryRunner.release();
+            }
+
+            return respuesta;
+    }
+*/
+    async rechazarAceptado(postulacion: Postulacion) {
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+             
+    
+                await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Postulacion)
+                    .set({
+                        aceptado: false,
+                        rechazado: true,
+                        rechazado_en: new Date()
+                    })
+                    .where("id = :id", { id: postulacion.id })
+                    .execute();
+                await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Vacante)
+                    .set({
+                        num_disponibles: postulacion.vacante.num_disponibles + 1,
+                        num_postulantes_aceptados: postulacion.vacante.num_postulantes_aceptados - 1
+                    })
+                    .where("id = :id", { id: postulacion.vacante.id })
+                    .execute();
+                await getRepository(NotificacionSolicitante)
+                    .createQueryBuilder("notificaciones")
+                    .leftJoinAndSelect("notificaciones.solicitante","solicitante")
+                    .leftJoinAndSelect("notificaciones.vacante","vacante")
+                    .delete()
+                    .where("solicitante.id = :id_solicitante && vacante.id = :id_vacante", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                    .execute();
+                await queryRunner.manager.save(NotificacionSolicitante,
+                        {
+                            leido: false,
+                            solicitante: {id: postulacion.solicitante.id},
+                            empleador: {id: postulacion.vacante.empleador.id},
+                            vacante: {id: postulacion.vacante.id},
+                            tipo_notificacion: {id: 3}
                         });
                 await queryRunner.commitTransaction();
 
@@ -235,6 +306,14 @@ class PostulacionService  implements IPostulacionService  {
                        confirmado: false
                     });
                 await queryRunner.manager.delete(Postulacion,postulacion);
+
+                await queryRunner.manager
+                .getRepository(NotificacionEmpleador)
+                .createQueryBuilder()
+                .delete()
+                .where(" vacante.id = :id_vacante and solicitante.id = :id_solicitante ", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                .execute();
+
                 await queryRunner.manager.save(NotificacionEmpleador,
                     {
                         leido: false,
@@ -308,7 +387,7 @@ class PostulacionService  implements IPostulacionService  {
             return respuesta;
     }
     // Empleador rechaza postulacion que no ha sido aceptada
-    async rechazar(postulacion: Postulacion) {
+    async rechazarPostulacionEmpleador(postulacion: Postulacion) {
      
 
         let respuesta: any;
@@ -329,7 +408,15 @@ class PostulacionService  implements IPostulacionService  {
                         aceptado: false
                     })
                     .where("id = :id", { id: postulacion.id })  
-                    .execute();  
+                    .execute(); 
+                
+                await getRepository(NotificacionSolicitante)
+                    .createQueryBuilder("notificaciones")
+                    .leftJoinAndSelect("notificaciones.solicitante","solicitante")
+                    .leftJoinAndSelect("notificaciones.vacante","vacante")
+                    .delete()
+                    .where("solicitante.id = :id_solicitante && vacante.id = :id_vacante", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                    .execute();
                 await queryRunner.manager.save(NotificacionSolicitante,
                    {
                        leido: false,
@@ -512,8 +599,11 @@ class PostulacionService  implements IPostulacionService  {
              .createQueryBuilder("postulaciones")
              .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
              .leftJoinAndSelect("postulaciones.vacante", "vacante")
+             .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago") 
              .leftJoinAndSelect("vacante.sueldo", "sueldo")
              .leftJoinAndSelect("vacante.empleador", "empleador")
+             .leftJoinAndSelect("empleador.empresa", "empresa")
+             .leftJoinAndSelect("empresa.razon_social", "razon_social")
              .leftJoinAndSelect("vacante.requisitos", "requisitos")
              .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
              .where("solicitante.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false", { id: id })
@@ -538,8 +628,11 @@ class PostulacionService  implements IPostulacionService  {
         .createQueryBuilder("postulaciones")
         .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
         .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago") 
         .leftJoinAndSelect("vacante.sueldo", "sueldo")
         .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
         .where("solicitante.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false", { id: id })
@@ -565,10 +658,13 @@ class PostulacionService  implements IPostulacionService  {
              .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
              .leftJoinAndSelect("postulaciones.vacante", "vacante")
              .leftJoinAndSelect("vacante.sueldo", "sueldo")
+             .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago") 
              .leftJoinAndSelect("vacante.empleador", "empleador")
+             .leftJoinAndSelect("empleador.empresa", "empresa")
+             .leftJoinAndSelect("empresa.razon_social", "razon_social")
              .leftJoinAndSelect("vacante.requisitos", "requisitos")
              .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-             .where("solicitante.id = :id and postulaciones.rechazado = true", { id: id })
+             .where("solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false", { id: id })
              .skip(desde)  
              .take(5)
              .getMany();
@@ -580,7 +676,7 @@ class PostulacionService  implements IPostulacionService  {
                 .createQueryBuilder("postulaciones")
                 .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
                 .leftJoinAndSelect("postulaciones.vacante", "vacante")
-                .where("solicitante.id = :id and postulaciones.rechazado = true", { id: id_solicitante })
+                .where("solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false", { id: id_solicitante })
                 .getCount();
             return total;
    }
@@ -595,7 +691,7 @@ class PostulacionService  implements IPostulacionService  {
    return postulacion;
     }
 
-    async busqueda(valor: string, id_empleador: number) {
+    async busquedaPendientesEmpleador(valor: string, id_empleador: number) {
         const postulaciones = await 
         getRepository(Postulacion)
         .createQueryBuilder("postulaciones")
@@ -605,11 +701,226 @@ class PostulacionService  implements IPostulacionService  {
         .leftJoinAndSelect("vacante.empleador", "empleador")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-        .where("(solicitante.nombre regexp :valor and empleador.id = :id) ||(solicitante.apellidos regexp :valor and empleador.id = :id) || (ocupacion.nombre regexp :valor and empleador.id = :id)",{valor: valor, id: id_empleador})
+        .where("(solicitante.nombre regexp :valor and empleador.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false) || (solicitante.apellidos regexp :valor and empleador.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false) || (solicitante.cedula regexp :valor and empleador.id = :id and postulaciones.aceptado = false and postulaciones.rechazado = false)",{valor: valor, id: id_empleador})
         .addOrderBy("postulaciones.creado_en", "DESC")
         .getMany()
         return postulaciones;
      }
+     async busquedaConsideradosEmpleador(valor: string, id_empleador: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where("(solicitante.nombre regexp :valor and empleador.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false) || (solicitante.apellidos regexp :valor and empleador.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false) || (solicitante.cedula regexp :valor and empleador.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false)",{valor: valor, id: id_empleador})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+     async busquedaFavoritosEmpleador(valor: string, id_empleador: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where("(solicitante.nombre regexp :valor and empleador.id = :id and postulaciones.favorito) || (solicitante.apellidos regexp :valor and empleador.id = :id and postulaciones.favorito) || (solicitante.cedula regexp :valor and empleador.id = :id and postulaciones.favorito)",{valor: valor, id: id_empleador})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+     async busquedaRechazadosEmpleador(valor: string, id_empleador: number) {
+        const postulaciones: Postulacion [] = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where("(solicitante.nombre regexp :valor and empleador.id = :id and postulaciones.rechazado = true) || (solicitante.apellidos regexp :valor and empleador.id = :id and postulaciones.rechazado = true) || (solicitante.cedula regexp :valor and empleador.id = :id and postulaciones.rechazado = true)",{valor: valor, id: id_empleador})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+     async buscarPorIdSolicitanteVacante(id_solicitante: number, id_vacante: number) {
+        const postulacion: Postulacion = await getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .where("solicitante.id = :id_solicitante and vacante.id = :id_vacante", {id_solicitante,id_vacante})
+        .getOne();
+
+        return postulacion;
+    }
+    async busquedaPendientesSolicitante(valor: string, id_solicitante: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
+        .where(`(empleador.nombre regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false) ||
+        (empleador.apellidos regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false) || 
+        (empleador.cedula regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false) ||
+        (vacante.titulo regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false) ||
+        (empresa.nombre regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false) ||
+        (ocupacion.nombre regexp :valor and solicitante.id = :id  and postulaciones.aceptado = false and postulaciones.rechazado = false)`,{valor: valor, id: id_solicitante})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+     async busquedaAceptadosSolicitante(valor: string, id_solicitante: number) {
+        const postulaciones = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
+        .where(`(empleador.nombre regexp :valor and solicitante.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false) ||
+        (empleador.apellidos regexp :valor and solicitante.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false) || 
+        (empleador.cedula regexp :valor and solicitante.id = :id and postulaciones.aceptado = true and postulaciones.rechazado = false) ||
+        (vacante.titulo regexp :valor and solicitante.id = :id  and postulaciones.aceptado = true and postulaciones.rechazado = false) ||
+        (empresa.nombre regexp :valor and solicitante.id = :id  and postulaciones.aceptado = true and postulaciones.rechazado = false) ||
+        (ocupacion.nombre regexp :valor and solicitante.id = :id  and postulaciones.aceptado = true and postulaciones.rechazado = false)`,{valor: valor, id: id_solicitante})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+     async busquedaRechazadosSolicitante(valor: string, id_solicitante: number) {
+        const postulaciones: Postulacion [] = await 
+        getRepository(Postulacion)
+        .createQueryBuilder("postulaciones")
+        .leftJoinAndSelect("postulaciones.solicitante", "solicitante")
+        .leftJoinAndSelect("postulaciones.vacante", "vacante")
+        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("vacante.requisitos", "requisitos")
+        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
+        .where(`(empleador.nombre regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true) ||
+        (empleador.apellidos regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) || 
+        (empleador.cedula regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true) ||
+        (vacante.titulo regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) ||
+        (empresa.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) ||
+        (ocupacion.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true)`,{valor: valor, id: id_solicitante})
+        .addOrderBy("postulaciones.creado_en", "DESC")
+        .getMany()
+        return postulaciones;
+     }
+    // Elimina logicamente la postulacion cambiando el atributo oculto a true
+    async eliminarRechazadoSolicitante(postulacion: Postulacion) {
+     
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+                let post = await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Postulacion)
+                    .set({
+                        oculto: true
+                    })
+                    .where("id = :id", { id: postulacion.id })  
+                    .execute(); 
+                respuesta = true;
+            } catch (err) {
+            
+                // since we have errors let's rollback changes we made
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            
+            } finally {
+            
+                // you need to release query runner which is manually created:
+                await queryRunner.release();
+            }
+
+            return respuesta;
+    }
+    async rechazarPostulacionSolicitante(postulacion: Postulacion) {
+        let respuesta: any;
+        const connection = getConnection();
+            const queryRunner = connection.createQueryRunner();
+
+            // establish real database connection using our new query runner
+            await queryRunner.connect();
+
+            // lets now open a new transaction:
+            await queryRunner.startTransaction();
+            try {
+                await queryRunner.manager
+                    .createQueryBuilder()
+                    .update(Vacante)
+                    .set({
+                        num_disponibles: postulacion.vacante.num_disponibles + 1,
+                        num_postulantes_aceptados: postulacion.vacante.num_postulantes_aceptados - 1
+                    })
+                    .where("id = :id", { id: postulacion.vacante.id })
+                    .execute();
+                await queryRunner.manager
+                .createQueryBuilder()
+                .update(Postulacion)
+                .set({
+                    rechazado: true
+                })
+                .where("id = :id", { id: postulacion.id })
+                .execute();
+                    
+                await queryRunner.manager
+                .getRepository(NotificacionEmpleador)
+                .createQueryBuilder()
+                .delete()
+                .where(" vacante.id = :id_vacante and solicitante.id = :id_solicitante ", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                .execute();
+                 
+                await queryRunner.manager.save(NotificacionEmpleador,
+                    {
+                        leido: false,
+                        solicitante: {id: postulacion.solicitante.id},
+                        empleador: {id: postulacion.vacante.empleador.id},
+                        vacante: {id: postulacion.vacante.id},
+                        tipo_notificacion: {id: 6}
+                    });
+                await queryRunner.commitTransaction();
+
+                respuesta = true;
+                
+            
+            } catch (err) {
+                await queryRunner.rollbackTransaction();
+                respuesta = err;
+            } finally {
+                await queryRunner.release();
+            }
+
+            return respuesta;   
+    }
 }
   
 export {PostulacionService};  

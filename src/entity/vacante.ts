@@ -5,6 +5,8 @@ import { Requisitos } from './requisitos';
 import { TipoContrato } from './tipo-contrato';
 import { Horario } from './horario';
 import { RangoSueldo } from './rango-sueldo';
+import { PeriodoPago } from './periodo-pago';
+import { TipoJornada } from './tipo-jornada';
 
 
 @Entity('vacantes')
@@ -18,14 +20,18 @@ export class Vacante {
       
     @JoinColumn({name:'sueldos_id'}) 
     @ManyToOne(type => RangoSueldo, sueldo => sueldo.id, {nullable: false, eager: true})  
-    sueldo: RangoSueldo
+    sueldo: RangoSueldo;
+
+    @JoinColumn({name:'periodos_de_pago_id'}) 
+    @ManyToOne(type => PeriodoPago, periodo => periodo.id, {nullable: false, eager: true})  
+    periodo_pago: PeriodoPago;
 
     @Column({type: 'varchar', length: 45})
     direccion: string; 
     
     @JoinColumn({name:'horarios_id'}) 
     @ManyToOne(type => Horario, horario => horario.id, {nullable: false, eager: true})  
-    horario: Horario
+    horario: Horario;
 
     @Column()
     num_vacantes: number;
@@ -36,7 +42,7 @@ export class Vacante {
 /*    @Column({type: 'varchar', length: 255})
     funciones: string;
 */
-    @Column({type: 'varchar', length: 255})
+    @Column({type: 'varchar', length: 255}) 
     descripcion: string;
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
@@ -63,9 +69,10 @@ export class Vacante {
 
 
     @Column()
-    eliminado: boolean;
-
-    @Column()
     num_postulantes_aceptados: number;
+
+    @JoinColumn({name:'tipo_jornada_id'}) 
+    @ManyToOne(type => TipoJornada, tipo => tipo.id, {nullable: false, eager: true})  
+    tipo_jornada: TipoJornada;
  
 }

@@ -28,6 +28,8 @@ class ReportesContratacionService  implements IReportesContratacionService  {
           .leftJoinAndSelect("vacante.horario", "horario") 
           .leftJoinAndSelect("vacante.sueldo", "sueldo")
           .leftJoinAndSelect("vacante.empleador", "empleador")
+          .leftJoinAndSelect("empleador.empresa", "empresa")
+          .leftJoinAndSelect("empresa.razon_social", "razon_social")
           .leftJoinAndSelect("vacante.requisitos", "requisitos")
           .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
           .leftJoinAndSelect("vacante.ciudad", "ciudad")
@@ -70,6 +72,8 @@ class ReportesContratacionService  implements IReportesContratacionService  {
      }
      async generarListadoContratacionesPorNumeroDeContrataciones(body: any) {
           let habilitado: boolean = false;
+          let f1: Date = new Date(body.fecha_inicio);
+          let f2: Date = new Date(body.fecha_fin);
           if(body.habilitado === true || body.habilitado === 'true') {
                habilitado = true;
           }       
@@ -80,7 +84,7 @@ class ReportesContratacionService  implements IReportesContratacionService  {
           if(body.id_ciudad > 0) {
                consulta += "and ciudad.id = :id_ciudad ";
           }
-          consulta += "and ocupacion.id = :id_ocupacion"
+          consulta += "and c.vacantes_id = v.id and v.requisitos_id = r.id and  o.id = r.ocupaciones_id and o.id = :id_ocupacion"
               const contrataciones = await getRepository(Contratacion)
                   .createQueryBuilder("contrataciones")
                   .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
@@ -92,9 +96,9 @@ class ReportesContratacionService  implements IReportesContratacionService  {
                   .leftJoinAndSelect("contrataciones.vacante", "vacante")
                   .leftJoinAndSelect("vacante.requisitos", "requisitos")
                   .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
-                  .where("(select count(*) from contrataciones  as c where  solicitante.id = c.solicitantes_id and (c.creado_en between :fecha_inicio and :fecha_fin)"+consulta+") in (:num_contrataciones) ",
-                       {fecha_inicio: body.fecha_inicio, 
-                        fecha_fin: body.fecha_fin, 
+                  .where("(select count(*) from contrataciones  as c, vacantes as v, requisitos as r, ocupaciones as o where  solicitante.id = c.solicitantes_id and (c.creado_en between :fecha_inicio and :fecha_fin)"+consulta+") in (:num_contrataciones) ",
+                       {fecha_inicio: f1, 
+                        fecha_fin: f2,  
                         habilitado: habilitado, 
                         id_ocupacion: body.id_ocupacion, 
                         id_ciudad: body.id_ciudad,

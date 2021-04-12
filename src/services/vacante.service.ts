@@ -25,12 +25,13 @@ class VacanteService  implements IVacanteService  {
             consulta += "and vacantes.creado_en >= :creado_en ";
         }
 
-        consulta += "and vacantes.habilitado = true and vacantes.eliminado = false";
+        consulta += "and vacantes.habilitado = true";
 
         const vacantes = await 
         getRepository(Vacante)
        .createQueryBuilder("vacantes")
        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+       .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacantes.horario", "horario")
        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "requisitos.ocupacion")
@@ -43,6 +44,7 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("empleador.imagen", "imagen")
        .leftJoinAndSelect("empleador.empresa", "empresa")
        .leftJoinAndSelect("empresa.logo", "logo")
+       .leftJoinAndSelect("empresa.razon_social", "razon_social")
        .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
        .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
        .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
@@ -69,12 +71,13 @@ class VacanteService  implements IVacanteService  {
             consulta += "and vacantes.creado_en >= :creado_en ";
         }
 
-        consulta += "and vacantes.habilitado = true and vacantes.eliminado = false";
+        consulta += "and vacantes.habilitado = true";
 
         const vacantes = await 
         getRepository(Vacante)
        .createQueryBuilder("vacantes")
        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+       .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacantes.horario", "horario")
        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "requisitos.ocupacion")
@@ -87,6 +90,7 @@ class VacanteService  implements IVacanteService  {
        .leftJoinAndSelect("empleador.imagen", "imagen")
        .leftJoinAndSelect("empleador.empresa", "empresa")
        .leftJoinAndSelect("empresa.logo", "logo")
+       .leftJoinAndSelect("empresa.razon_social", "razon_social")
        .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
        .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
        .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
@@ -113,12 +117,13 @@ class VacanteService  implements IVacanteService  {
             consulta += "and vacantes.creado_en >= :creado_en ";
         }
 
-        consulta += "and vacantes.habilitado = true and vacantes.eliminado = false";
+        consulta += "and vacantes.habilitado = true";
 
         const total = await 
         getRepository(Vacante)
        .createQueryBuilder("vacantes")
        .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+       .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacantes.horario", "horario")
        .leftJoinAndSelect("vacantes.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "requisitos.ocupacion")
@@ -139,6 +144,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -146,7 +152,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.eliminado = false", { id: id })
+        .where("vacantes.empleador.id = :id", { id: id })
         .addOrderBy("vacantes.creado_en", "DESC")
         .skip(desde)  
         .take(5)
@@ -158,6 +164,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -165,7 +172,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.habilitado = true and vacantes.eliminado = false", { id: id })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = true", { id: id })
         .addOrderBy("vacantes.creado_en", "DESC")
         .skip(desde)  
         .take(5)
@@ -177,6 +184,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -187,7 +195,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.empleador", "empleador")
         .leftJoinAndSelect("requisitos.idiomas", "idiomas")
         .leftJoinAndSelect("idiomas.idioma", "idioma")
-        .where("vacantes.empleador.id = :id and vacantes.habilitado = true and vacantes.eliminado = false", { id: id })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = true", { id: id })
         .addOrderBy("vacantes.creado_en", "DESC")
         .getMany();
         return vacantes;
@@ -197,6 +205,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -204,7 +213,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.habilitado = false and vacantes.eliminado = false", { id: id })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = false", { id: id })
         .addOrderBy("vacantes.creado_en", "DESC")
         .skip(desde)  
         .take(5)
@@ -216,7 +225,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.eliminado = false", { id: id_empleador })
+        .where("vacantes.empleador.id = :id", { id: id_empleador })
         .getCount()
         return total;
     }
@@ -225,7 +234,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.habilitado = true and vacantes.eliminado = false", { id: id_empleador })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = true", { id: id_empleador })
         .getCount()
         return total;
     }
@@ -234,7 +243,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.empleador", "empleador")
-        .where("vacantes.empleador.id = :id and vacantes.habilitado = false and vacantes.eliminado = false", { id: id_empleador })
+        .where("vacantes.empleador.id = :id and vacantes.habilitado = false", { id: id_empleador })
         .getCount()
         return total;
     }
@@ -273,6 +282,7 @@ class VacanteService  implements IVacanteService  {
                     {    
                         titulo: body.titulo,
                         sueldo: {id: body.id_sueldo},
+                        periodo_pago: {id: body.id_periodo_pago},
                         direccion: body.direccion,
                         horario: {id: body.id_horario},
                         num_vacantes: body.num_vacantes,
@@ -282,8 +292,8 @@ class VacanteService  implements IVacanteService  {
                         descripcion: body.descripcion,
                         habilitado: body.habilitado,
                         requisitos: requisitos,
-                        eliminado: false,
                         tipo_contrato: {id: body.id_tipo_contrato},
+                        tipo_jornada: {id: body.id_tipo_jornada},
                         ciudad: {id: body.id_ciudad},
                         empleador: {id: body.id_empleador}
                     });
@@ -346,6 +356,7 @@ class VacanteService  implements IVacanteService  {
                 .set({
                     titulo: body.titulo,
                     sueldo: {id: body.id_sueldo},
+                    periodo_pago: {id: body.id_periodo_pago},
                     direccion: body.direccion,
                     horario: {id: body.id_horario},
                     num_vacantes: body.num_vacantes,
@@ -353,6 +364,7 @@ class VacanteService  implements IVacanteService  {
                     descripcion: body.descripcion,
                     habilitado: habilitado,
                     tipo_contrato: {id: body.id_tipo_contrato},
+                    tipo_jornada: {id: body.id_tipo_jornada},
                     ciudad: {id: body.id_ciudad},
                 })
                 .where("id = :id", { id: id })
@@ -400,14 +412,6 @@ class VacanteService  implements IVacanteService  {
         .execute();
         return respuesta;
     }
-    async eliminar(id: number) {
-        const respuesta = await getRepository(Vacante)
-        .createQueryBuilder()
-        .delete()
-        .where("id = :id", { id: id })
-        .execute();
-        return respuesta;
-    }
     async habilitar(id: number) {
         const respuesta = await getRepository(Vacante)
         .createQueryBuilder()
@@ -424,6 +428,7 @@ class VacanteService  implements IVacanteService  {
         getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -433,6 +438,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("idiomas.nivel_oral", "nivel_oral")
         .leftJoinAndSelect("idiomas.nivel_lectura", "nivel_lectura")
         .leftJoinAndSelect("vacantes.tipo_contrato", "tipo_contrato")
+        .leftJoinAndSelect("vacantes.tipo_jornada", "tipo_jornada")
         .leftJoinAndSelect("vacantes.ciudad", "ciudad")
         .leftJoinAndSelect("ciudad.estado", "estado")
         .leftJoinAndSelect("estado.pais", "pais")
@@ -444,6 +450,7 @@ class VacanteService  implements IVacanteService  {
         .leftJoinAndSelect("empleador.credenciales", "credenciales")
         .leftJoinAndSelect("empleador.empresa", "empresa")
         .leftJoinAndSelect("empresa.logo", "logo")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
         .leftJoinAndSelect("empresa.ciudad", "ciudad_empresa")
         .leftJoinAndSelect("ciudad_empresa.estado", "estado_empresa")
         .leftJoinAndSelect("estado_empresa.pais", "pais_empresa")
@@ -460,6 +467,7 @@ class VacanteService  implements IVacanteService  {
          getRepository(Vacante)
         .createQueryBuilder("vacantes")
         .leftJoinAndSelect("vacantes.sueldo", "sueldo")
+        .leftJoinAndSelect("vacantes.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacantes.horario", "horario")
         .leftJoinAndSelect("vacantes.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")

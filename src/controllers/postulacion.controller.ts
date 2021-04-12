@@ -20,6 +20,7 @@ import { INotificacionSolicitanteService } from '../interfaces/INotificacionSoli
 import { IVacanteService } from '../interfaces/IVacante.service';
 import { Vacante } from '../entity/vacante';
 import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
+import { OcupacionSolicitante } from '../entity/ocupacion-solicitante';
 
  
 @controller("/postulacion")    
@@ -96,6 +97,7 @@ export class PostulacionController implements interfaces.Controller {
         try { 
             const solicitante: Solicitante = await this.solicitanteService.buscar(req.body.id_solicitante);
             const vacante: Vacante = await this.vacanteService.buscar(req.body.id_vacante);
+
             if(!vacante) {
                 return res.status(400).json({
                     ok: false,
@@ -106,6 +108,21 @@ export class PostulacionController implements interfaces.Controller {
                 return res.status(400).json({
                     ok: false,
                     mensaje: `No existen vacantes disponibles`,  
+                });
+            }
+            const ocupaciones = solicitante.ocupaciones.map( (ocupacionSolicitante: OcupacionSolicitante) => {
+                return ocupacionSolicitante.ocupacion;
+            })
+            let existeOcupacion = false;
+            for (let index = 0; index < ocupaciones.length; index++) {
+                if(ocupaciones[index].id === vacante.requisitos.ocupacion.id){
+                    existeOcupacion = true;
+                }
+            }
+            if(!existeOcupacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `Usted debe tener la ocupacion de ${vacante.requisitos.ocupacion.nombre.toUpperCase()} para permitirle postular a esta vacante`,  
                 });
             }
             const buscar_postulacion: Postulacion = await this.postulacionService.buscarPorSolicitanteVacante(solicitante.id, req.body.id_vacante);
@@ -298,7 +315,7 @@ export class PostulacionController implements interfaces.Controller {
     }
    
     } 
-    @httpPut("/aceptar-rechazado/:id",verificaToken)
+/*    @httpPut("/aceptar-rechazado/:id",verificaToken)
     private async aceptarRechazado(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
       
     try {
@@ -316,7 +333,7 @@ export class PostulacionController implements interfaces.Controller {
             });
         }
 */
-        if (postulacion.vacante.num_disponibles === 0) {
+  /*      if (postulacion.vacante.num_disponibles === 0) {
             return res.status(400).json({
                 ok: false,
                 mensaje:`Numero de vacantes disponibles es cero`
@@ -351,13 +368,59 @@ export class PostulacionController implements interfaces.Controller {
     }
    
     } 
-    @httpPut("/rechazar/:id",verificaToken)  
-    private async rechazar(@requestParam("id") id: number, @response() res: express.Response) {
+*/
+    @httpPut("/rechazar-aceptado/:id",verificaToken)
+    private async rechazarAceptado(@requestParam("id") id: number,@request() req: express.Request, @response() res: express.Response) {
+      
+         try {
+             const postulacion: Postulacion = await this.postulacionService.buscar(id);
+             if (!postulacion) {
+                 return res.status(400).json({
+                     ok: false,
+                     mensaje:`No existe una postulacion con el ID ${id}`
+                 });
+             }
+             if (postulacion.rechazado === true) {
+                 return res.status(400).json({
+                     ok: false,
+                     mensaje:`La postulacion está rechazada`
+                 });
+             }
+             const postulacion_rechazada = await this.postulacionService.rechazarAceptado(postulacion);
+             if (postulacion_rechazada) {
+                 const server = Server.instance;
+                 const solicitante: Solicitante = await this.solicitanteService.buscar(postulacion.solicitante.id);
+                 const id_socket = usuariosConectados.getUsuarioByIdAndRol(solicitante.id, solicitante.credenciales.rol.nombre);
+                 if(id_socket){
+                     server.io.in(id_socket).emit('notificacion-nueva');
+                     server.io.in(id_socket).emit('verificar-postulacion');
+                     const totalNotificaciones: number = await this.notificacionSolicitanteService.contarNoLeidas(solicitante.id)
+                     server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+                 }
+                 return res.status(200).json({
+                     ok: true,
+                     mensaje: 'Solicitante rechazado para la vacante'
+                 });
+             } else {
+                 
+                 return res.status(400).json({
+                     ok:false,
+                     mensaje: 'Error al rechazar solicitante',
+                 });
+             }
+         } catch (err) {
+             res.status(400).json({  
+                 ok:false, 
+                 error: err.message });
+         }
+   
+    } 
+    @httpPut("/rechazar-empleador/:id",verificaToken)  
+    private async rechazarPostulacionEmpleador(@requestParam("id") id: number, @response() res: express.Response) {
         try {
             const postulacion:Postulacion = await this.postulacionService.buscar(id);
             if(postulacion){
-                const postulacion_eliminada = await this.postulacionService.rechazar(postulacion);
-                console.log(postulacion_eliminada, postulacion)
+                const postulacion_eliminada = await this.postulacionService.rechazarPostulacionEmpleador(postulacion);
                 if (postulacion_eliminada){
                     const server = Server.instance;
                     const solicitante: Solicitante = await this.solicitanteService.buscar(postulacion.solicitante.id);
@@ -384,6 +447,58 @@ export class PostulacionController implements interfaces.Controller {
                 });
             }
            
+
+        } catch (err) {
+            res.status(500).json({ 
+                ok: false,  
+                error: err.message 
+            });  
+        }
+    }
+    @httpPut("/rechazar-solicitante/:id",verificaToken)  
+    private async rechazarPostulacionSolicitante(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const postulacion: Postulacion = await this.postulacionService.buscar(id);
+            if (!postulacion) { 
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una postulacion con el ID ${id}`
+                });
+            }
+            if (postulacion.vacante.num_disponibles === postulacion.vacante.num_vacantes) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`Error, Existe un numero de vacantes igual al numero de disponibles ${id}`
+                }); 
+            }
+    
+            if (postulacion.aceptado === false) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`Error al borrar, No  ha sido aceptado para la vacante`
+                }); 
+            }
+            const postulacion_rechazada = await this.postulacionService.rechazarPostulacionSolicitante(postulacion);
+            if (postulacion_rechazada === true){
+                const server = Server.instance;
+                const empleador: Empleador = await this.empleadorService.buscar(postulacion.vacante.empleador.id);
+                const id_socket = usuariosConectados.getUsuarioByIdAndRol(empleador.id, empleador.credenciales.rol.nombre);
+                if(id_socket){
+                    server.io.in(id_socket).emit('notificacion-nueva');
+                    server.io.in(id_socket).emit('actualizar-postulaciones', postulacion.id);
+                    const totalNotificaciones: number = await this.notificacionEmpleadorService.contarNoLeidas(empleador.id)
+                    server.io.in(id_socket).emit('total-no-leidas', totalNotificaciones);
+                }
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Contratacion rechazada exitosamente',
+                })
+            }else {
+                return res.status(400).json({
+                    ok:false,
+                     mensaje: 'Error al rechazar contratacion'                
+                    });
+            }
 
         } catch (err) {
             res.status(500).json({ 
@@ -517,10 +632,10 @@ export class PostulacionController implements interfaces.Controller {
         }
     } 
 
-    @httpGet("/busqueda/:id/:valor",verificaToken)
-    private async busqueda(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+    @httpGet("/busqueda-pendientes-empleador/:id/:valor",verificaToken)
+    private async busquedaPendientesEmpleador(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
         try {
-            const postulaciones = await this.postulacionService.busqueda(valor,idEmpleador);
+            const postulaciones = await this.postulacionService.busquedaPendientesEmpleador(valor,idEmpleador);
             if (!postulaciones){
                 return res.status(400).json({
                     ok: false,
@@ -537,13 +652,132 @@ export class PostulacionController implements interfaces.Controller {
                 error: err.message });
         }
     }
-
-        @httpPost("/invitacion",verificaToken, 
-        body('id_solicitante','El id del Solicitante es oblidatorio').not().isEmpty(),
-        body('id_empleador','El id del Empleador es oblidatorio').not().isEmpty(),
-        body('id_vacante','El id de la vacante es oblidatorio').not().isEmpty(),
-        validarCampos
-        )
+    @httpGet("/busqueda-considerados-empleador/:id/:valor",verificaToken)
+    private async busquedaConsideradosEmpleador(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones = await this.postulacionService.busquedaConsideradosEmpleador(valor,idEmpleador);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda-favoritos-empleador/:id/:valor",verificaToken)
+    private async busquedaFavoritosEmpleador(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones = await this.postulacionService.busquedaFavoritosEmpleador(valor,idEmpleador);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda-rechazados-solicitante/:id/:valor",verificaToken)
+    private async busquedaRechazadosSoliciatante(@requestParam("valor") valor: string,@requestParam("id") idSolicitante: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones: Postulacion[] = await this.postulacionService.busquedaRechazadosSolicitante(valor,idSolicitante);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda-pendientes-solicitante/:id/:valor",verificaToken)
+    private async busquedaPendientesSolicitante(@requestParam("valor") valor: string,@requestParam("id") idSolicitante: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones = await this.postulacionService.busquedaPendientesSolicitante(valor,idSolicitante);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda-aceptados-solicitante/:id/:valor",verificaToken)
+    private async busquedaAceptadosSolicitante(@requestParam("valor") valor: string,@requestParam("id") idSolicitante: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones = await this.postulacionService.busquedaAceptadosSolicitante(valor,idSolicitante);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpGet("/busqueda-rechazados-empleador/:id/:valor",verificaToken)
+    private async busquedaRechazadosEmpleador(@requestParam("valor") valor: string,@requestParam("id") idEmpleador: number, @response() res: express.Response, next: express.NextFunction) {
+        try {
+            const postulaciones: Postulacion[] = await this.postulacionService.busquedaRechazadosEmpleador(valor,idEmpleador);
+            if (!postulaciones){
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existen postulaciones con este parametro ${valor}`
+            });
+            }  
+            return res.status(200).json({
+                ok: true, 
+                postulaciones,
+            });
+        } catch (err) {
+            res.status(400).json({ 
+                ok: false,
+                error: err.message });
+        }
+    }
+    @httpPost("/invitacion",verificaToken, 
+    body('id_solicitante','El id del Solicitante es oblidatorio').not().isEmpty(),
+    body('id_empleador','El id del Empleador es oblidatorio').not().isEmpty(),
+    body('id_vacante','El id de la vacante es oblidatorio').not().isEmpty(),
+    validarCampos
+    )
     private async invitarPostulacion(@request() req: express.Request, @response() res: express.Response) {
 
         
@@ -574,6 +808,20 @@ export class PostulacionController implements interfaces.Controller {
                 return res.status(400).json({
                     ok: false,
                     mensaje: `Ya se envio un invitacion a ${solicitante.nombre} ${solicitante.apellidos}`,  
+                });
+            }
+            const postulacion: Postulacion = await this.postulacionService.buscarPorIdSolicitanteVacante(solicitante.id, vacante.id);
+            if(postulacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `El solicitante ${solicitante.nombre} ${solicitante.apellidos} ya postulo a la vacante`,  
+                });
+            }
+            const contratacion: Contratacion = await this.contratacionService.buscarPorSolicitanteVacante(solicitante.id, vacante.id);
+            if(contratacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: `El solicitante ${solicitante.nombre} ${solicitante.apellidos} ya fue contratado para la vacante`,  
                 });
             }
             const invitar: boolean = await this.postulacionService.invitarPostulacion(req.body);
@@ -647,4 +895,36 @@ export class PostulacionController implements interfaces.Controller {
              });
         }
     } 
+
+    // Eliminar logicamente la postulacion po el solicitante
+
+    @httpPut("/eliminacion-rechazado-solicitante/:id",verificaToken)
+    private async eliminarRechazadoSolicitante(@requestParam("id") id: number, @response() res: express.Response) {
+        try {
+            const postulacion: Postulacion = await this.postulacionService.buscar(id);
+            if (!postulacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No existe una postulacion con el ID ${id}`
+                });
+            }
+            const postulacion_eliminada = await this.postulacionService.eliminarRechazadoSolicitante(postulacion);
+            if(postulacion_eliminada === true) { 
+                return res.status(200).json({
+                    ok: true,
+                    mensaje: 'Postulacion eliminada exitosamente',  
+                });
+            }else {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al confirmar  contratacion', 
+                });
+            }
+        } catch (err) {
+            res.status(500).json({
+                ok: false, 
+                error: err.message 
+            });
+        }
+    } // 
 }

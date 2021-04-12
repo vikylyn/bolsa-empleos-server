@@ -35,6 +35,8 @@ class ReportesVacanteService  implements IReportesVacanteService  {
          .leftJoinAndSelect("ciudad.estado", "estado")
          .leftJoinAndSelect("estado.pais", "pais")
          .leftJoinAndSelect("vacantes.empleador", "empleador")
+         .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
         .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, id_ocupacion: body.id_ocupacion, id_ciudad: body.id_ciudad })
         .addOrderBy("vacantes.creado_en", "ASC")
         .getMany();

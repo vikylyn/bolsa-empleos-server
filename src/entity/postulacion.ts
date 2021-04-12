@@ -12,11 +12,11 @@ export class Postulacion {
 
   
     @JoinColumn({name:'vacantes_id'})
-    @ManyToOne(type => Vacante, vacante => vacante.id,{nullable: false})
+    @ManyToOne(type => Vacante, vacante => vacante.id,{nullable: false, eager: true})
     vacante: Vacante;
 
     @JoinColumn({name:'solicitantes_id'})
-    @ManyToOne(type => Solicitante, solicitante => solicitante.id, {nullable: false})
+    @ManyToOne(type => Solicitante, solicitante => solicitante.id, {nullable: false, eager: true})
     solicitante: Solicitante;
 
     @Column({default: false})

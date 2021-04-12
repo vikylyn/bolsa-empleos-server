@@ -192,18 +192,8 @@ class EstudioBasicoService  implements IEstudioBasicoService  {
             return respuesta;
     }
     async buscar(id: number) {
-        const estudio = await 
-        getRepository(EstudioBasico)
-        .createQueryBuilder("estudios_basicos")
-        .leftJoinAndSelect("estudios_basicos.curriculum", "curriculum")
-        .leftJoinAndSelect("estudios_basicos.ciudad", "ciudad")
-        .leftJoinAndSelect("ciudad.estado", "estado")
-        .leftJoinAndSelect("estado.pais", "pais")
-        .leftJoinAndSelect("estudios_basicos.otraCiudad", "otraCiudad")
-        .leftJoinAndSelect("estudios_basicos.grado_inicio", "grado_inicio")
-        .leftJoinAndSelect("estudios_basicos.grado_fin", "grado_fin")
-        .where("estudios_basicos.id = :id", { id: id })
-       .getOne();
+       const estudio = await 
+        getRepository(EstudioBasico).findOne({id: id});
        return estudio;
     }
 

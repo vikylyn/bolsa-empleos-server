@@ -11,6 +11,7 @@ import { sendEmailEmpleador } from '../email/enviar-email';
 import { IEmpleadorService } from '../interfaces/IEmpleador.service';
 import { Empleador } from '../entity/empleador';
 import { IEmpresaService } from '../interfaces/IEmpresa.service';
+import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
 
 
 
@@ -20,6 +21,7 @@ export class EmpleadorController implements interfaces.Controller {
  
     constructor( @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService,
                  @inject(TYPES.IEmpresaService) private empresaService: IEmpresaService,
+                 @inject(TYPES.IInformacionAppService) private informacionAppService: IInformacionAppService,
                  @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService
      ) {}
  
@@ -72,6 +74,7 @@ private async adicionar(@request() req: express.Request, @response() res: expres
 
     try {
         const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
+        const informacionApp = await this.informacionAppService.buscar(1);
         if (existe_email) {
             return res.status(500).json({
                 ok: false, 
@@ -85,7 +88,7 @@ private async adicionar(@request() req: express.Request, @response() res: expres
      
         if (empleador) {
         
-            await sendEmailEmpleador(empleador, false);
+            await sendEmailEmpleador(empleador,informacionApp);
 
             return res.status(201).json({
                 ok: true,
@@ -121,6 +124,7 @@ private async adicionar(@request() req: express.Request, @response() res: expres
         body('id_rol', 'El id del Rol es obligatorio').not().isEmpty(),
         body('empresa', 'El valor boleano para la existencia de una empresa es obligatorio').not().isEmpty(),
         body('empresa_nombre', 'El nombre de la empresa es obligatorio').not().isEmpty(),
+        body('id_razon_social', 'El id de la razon social es obligatorio').not().isEmpty(),
         body('empresa_direccion', 'La direccion de la empresa es obligatorio').not().isEmpty(),
         body('empresa_telefono', 'El telefono de la empresa es obligatorio').not().isEmpty(),
         body('empresa_descripcion', 'La descripcion de la empresa es obligatorio').not().isEmpty(),
@@ -132,6 +136,7 @@ private async adicionar(@request() req: express.Request, @response() res: expres
     
         try {
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
+            const informacionApp = await this.informacionAppService.buscar(1);
             if (existe_email) {
                 return res.status(400).json({
                     ok: false, 
@@ -140,12 +145,10 @@ private async adicionar(@request() req: express.Request, @response() res: expres
             }
             
             const empleador = await this.empleadorService.adicionarEmpleadorEmpresa(req.body);
-            console.log(empleador);
-           
-         
+                     
             if (empleador) {
             
-                sendEmailEmpleador(empleador, false);
+                sendEmailEmpleador(empleador,informacionApp);
     
                 return res.status(201).json({
                     ok: true,

@@ -189,17 +189,7 @@ class EstudioAvanzadoService  implements IEstudioAvanzadoService  {
         return respuesta;
     }
     async buscar(id: number) {
-        const estudio = await 
-        getRepository(any)
-        .createQueryBuilder("estudios_avanzados")
-        .leftJoinAndSelect("estudios_avanzados.curriculum", "curriculum")
-        .leftJoinAndSelect("estudios_avanzados.ciudad", "ciudad")
-        .leftJoinAndSelect("ciudad.estado", "estado")
-        .leftJoinAndSelect("estado.pais", "pais")
-        .leftJoinAndSelect("estudios_avanzados.otraCiudad", "otraCiudad")
-        .leftJoinAndSelect("estudios_avanzados.nivel_estudio", "nivel_estudio")
-        .where("estudios_avanzados.id = :id", { id: id })
-       .getOne();
+        const estudio = await getRepository(EstudioAvanzado).findOne({id});
        return estudio;
     }
     async contar(id_curriculum: number) {

@@ -8,8 +8,8 @@ export interface IPostulacionService {
     buscar(id: number): any;
     eliminar(postulacion: Postulacion):any;
     aceptarSolicitante(postulacion: Postulacion): any;
-    aceptarRechazado(postulacion: Postulacion): any;
-    rechazar(postulacion: Postulacion):any;
+    //aceptarRechazado(postulacion: Postulacion): any;
+    rechazarAceptado(postulacion: Postulacion): any;
     confirmar(postulacion: Postulacion):any;
 
     postularSolicitante(body:any): any;
@@ -33,8 +33,19 @@ export interface IPostulacionService {
     
 
 
-    busqueda(valor: string,id_empleador: number): any;
+    busquedaPendientesEmpleador(valor: string,id_empleador: number): any;
+    busquedaConsideradosEmpleador(valor: string,id_empleador: number): any;
+    busquedaFavoritosEmpleador(valor: string,id_empleador: number): any;
+    busquedaRechazadosEmpleador(valor: string,id_empleador: number): any;
 
+    busquedaPendientesSolicitante(valor: string,id_solicitante: number): any;
+    busquedaAceptadosSolicitante(valor: string,id_solicitante: number): any;
+    busquedaRechazadosSolicitante(valor: string,id_solicitante: number): any;
+
+    buscarPorIdSolicitanteVacante(id_solicitante: number, id_vacante: number):any;
     invitarPostulacion(body:any): any;
 
+    eliminarRechazadoSolicitante(postulacion: Postulacion):any;
+    rechazarPostulacionEmpleador(postulacion: Postulacion):any;
+    rechazarPostulacionSolicitante(postulacion: Postulacion): any;
 } 

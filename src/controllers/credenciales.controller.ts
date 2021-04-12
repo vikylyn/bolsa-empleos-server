@@ -14,15 +14,18 @@ import { IEmpleadorService } from '../interfaces/IEmpleador.service';
 import { Solicitante } from '../entity/solicitante';
 import { Administrador } from '../entity/administrador';
 import { Empleador } from '../entity/empleador';
-import { sendEmailAdministrador, sendEmailEmpleador, sendEmailSolicitante } from '../email/enviar-email';
+import { sendEmailRestablecerPasswordEmpleador, sendEmailRestablecerPasswordSolicitante, sendEmailRestablecerPasswordAdministrador } from '../email/enviar-email';
 import jwt from 'jsonwebtoken';
 import { SEED } from '../config/config';
+import { InformacionApp } from '../entity/informacionApp';
+import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
 
 @controller("/credenciales")    
 export class CredencialesController implements interfaces.Controller {    
  
     constructor(@inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService,
                 @inject(TYPES.IAdministradorService) private adminService: IAdministradorService,
+                @inject(TYPES.IInformacionAppService) private informacionAppService: IInformacionAppService,
                 @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService,
                 @inject(TYPES.IEmpleadorService) private empleadorService: IEmpleadorService) {}
     
@@ -80,6 +83,7 @@ export class CredencialesController implements interfaces.Controller {
     private async enviarEmail(@request() req: express.Request, @response() res: express.Response) {
         try {
             const credenciales = await this.credencialesService.buscarCredenciales(req.body.email);
+            const informacionApp = await this.informacionAppService.buscar(1);
             if (!credenciales){
                 return res.status(400).json({
                     ok: false,
@@ -88,8 +92,7 @@ export class CredencialesController implements interfaces.Controller {
             }
 
             if(credenciales.rol.nombre === 'ROLE_ADMINISTRADOR') {
-                    console.log('enviando Email administrador');
-
+                 
                     const admin: Administrador = await this.adminService.buscarPorCredencial(credenciales.id);
                     if( admin.habilitado === false) {
                         return res.status(403).json({
@@ -100,7 +103,7 @@ export class CredencialesController implements interfaces.Controller {
                     admin.credenciales = credenciales;
                     admin.credenciales.password = 'xd';
                    // enviar email
-                   await sendEmailAdministrador(admin);
+                   await sendEmailRestablecerPasswordAdministrador(admin,informacionApp);
 
                    return res.status(200).json({
                     ok: false,
@@ -121,7 +124,7 @@ export class CredencialesController implements interfaces.Controller {
                 solicitante.credenciales = credenciales;
                 solicitante.credenciales.password = 'xd';
                // enviar email
-               await sendEmailSolicitante(solicitante, true);
+               await sendEmailRestablecerPasswordSolicitante(solicitante,informacionApp);
 
                return res.status(200).json({
                 ok: false,
@@ -140,7 +143,7 @@ export class CredencialesController implements interfaces.Controller {
                 empleador.credenciales = credenciales;
                 empleador.credenciales.password = 'xd';
                // enviar email
-               await sendEmailEmpleador(empleador, true);
+               await sendEmailRestablecerPasswordEmpleador(empleador, informacionApp);
 
                return res.status(200).json({
                 ok: false,
@@ -163,9 +166,9 @@ export class CredencialesController implements interfaces.Controller {
         try {
             const credenciales: Credenciales = await this.credencialesService.buscarPorId(id_credencial);
             const token = req.query.token;
+           console.log(credenciales);
+           console.log(token);
             jwt.verify( token.toString() , SEED, (err: any, decoded: any ) => {
-                
-                console.log('dentro de restablecer',decoded.usuario);
                 if(decoded.usuario.credenciales.id != id_credencial) {
                     return res.status(403).json({
                         ok:false,
@@ -196,7 +199,7 @@ export class CredencialesController implements interfaces.Controller {
                 });
             }
         } catch (err) {
-            res.status(400).json({ 
+            res.status(500).json({ 
                 ok: false,  
                 error: err.message });  
         }

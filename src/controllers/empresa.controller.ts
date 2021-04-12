@@ -68,7 +68,6 @@ export class EmpresaController implements interfaces.Controller {
     } 
     @httpPut("/:id",
         body('nombre','El nombre es oblidatorio').not().isEmpty(),
-        body('dominio_web','Los apellidos son obligatorios').not().isEmpty(),
         body('telefono','El telefono es obigatorio').not().isEmpty(),
         body('descripcion','La descripcion es obligatoria').not().isEmpty(),
         body('direccion', 'La direccion es obligatoria').not().isEmpty(),

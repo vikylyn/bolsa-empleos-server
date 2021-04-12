@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne, OneToOne
 import { Empleador } from './empleador';
 import { Ciudad } from './ciudad';
 import { Imagen } from './imagen';
+import { RazonSocial } from './razon-social';
 
 
 @Entity('empresas') 
@@ -32,11 +33,7 @@ export class Empresa {
     
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     creado_en: Date;
-  
- /*   @JoinColumn({name:'empleadores_id'}) 
-    @OneToOne(type => Empleador, empleador => empleador.id, {nullable: false, eager: true})  
-    empleador: Empleador;
-*/
+    
     @JoinColumn({name:'empleadores_id'}) 
     @OneToOne(type => Empleador, empleador => empleador.id, {nullable: false})  
     empleador: Empleador;
@@ -44,5 +41,8 @@ export class Empresa {
     @JoinColumn({name:'ciudades_id'}) 
     @ManyToOne(type => Ciudad, ciudad => ciudad.id, {nullable: false, eager: true})  
     ciudad: Ciudad;
- 
+
+    @JoinColumn({name:'razon_social_id'}) 
+    @ManyToOne(type => RazonSocial, razon => razon.id, {nullable: false, eager: true})  
+    razon_social: RazonSocial;   
 }

@@ -9,6 +9,7 @@ import { ICredencialesService } from '../interfaces/ICreadenciales.service';
 import { ISolicitanteService } from '../interfaces/ISolicitante.service';
 import { Solicitante } from '../entity/solicitante';
 import {sendEmailSolicitante}  from '../email/enviar-email';
+import { IInformacionAppService } from '../interfaces/IInformacionApp.service';
 
 
 
@@ -16,6 +17,7 @@ import {sendEmailSolicitante}  from '../email/enviar-email';
 export class SolicitanteController implements interfaces.Controller {    
  
     constructor( @inject(TYPES.ISolicitanteService) private solicitanteService: ISolicitanteService,
+                 @inject(TYPES.IInformacionAppService) private informacionAppService: IInformacionAppService,
                  @inject(TYPES.ICredencialesService) private credencialesService: ICredencialesService
      ) {}
  
@@ -83,6 +85,7 @@ export class SolicitanteController implements interfaces.Controller {
         
         try {
             const existe_email = await this.credencialesService.buscarCredenciales(req.body.email);
+            const informacionApp = await this.informacionAppService.buscar(1);
             if (existe_email) {
                 return res.status(400).json({
                     ok: false, 
@@ -91,7 +94,7 @@ export class SolicitanteController implements interfaces.Controller {
             }
             const solicitante: Solicitante = await this.solicitanteService.adicionar(req.body);
             if (solicitante) {
-                sendEmailSolicitante(solicitante, false);
+                sendEmailSolicitante(solicitante,informacionApp);
                 return res.status(201).json({
                     ok: true,
                     mensaje: 'Solicitante adicionado exitosamente',  

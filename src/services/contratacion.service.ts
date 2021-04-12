@@ -3,7 +3,6 @@ import { IContratacionService } from '../interfaces/IContratacion.service';
 import { Postulacion } from '../entity/postulacion';
 import { Contratacion } from '../entity/contratacion';
 import { getRepository, getConnection } from 'typeorm';
-import { Solicitante } from '../entity/solicitante';
 import { Vacante } from '../entity/vacante';
 import { NotificacionEmpleador } from '../entity/notificacion-empleador';
 import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
@@ -11,7 +10,7 @@ import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
 
 @injectable()
 class ContratacionService  implements IContratacionService  {
-
+/*
     async rechazar(postulacion: Postulacion) {
         let respuesta: any;
         const connection = getConnection();
@@ -41,7 +40,13 @@ class ContratacionService  implements IContratacionService  {
                 .where("id = :id", { id: postulacion.id })
                 .execute();
                     
-
+                await queryRunner.manager
+                .getRepository(NotificacionEmpleador)
+                .createQueryBuilder()
+                .delete()
+                .where(" vacante.id = :id_vacante and solicitante.id = :id_solicitante ", { id_solicitante: postulacion.solicitante.id, id_vacante: postulacion.vacante.id })
+                .execute();
+                 
                 await queryRunner.manager.save(NotificacionEmpleador,
                     {
                         leido: false,
@@ -64,6 +69,7 @@ class ContratacionService  implements IContratacionService  {
 
             return respuesta;   
     }
+*/
     async eliminar(contratacion: Contratacion) {
             
         let respuesta: any;
@@ -109,6 +115,7 @@ class ContratacionService  implements IContratacionService  {
        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
        .leftJoinAndSelect("contrataciones.vacante", "vacante")
        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
        .where("vacante.id = :id and contrataciones.habilitado", { id: id })
@@ -135,7 +142,10 @@ class ContratacionService  implements IContratacionService  {
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
         .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacante.empleador", "empleador")
+        .leftJoinAndSelect("empleador.empresa", "empresa")
+        .leftJoinAndSelect("empresa.razon_social", "razon_social")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
        .where("solicitante.id = :id and contrataciones.oculto = false", { id: id })
@@ -152,6 +162,7 @@ class ContratacionService  implements IContratacionService  {
         .createQueryBuilder("contrataciones")
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       
        .where("solicitante.id = :id and contrataciones.oculto = false", { id: id_solicitante })
        .getCount();
     
@@ -164,6 +175,7 @@ class ContratacionService  implements IContratacionService  {
         .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
         .leftJoinAndSelect("vacante.sueldo", "sueldo")
+        .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
         .leftJoinAndSelect("vacante.empleador", "empleador")
         .leftJoinAndSelect("vacante.requisitos", "requisitos")
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -180,19 +192,22 @@ class ContratacionService  implements IContratacionService  {
         .createQueryBuilder("contrataciones")
         .leftJoinAndSelect("contrataciones.vacante", "vacante")
         .leftJoinAndSelect("vacante.empleador", "empleador")
-       .where("empleador.id = :id", { id: id_empleador })
+       .where("empleador.id = :id and contrataciones.habilitado =true", { id: id_empleador })
        .getCount();
     
         return total; 
     }
 
     async buscar(id: number) {
-        const contratacion = await  
+        let contratacion: Contratacion = await  getRepository(Contratacion).findOne(id);
+       return contratacion;
+    /*    const contratacion = await  
         getRepository(Contratacion)
        .createQueryBuilder("contrataciones")
        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
        .leftJoinAndSelect("contrataciones.vacante", "vacante")
        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacante.empleador", "empleador")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -201,7 +216,8 @@ class ContratacionService  implements IContratacionService  {
        .leftJoinAndSelect("estado.pais", "pais")
        .where("contrataciones.id = :id", { id: id })
        .getOne();
-       return contratacion;    
+       return contratacion;   
+    */ 
     }
 
     async aceptarSolicitante(postulacion: Postulacion) {
@@ -279,6 +295,13 @@ class ContratacionService  implements IContratacionService  {
             })
             .where("id = :id", { id: contratacion.id })
             .execute();
+            await getRepository(NotificacionSolicitante)
+                    .createQueryBuilder("notificaciones")
+                    .leftJoinAndSelect("notificaciones.solicitante","solicitante")
+                    .leftJoinAndSelect("notificaciones.vacante","vacante")
+                    .delete()
+                    .where("solicitante.id = :id_solicitante && vacante.id = :id_vacante", { id_solicitante: contratacion.solicitante.id, id_vacante: contratacion.vacante.id })
+                    .execute();
             await queryRunner.manager.save(NotificacionSolicitante,
                 {
                     leido: false,
@@ -350,13 +373,14 @@ class ContratacionService  implements IContratacionService  {
         .getOne();
        return contratacion;
     }
-    async busqueda(valor: string, id_empleador: number) {
+    async busquedaEmpleador(valor: string, id_empleador: number) {
         const contrataciones = await 
         getRepository(Contratacion)
        .createQueryBuilder("contrataciones")
        .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
        .leftJoinAndSelect("contrataciones.vacante", "vacante")
        .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
        .leftJoinAndSelect("vacante.requisitos", "requisitos")
        .leftJoinAndSelect("vacante.empleador", "empleador")
        .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
@@ -365,6 +389,29 @@ class ContratacionService  implements IContratacionService  {
                 (solicitante.cedula regexp :valor and empleador.id = :id and contrataciones.habilitado = true) ||
                 (vacante.titulo regexp :valor and empleador.id = :id and contrataciones.habilitado = true) ||
                 (ocupacion.nombre regexp :valor and empleador.id = :id and contrataciones.habilitado = true)`,{valor: valor, id: id_empleador})
+        .addOrderBy("contrataciones.creado_en", "DESC")
+        .getMany()
+        return contrataciones;
+     }
+     async busquedaSolicitante(valor: string, id_solicitante: number) {
+        const contrataciones = await 
+        getRepository(Contratacion)
+       .createQueryBuilder("contrataciones")
+       .leftJoinAndSelect("contrataciones.solicitante", "solicitante")
+       .leftJoinAndSelect("contrataciones.vacante", "vacante")
+       .leftJoinAndSelect("vacante.sueldo", "sueldo")
+       .leftJoinAndSelect("vacante.periodo_pago", "periodo_pago")
+       .leftJoinAndSelect("vacante.requisitos", "requisitos")
+       .leftJoinAndSelect("vacante.empleador", "empleador")
+       .leftJoinAndSelect("empleador.empresa", "empresa")
+       .leftJoinAndSelect("empresa.razon_social", "razon_social")
+       .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
+        .where(`(empleador.nombre regexp :valor and solicitante.id = :id and contrataciones.oculto = false) ||
+                (empleador.apellidos regexp :valor and solicitante.id = :id and contrataciones.oculto = false) || 
+                (empleador.cedula regexp :valor and solicitante.id = :id and contrataciones.oculto = false) ||
+                (vacante.titulo regexp :valor and solicitante.id = :id and contrataciones.oculto = false) ||
+                (empresa.nombre regexp :valor and solicitante.id = :id and contrataciones.oculto = false) ||
+                (ocupacion.nombre regexp :valor and solicitante.id = :id and contrataciones.oculto = false)`,{valor: valor, id: id_solicitante})
         .addOrderBy("contrataciones.creado_en", "DESC")
         .getMany()
         return contrataciones;

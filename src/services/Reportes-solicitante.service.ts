@@ -7,8 +7,10 @@ import { Contratacion } from '../entity/contratacion';
 @injectable()
 class ReportesSolicitanteService  implements IReportesSolicitanteService  {
     
-    async generarListadoSolicitantes(body: any) {
+    async generarListadoSolicitantes(body: any) { 
        let habilitado: boolean = false;
+       let f1: Date = new Date(body.fecha_inicio);
+       let f2: Date = new Date(body.fecha_fin);
        if(body.habilitado === true || body.habilitado === 'true') {
             habilitado = true;
        }       
@@ -29,7 +31,7 @@ class ReportesSolicitanteService  implements IReportesSolicitanteService  {
        .leftJoinAndSelect("ciudad.estado", "estado")
        .leftJoinAndSelect("estado.pais", "pais")
        .leftJoinAndSelect("solicitantes.ocupaciones", "ocupaciones")
-       .where( consulta, {fecha_inicio: body.fecha_inicio, fecha_fin: body.fecha_fin, habilitado: habilitado, id_ocupacion: body.id_ocupacion, id_ciudad: body.id_ciudad })
+       .where( consulta, {fecha_inicio: f1, fecha_fin: f2, habilitado: habilitado, id_ocupacion: body.id_ocupacion, id_ciudad: body.id_ciudad })
        .addOrderBy("solicitantes.creado_en", "ASC")
        .getMany();
        return solicitantes;
