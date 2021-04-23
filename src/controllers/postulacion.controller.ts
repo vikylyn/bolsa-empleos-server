@@ -231,6 +231,12 @@ export class PostulacionController implements interfaces.Controller {
         try {
             const postulacion:Postulacion = await this.postulacionService.buscar(id);
             if(postulacion){
+                if (postulacion.aceptado) {
+                    return res.status(400).json({
+                        ok:false,
+                         mensaje: 'No es posible eliminar una postulación aceptada',
+                    });
+                }
                 const postulacion_eliminada = await this.postulacionService.eliminar(postulacion);
                 if (postulacion_eliminada === true){
                     const server = Server.instance;
@@ -465,19 +471,20 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje:`No existe una postulacion con el ID ${id}`
                 });
             }
-            if (postulacion.vacante.num_disponibles === postulacion.vacante.num_vacantes) {
+            if (postulacion.rechazado) {
                 return res.status(400).json({
                     ok: false,
-                    mensaje:`Error, Existe un numero de vacantes igual al numero de disponibles ${id}`
-                }); 
+                    mensaje:`La postulación ya fue rechazada`
+                });
             }
     
-            if (postulacion.aceptado === false) {
+            if (!postulacion.aceptado) {
                 return res.status(400).json({
                     ok: false,
                     mensaje:`Error al borrar, No  ha sido aceptado para la vacante`
                 }); 
             }
+           
             const postulacion_rechazada = await this.postulacionService.rechazarPostulacionSolicitante(postulacion);
             if (postulacion_rechazada === true){
                 const server = Server.instance;
@@ -517,6 +524,12 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje:`No existe una postulacion con el ID ${id}`
                 });
             }
+            if (postulacion.rechazado) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No es posible Confirmar porque la postulación fue rechazada`
+                });
+            }
             const contratacion = await this.postulacionService.confirmar(postulacion);
             if(contratacion) { 
                 const server = Server.instance;
@@ -532,7 +545,7 @@ export class PostulacionController implements interfaces.Controller {
                 }
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Confirmacion exitosamente',  
+                    mensaje: 'Confirmacion realizada exitosamente',  
                     contratacion
                 });
             }else {
@@ -908,16 +921,22 @@ export class PostulacionController implements interfaces.Controller {
                     mensaje:`No existe una postulacion con el ID ${id}`
                 });
             }
+            if (postulacion.aceptado && !postulacion.rechazado) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje:`No es posible eliminar la postulacion porque fue aceptada`
+                });
+            }
             const postulacion_eliminada = await this.postulacionService.eliminarRechazadoSolicitante(postulacion);
             if(postulacion_eliminada === true) { 
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Postulacion eliminada exitosamente',  
+                    mensaje: 'Postulación eliminada exitosamente',  
                 });
             }else {
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'Error al confirmar  contratacion', 
+                    mensaje: 'No se pudo eliminar la postulación', 
                 });
             }
         } catch (err) {

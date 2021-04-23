@@ -8,19 +8,7 @@ import { Imagen } from "../entity/imagen";
 @injectable()
 class ImagenService  implements IImagenService  {
     async modificar(id: number, imagen: Imagen) {
-  
-
-        let respuesta: any;
-        const connection = getConnection();
-            const queryRunner = connection.createQueryRunner();
-
-            // establish real database connection using our new query runner
-            await queryRunner.connect();
-
-            // lets now open a new transaction:
-            await queryRunner.startTransaction();
-            try {
-                await getRepository(Imagen)
+        let respuesta = await getRepository(Imagen)
                 .createQueryBuilder()
                 .update(Imagen)
                 .set({
@@ -31,21 +19,13 @@ class ImagenService  implements IImagenService  {
                 })
                 .where("id = :id", { id: id })
                 .execute();
-                respuesta = true;
-            } catch (err) {
-            
-                // since we have errors let's rollback changes we made
-                await queryRunner.rollbackTransaction();
-                respuesta = err;
-                console.log(err);
-            
-            } finally {
-            
-                // you need to release query runner which is manually created:
-                await queryRunner.release();
-            }
-
-            return respuesta;
+        console.log(respuesta);
+        if (respuesta.raw.affectedRows === 1 && respuesta.raw.changedRows === 1 && respuesta.raw.warningCount === 0) {
+            return true;
+        }else {
+            return false;
+        }
+       
     }
     async buscar(id: number) {
         const imagen = await  getRepository(Imagen).findOne(id);

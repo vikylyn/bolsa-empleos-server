@@ -6,7 +6,6 @@ import { NotificacionEmpleador } from '../entity/notificacion-empleador';
 import { NotificacionSolicitante } from '../entity/notificacion-solicitante';
 import { Vacante } from '../entity/vacante';
 import { Contratacion } from '../entity/contratacion';
-import { Solicitante } from '../entity/solicitante';
 
 
 
@@ -146,7 +145,8 @@ class PostulacionService  implements IPostulacionService  {
                             solicitante: {id: postulacion.solicitante.id},
                             empleador: {id: postulacion.vacante.empleador.id},
                             vacante: {id: postulacion.vacante.id},
-                            tipo_notificacion: {id: 2}
+                            tipo_notificacion: {id: 2},
+                            creado_en: new Date()
                         });
                 await queryRunner.commitTransaction();
 
@@ -269,7 +269,8 @@ class PostulacionService  implements IPostulacionService  {
                             solicitante: {id: postulacion.solicitante.id},
                             empleador: {id: postulacion.vacante.empleador.id},
                             vacante: {id: postulacion.vacante.id},
-                            tipo_notificacion: {id: 3}
+                            tipo_notificacion: {id: 3},
+                            creado_en: new Date()
                         });
                 await queryRunner.commitTransaction();
 
@@ -303,7 +304,8 @@ class PostulacionService  implements IPostulacionService  {
                        habilitado: true,
                        solicitante: postulacion.solicitante,
                        vacante: postulacion.vacante,
-                       confirmado: false
+                       confirmado: false,
+                       creado_en: new Date()
                     });
                 await queryRunner.manager.delete(Postulacion,postulacion);
 
@@ -320,7 +322,8 @@ class PostulacionService  implements IPostulacionService  {
                         solicitante: {id: postulacion.solicitante.id},
                         empleador: {id: postulacion.vacante.empleador.id},
                         vacante: {id: postulacion.vacante.id},
-                        tipo_notificacion: {id: 5}
+                        tipo_notificacion: {id: 5},
+                        creado_en: new Date()
                     });
                 await queryRunner.commitTransaction();
 
@@ -423,7 +426,8 @@ class PostulacionService  implements IPostulacionService  {
                        solicitante: {id: postulacion.solicitante.id},
                        empleador: {id: postulacion.vacante.empleador.id},
                        vacante: {id: postulacion.vacante.id},
-                       tipo_notificacion: {id: 3}
+                       tipo_notificacion: {id: 3},
+                       creado_en: new Date()
                    });
                 await queryRunner.commitTransaction();
 
@@ -463,7 +467,8 @@ class PostulacionService  implements IPostulacionService  {
                         vacante: {id: body.id_vacante},
                         aceptado: false,
                         rechazado: false,
-                        favorito: false
+                        favorito: false,
+                        creado_en: new Date()
                     });
 
                 await queryRunner.manager.save(NotificacionEmpleador,
@@ -472,7 +477,8 @@ class PostulacionService  implements IPostulacionService  {
                         solicitante: {id: body.id_solicitante},
                         empleador: {id: body.id_empleador},
                         vacante: {id: body.id_vacante},
-                        tipo_notificacion: {id: 1}
+                        tipo_notificacion: {id: 1},
+                        creado_en: new Date()
                     });
 
                     
@@ -516,7 +522,8 @@ class PostulacionService  implements IPostulacionService  {
                         solicitante: {id: body.id_solicitante},
                         empleador: {id: body.id_empleador},
                         vacante: {id: body.id_vacante},
-                        tipo_notificacion: {id: 7}
+                        tipo_notificacion: {id: 7},
+                        creado_en: new Date()
                     });
 
                     
@@ -817,12 +824,12 @@ class PostulacionService  implements IPostulacionService  {
         .leftJoinAndSelect("requisitos.ocupacion", "ocupacion")
         .leftJoinAndSelect("empleador.empresa", "empresa")
         .leftJoinAndSelect("empresa.razon_social", "razon_social")
-        .where(`(empleador.nombre regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true) ||
-        (empleador.apellidos regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) || 
-        (empleador.cedula regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true) ||
-        (vacante.titulo regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) ||
-        (empresa.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true) ||
-        (ocupacion.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true)`,{valor: valor, id: id_solicitante})
+        .where(`(empleador.nombre regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true and postulaciones.oculto = false) ||
+        (empleador.apellidos regexp :valor and solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false) || 
+        (empleador.cedula regexp :valor and solicitante.id = :id  and postulaciones.rechazado = true and postulaciones.oculto = false) ||
+        (vacante.titulo regexp :valor and solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false) ||
+        (empresa.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false) ||
+        (ocupacion.nombre regexp :valor and solicitante.id = :id and postulaciones.rechazado = true and postulaciones.oculto = false)`,{valor: valor, id: id_solicitante})
         .addOrderBy("postulaciones.creado_en", "DESC")
         .getMany()
         return postulaciones;
@@ -905,7 +912,8 @@ class PostulacionService  implements IPostulacionService  {
                         solicitante: {id: postulacion.solicitante.id},
                         empleador: {id: postulacion.vacante.empleador.id},
                         vacante: {id: postulacion.vacante.id},
-                        tipo_notificacion: {id: 6}
+                        tipo_notificacion: {id: 6},
+                        creado_en: new Date()
                     });
                 await queryRunner.commitTransaction();
 

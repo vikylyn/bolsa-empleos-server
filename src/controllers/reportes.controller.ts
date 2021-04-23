@@ -147,18 +147,18 @@ export class ReportesController implements interfaces.Controller {
         body('fecha_fin','la fecha de finalizacion es obligatoria').not().isEmpty(),
         body('habilitado','El valor de todos, habilitado o inhabilitado es obligatorio').not().isEmpty(),
         validarCampos)
-    private async generarListadoPostulacionesRechadas(
+    private async generarListadoSolicitantesRechazados(
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {
-        let postulaciones: Postulacion [] = await this.reportePostulacionesService.generarListadoPostulacionesRechazadasPorOcupacion(req.body);
+        let solicitantes: Solicitante[] = await this.reporteSolicitanteService.generarListadoSolicitantesRechazados(req.body);
         let ocupacion: Ocupacion = await this.ocupacionService.buscar(req.body.id_ocupacion);
        // let total: number = await this.reporteSolicitanteService.contarSolicitantes(req.body);
         return res.status(200).json({
             ok: true,
-            postulaciones,
+            solicitantes,
             ocupacion,
-            total: 0
+            total: 0 
         });
     }
 
@@ -173,11 +173,11 @@ export class ReportesController implements interfaces.Controller {
             req: express.Request, 
             res: express.Response, 
             next: express.NextFunction) {
-        let contrataciones = await this.reporteContratacionService.generarListadoContratacionesPorNumeroDeContrataciones(req.body);
+        let solicitantes: Solicitante[] = await this.reporteSolicitanteService.generarListadoSolicitantesContratados(req.body);
         let ocupacion: Ocupacion = await this.ocupacionService.buscar(req.body.id_ocupacion);
         return res.status(200).json({
             ok: true,
-            contrataciones,
+            solicitantes,
             ocupacion
         });
     }

@@ -104,7 +104,7 @@ export class ContratacionController implements interfaces.Controller {
                 }
                 return res.status(200).json({
                     ok: true,
-                    mensaje: 'Desvinculacion exitosamente'
+                    mensaje: 'Contratación eliminada exitosamente'
                 });
             }else {
                 return res.status(500).json({
